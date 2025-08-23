@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'wouter';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Sidebar } from '@/components/ui/sidebar';
 import { FileUpload } from '@/components/file-upload';
-import { ChatInterface } from '@/components/chat-interface';
+import { ChatInterface } from '@/components/chat-interface-with-agents';
 import { KeyManagement } from '@/components/key-management';
 import { 
   FileText, 
@@ -15,7 +16,8 @@ import {
   LogOut, 
   MoreVertical,
   Trash2,
-  Download
+  Download,
+  Bot
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
@@ -28,8 +30,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState('dashboard');
+export default function Dashboard({ initialTab }: { initialTab?: string }) {
+  const [location, setLocation] = useLocation();
+  const [activeTab, setActiveTab] = useState(initialTab || 'dashboard');
   const [activeChatSession, setActiveChatSession] = useState<string | null>(null);
   const { user, logout } = useAuth();
   const { toast } = useToast();
@@ -43,6 +46,16 @@ export default function Dashboard() {
   const { data: chatSessions = [] } = useQuery<ChatSession[]>({
     queryKey: ['/api/chat-sessions/user', user?.id],
     enabled: !!user?.id,
+    queryFn: async () => {
+      console.log('[Dashboard Debug] Fetching chat sessions for user:', user?.id);
+      const response = await fetch(`/api/chat-sessions/user/${user?.id}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch chat sessions');
+      }
+      const data = await response.json();
+      console.log('[Dashboard Debug] Fetched chat sessions:', data);
+      return data;
+    }
   });
 
   const handleFileUploaded = () => {
@@ -134,8 +147,8 @@ export default function Dashboard() {
                             <FileText className="text-red-600 h-5 w-5" />
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-900">{file.fileName}</p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-sm font-medium text-foreground">{file.fileName}</p>
+                            <p className="text-xs text-muted-foreground">
                               Uploaded {new Date(file.uploadedAt).toLocaleDateString()}
                             </p>
                           </div>
@@ -212,8 +225,8 @@ export default function Dashboard() {
                       data-testid={`chat-session-${session.id}`}
                     >
                       <div>
-                        <p className="text-sm font-medium text-gray-900">{session.title}</p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-sm font-medium text-foreground">{session.title}</p>
+                        <p className="text-xs text-muted-foreground">
                           {new Date(session.updatedAt).toLocaleDateString()}
                         </p>
                       </div>
@@ -244,8 +257,8 @@ export default function Dashboard() {
                       <FileText className="text-primary h-6 w-6" />
                     </div>
                     <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Encrypted Files</p>
-                      <p className="text-2xl font-bold text-gray-900" data-testid="file-count">
+                      <p className="text-sm font-medium text-muted-foreground">Encrypted Files</p>
+                      <p className="text-2xl font-bold text-foreground" data-testid="file-count">
                         {files.length}
                       </p>
                     </div>
@@ -260,8 +273,8 @@ export default function Dashboard() {
                       <MessageSquare className="text-secondary h-6 w-6" />
                     </div>
                     <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">AI Conversations</p>
-                      <p className="text-2xl font-bold text-gray-900" data-testid="chat-count">
+                      <p className="text-sm font-medium text-muted-foreground">AI Conversations</p>
+                      <p className="text-2xl font-bold text-foreground" data-testid="chat-count">
                         {chatSessions.length}
                       </p>
                     </div>
@@ -276,8 +289,8 @@ export default function Dashboard() {
                       <Shield className="text-accent h-6 w-6" />
                     </div>
                     <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Security Level</p>
-                      <p className="text-xl font-bold text-gray-900">Maximum</p>
+                      <p className="text-sm font-medium text-muted-foreground">Security Level</p>
+                      <p className="text-xl font-bold text-foreground">Maximum</p>
                     </div>
                   </div>
                 </CardContent>
@@ -310,8 +323,8 @@ export default function Dashboard() {
                               <FileText className="text-red-600 h-5 w-5" />
                             </div>
                             <div>
-                              <p className="text-sm font-medium text-gray-900">{file.fileName}</p>
-                              <p className="text-xs text-gray-500">
+                              <p className="text-sm font-medium text-foreground">{file.fileName}</p>
+                              <p className="text-xs text-muted-foreground">
                                 Uploaded {new Date(file.uploadedAt).toLocaleDateString()}
                               </p>
                             </div>
@@ -344,23 +357,52 @@ export default function Dashboard() {
     }
   };
 
+  const handleTabChange = (tab: string) => {
+    // Use client-side navigation for known routes
+    if (tab === 'agents') {
+      setLocation('/agents');
+      return;
+    }
+    if (tab === 'vault') {
+      setLocation('/vault');
+      setActiveTab('vault');
+      return;
+    }
+    if (tab === 'chat') {
+      setLocation('/chat');
+      setActiveTab('chat');
+      return;
+    }
+    if (tab === 'history') {
+      setLocation('/history');
+      setActiveTab('history');
+      return;
+    }
+    if (tab === 'settings') {
+      setLocation('/settings');
+      setActiveTab('settings');
+      return;
+    }
+    setActiveTab(tab);
+  };
+
   return (
-    <div className="min-h-screen flex bg-gray-50">
+    <div className="min-h-screen flex bg-background text-foreground">
       <Sidebar 
         activeTab={activeTab} 
-        onTabChange={setActiveTab}
-        className="fixed h-full"
+        onTabChange={handleTabChange}
+        className="fixed h-full bg-sidebar text-sidebar-foreground dark:bg-sidebar dark:text-sidebar-foreground"
       />
-      
-      <div className="flex-1 ml-64 overflow-hidden">
+
+      <div className="flex-1 ml-64 overflow-hidden bg-background text-foreground">
         {/* Header */}
-        <header className="bg-white border-b border-gray-200 px-6 py-4">
+        <header className="bg-background border-b border-border px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 capitalize">
+              <h2 className="text-2xl font-bold text-foreground capitalize">
                 {activeTab === 'dashboard' ? 'Dashboard' : activeTab}
               </h2>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 Manage your private AI assistant and encrypted files
               </p>
             </div>
@@ -369,7 +411,7 @@ export default function Dashboard() {
                 <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                   <User className="text-white h-4 w-4" />
                 </div>
-                <span className="text-sm font-medium text-gray-700" data-testid="user-email">
+                <span className="text-sm font-medium text-foreground" data-testid="user-email">
                   {user?.email}
                 </span>
               </div>
@@ -386,7 +428,7 @@ export default function Dashboard() {
         </header>
 
         {/* Main Content */}
-        <div className="p-6 overflow-y-auto" style={{ height: 'calc(100vh - 88px)' }}>
+        <div className="p-6 overflow-y-auto bg-background text-foreground" style={{ height: 'calc(100vh - 88px)' }}>
           {renderContent()}
         </div>
       </div>

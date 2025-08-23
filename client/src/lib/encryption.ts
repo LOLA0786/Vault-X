@@ -3,6 +3,16 @@ import CryptoJS from 'crypto-js';
 export class EncryptionService {
   private static STORAGE_KEY = 'ai_vault_encryption_key';
   private static KEY_SIZE = 256;
+  static decryptFileToUint8Array(encryptedData: string, key?: string): Uint8Array {
+    const decrypted = this.decrypt(encryptedData, key); // base64 string
+    const binaryString = atob(decrypted);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes;
+  }
   
   static generateKey(): string {
     return CryptoJS.lib.WordArray.random(this.KEY_SIZE / 8).toString();

@@ -94,42 +94,45 @@ export function FileUpload({ onFileUploaded }: FileUploadProps) {
     setIsUploading(true);
     setUploadProgress(0);
 
+
+
     try {
       // Simulate encryption progress
       setUploadProgress(25);
-      
-      // Encrypt file
+
+      // Encrypt file client-side
       const encryptedData = await EncryptionService.encryptFile(file);
       setUploadProgress(60);
 
-      // Upload to server
-      const response = await fetch('/api/files', {
+
+      // Prepare JSON for encrypted upload
+      const payload = {
+        encryptedData,
+        fileName: file.name,
+        fileType: file.type,
+        userId: user.id,
+      };
+
+      // Upload to server using /api/upload
+      const response = await fetch('/api/upload', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: user.id,
-          fileName: file.name,
-          fileType: file.type,
-          encryptedData,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       });
 
       setUploadProgress(90);
 
-      if (!response.ok) {
-        throw new Error('Upload failed');
-      }
-
+      const result = await response.json();
       setUploadProgress(100);
-      
-      toast({
-        title: "File uploaded successfully",
-        description: `${file.name} has been encrypted and stored securely`,
-      });
-
-      onFileUploaded?.();
+      if (result.success) {
+        toast({
+          title: "File uploaded successfully",
+          description: `${file.name} has been stored securely`,
+        });
+        onFileUploaded?.();
+      } else {
+        throw new Error(result.error || 'Upload failed');
+      }
     } catch (error) {
       console.error('Upload error:', error);
       toast({

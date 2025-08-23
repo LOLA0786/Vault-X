@@ -7,8 +7,10 @@ import {
   MessageSquare, 
   History, 
   Settings,
-  Lock
+  Lock,
+  Bot
 } from "lucide-react";
+import { ThemeToggle } from "./theme-toggle";
 
 interface SidebarProps {
   className?: string;
@@ -21,20 +23,21 @@ export function Sidebar({ className, activeTab, onTabChange }: SidebarProps) {
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'vault', label: 'File Vault', icon: FolderOpen },
     { id: 'chat', label: 'AI Assistant', icon: MessageSquare },
+    { id: 'agents', label: 'AI Agents', icon: Bot },
     { id: 'history', label: 'Chat History', icon: History },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
   return (
-    <div className={cn("w-64 bg-white shadow-lg border-r border-gray-200", className)}>
+  <div className={cn("w-64 bg-sidebar text-sidebar-foreground dark:bg-sidebar dark:text-sidebar-foreground shadow-lg border-r border-border", className)}>
       <div className="p-6">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
             <Shield className="text-white text-lg" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900">AI Vault</h1>
-            <p className="text-xs text-gray-500">Private & Secure</p>
+            <h1 className="text-xl font-bold text-sidebar-foreground dark:text-sidebar-foreground">AI Vault</h1>
+            <p className="text-xs text-sidebar-foreground/70 dark:text-sidebar-foreground/70">Private & Secure</p>
           </div>
         </div>
       </div>
@@ -48,10 +51,10 @@ export function Sidebar({ className, activeTab, onTabChange }: SidebarProps) {
                 key={item.id}
                 variant={activeTab === item.id ? "default" : "ghost"}
                 className={cn(
-                  "w-full justify-start text-sm font-medium",
+                  "w-full justify-start text-sm font-medium text-sidebar-foreground dark:text-sidebar-foreground",
                   activeTab === item.id
-                    ? "text-primary bg-blue-50"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                    ? "text-primary bg-blue-50 dark:bg-sidebar-accent dark:text-sidebar-primary-foreground"
+                    : "hover:text-foreground hover:bg-accent dark:hover:text-foreground dark:hover:bg-accent"
                 )}
                 onClick={() => onTabChange(item.id)}
                 data-testid={`nav-${item.id}`}
@@ -64,16 +67,19 @@ export function Sidebar({ className, activeTab, onTabChange }: SidebarProps) {
         </div>
       </nav>
 
-      {/* Security Status */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 bg-white">
-        <div className="flex items-center space-x-2 text-sm">
-          <div className="w-3 h-3 bg-secondary rounded-full"></div>
-          <span className="text-gray-600">Encryption Active</span>
+      {/* Security Status & Theme Toggle */}
+      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 bg-white dark:bg-gray-900">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center space-x-2 text-sm">
+            <div className="w-3 h-3 bg-secondary rounded-full"></div>
+            <span className="text-gray-600 dark:text-gray-300">Encryption Active</span>
+          </div>
+          <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center">
+            <Lock className="w-3 h-3 mr-1" />
+            AES-256 Client-side
+          </p>
+          <ThemeToggle />
         </div>
-        <p className="text-xs text-gray-500 mt-1 flex items-center">
-          <Lock className="w-3 h-3 mr-1" />
-          AES-256 Client-side
-        </p>
       </div>
     </div>
   );

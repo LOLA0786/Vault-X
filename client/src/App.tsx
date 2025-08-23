@@ -7,6 +7,8 @@ import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import Dashboard from "@/pages/dashboard";
 import Onboarding from "@/pages/onboarding";
 import NotFound from "@/pages/not-found";
+import Agents from "@/pages/agents";
+import { ThemeProvider } from 'next-themes';
 
 function Router() {
   const { isAuthenticated, loading } = useAuth();
@@ -27,19 +29,37 @@ function Router() {
       <Route path="/">
         {isAuthenticated ? <Dashboard /> : <Onboarding />}
       </Route>
+      <Route path="/agents">
+        {isAuthenticated ? <Agents /> : <Onboarding />}
+      </Route>
+      <Route path="/vault">
+        {isAuthenticated ? <Dashboard initialTab="vault" /> : <Onboarding />}
+      </Route>
+      <Route path="/chat">
+        {isAuthenticated ? <Dashboard initialTab="chat" /> : <Onboarding />}
+      </Route>
+      <Route path="/history">
+        {isAuthenticated ? <Dashboard initialTab="history" /> : <Onboarding />}
+      </Route>
+      <Route path="/settings">
+        {isAuthenticated ? <Dashboard initialTab="settings" /> : <Onboarding />}
+      </Route>
       <Route component={NotFound} />
     </Switch>
   );
 }
 
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <AuthProvider>
-          <Toaster />
-          <Router />
-        </AuthProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <AuthProvider>
+            <Toaster />
+            <Router />
+          </AuthProvider>
+        </ThemeProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

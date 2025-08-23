@@ -30,13 +30,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchUser = async (email: string) => {
     try {
+      console.log('[Auth Debug] Fetching user with email:', email);
       const response = await fetch(`/api/users/${email}`);
       if (response.ok) {
         const userData = await response.json();
+        console.log('[Auth Debug] User data retrieved:', userData);
         setUser(userData);
+      } else {
+        console.error('[Auth Debug] Failed to fetch user, status:', response.status);
       }
     } catch (error) {
-      console.error('Failed to fetch user:', error);
+      console.error('[Auth Debug] Failed to fetch user:', error);
     } finally {
       setLoading(false);
     }
@@ -44,15 +48,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (email: string, password: string) => {
     try {
-      // Create user
+      // Create user with email and password
       const response = await fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, password }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create user');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create user');
       }
 
       const userData = await response.json();

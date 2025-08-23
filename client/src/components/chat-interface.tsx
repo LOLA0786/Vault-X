@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Paperclip, Send, Bot, User, Shield, Lock } from 'lucide-react';
 import { GeminiService, type ChatMessage } from '@/lib/gemini';
 import { EncryptionService } from '@/lib/encryption';
+import { extractPdfText } from '@/lib/pdf-utils';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
@@ -22,6 +23,7 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
+  const [decryptedFileContent, setDecryptedFileContent] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -30,6 +32,39 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
     queryKey: ['/api/files/user', user?.id],
     enabled: !!user?.id,
   });
+
+  // Decrypt and show file content when a file is selected
+  useEffect(() => {
+    const showDecrypted = async () => {
+      if (!selectedFileId) {
+        setDecryptedFileContent('');
+        return;
+      }
+      const selectedFile = files.find(f => f.id === selectedFileId);
+      if (!selectedFile) {
+        setDecryptedFileContent('');
+        return;
+      }
+      try {
+        const key = EncryptionService.getStoredKey();
+        console.log('[Decrypt Debug] File:', selectedFile);
+        console.log('[Decrypt Debug] Key:', key);
+        if (selectedFile.fileType === 'application/pdf' || selectedFile.fileName.endsWith('.pdf')) {
+          const pdfBytes = EncryptionService.decryptFileToUint8Array(selectedFile.encryptedData);
+          console.log('[Decrypt Debug] PDF Bytes:', pdfBytes);
+          const text = await extractPdfText(pdfBytes);
+          setDecryptedFileContent(text);
+        } else {
+          const text = EncryptionService.decryptFile(selectedFile.encryptedData);
+          setDecryptedFileContent(text);
+        }
+      } catch (err) {
+        setDecryptedFileContent('Failed to decrypt or parse file.');
+        console.error('[Decrypt Debug] Error:', err);
+      }
+    };
+    showDecrypted();
+  }, [selectedFileId, files]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -44,6 +79,7 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
     if (sessionId) {
       loadChatHistory(sessionId);
     }
+    // eslint-disable-next-line
   }, [sessionId]);
 
   const loadChatHistory = async (id: string) => {
@@ -63,72 +99,107 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
   };
 
   const saveChatHistory = async (newMessages: ChatMessage[]) => {
-    if (!user || newMessages.length === 0) return;
-
+    if (!user) {
+      console.warn('[Chat Debug] No user available, skipping saveChatHistory');
+      return;
+    }
+    if (newMessages.length === 0) {
+      console.warn('[Chat Debug] No messages to save, skipping saveChatHistory');
+      return;
+    }
     try {
+      console.log('[Chat Debug] Saving chat history for user:', user.id);
+      console.log('[Chat Debug] Message count:', newMessages.length);
+      
       const encryptedHistory = EncryptionService.encrypt(JSON.stringify(newMessages));
+      if (!encryptedHistory || encryptedHistory.length === 0) {
+        console.warn('[Chat Debug] Encrypted history is empty, aborting save');
+        return;
+      }
+      console.log('[Chat Debug] Encrypted history length:', encryptedHistory.length);
       
       if (sessionId) {
         // Update existing session
-        await fetch(`/api/chat-sessions/${sessionId}`, {
+        console.log('[Chat Debug] Updating existing session:', sessionId);
+        const response = await fetch(`/api/chat-sessions/${sessionId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ encryptedHistory }),
         });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('[Chat Debug] Failed to update session:', errorData);
+          throw new Error(`Failed to update session: ${response.status} ${response.statusText}`);
+        } else {
+          console.log('[Chat Debug] Session updated successfully');
+        }
       } else {
         // Create new session
         const title = newMessages[0]?.content.slice(0, 50) + '...' || 'New Chat';
+        console.log('[Chat Debug] Creating new session with title:', title);
+        
+        const requestData = {
+          userId: String(user.id || ''),
+          title: String(title || 'New Chat'),
+          encryptedHistory: String(encryptedHistory),
+        };
+        console.log('[Chat Debug] Request data:', JSON.stringify(requestData, null, 2));
+        
         const response = await fetch('/api/chat-sessions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: user.id,
-            title,
-            encryptedHistory,
-          }),
+          body: JSON.stringify(requestData),
         });
         
         if (response.ok) {
           const newSession = await response.json();
+          console.log('[Chat Debug] New session created:', newSession);
           onNewSession?.(newSession.id);
+        } else {
+          const errorData = await response.json();
+          console.error('[Chat Debug] Failed to create session:', errorData);
+          throw new Error(`Failed to create session: ${response.status} ${response.statusText}`);
         }
       }
     } catch (error) {
-      console.error('Failed to save chat history:', error);
+      console.error('[Chat Debug] Failed to save chat history:', error);
     }
   };
 
   const sendMessage = async () => {
     if (!inputValue.trim() || !user) return;
-
+    console.log('[Chat Debug] User object:', user);
+    
     const userMessage: ChatMessage = {
       role: 'user',
       content: inputValue,
       timestamp: new Date(),
     };
-
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
     setInputValue('');
     setIsLoading(true);
-
     try {
       let fileContent = '';
       let fileName = '';
-
-      // If a file is selected, decrypt it for AI processing
+      // If a file is selected, decrypt and extract text for AI processing
       if (selectedFileId) {
         const selectedFile = files.find(f => f.id === selectedFileId);
         if (selectedFile) {
           try {
-            fileContent = EncryptionService.decryptFile(selectedFile.encryptedData);
             fileName = selectedFile.fileName;
+            if (selectedFile.fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
+              const pdfBytes = EncryptionService.decryptFileToUint8Array(selectedFile.encryptedData);
+              fileContent = await extractPdfText(pdfBytes);
+            } else {
+              fileContent = EncryptionService.decryptFile(selectedFile.encryptedData);
+            }
           } catch (error) {
-            throw new Error('Failed to decrypt selected file');
+            throw new Error('Failed to decrypt or parse selected file');
           }
         }
       }
-
       // Send to Gemini
       const aiResponse = await GeminiService.sendMessage(
         inputValue,
@@ -136,25 +207,21 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
         fileName,
         messages
       );
-
       const assistantMessage: ChatMessage = {
         role: 'assistant',
         content: aiResponse,
         timestamp: new Date(),
       };
-
       const updatedMessages = [...newMessages, assistantMessage];
       setMessages(updatedMessages);
-      
       // Save encrypted chat history
       await saveChatHistory(updatedMessages);
-      
     } catch (error) {
       console.error('Chat error:', error);
       toast({
-        title: "Chat error",
-        description: (error as Error).message || "Failed to get AI response",
-        variant: "destructive",
+        title: 'Chat error',
+        description: (error as Error).message || 'Failed to get AI response',
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
@@ -177,6 +244,15 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col">
+        {/* Decrypted file preview */}
+        {selectedFileId && decryptedFileContent && (
+          <div className="mb-4">
+            <label className="block text-xs font-medium text-gray-700 mb-1">Decrypted File Content Preview</label>
+            <div className="border rounded bg-gray-50 p-2 text-xs max-h-40 overflow-y-auto whitespace-pre-wrap" style={{ fontFamily: 'monospace' }}>
+              {decryptedFileContent}
+            </div>
+          </div>
+        )}
         {/* Chat Messages */}
         <div className="flex-1 space-y-4 mb-6 max-h-96 overflow-y-auto" data-testid="chat-messages">
           {messages.length === 0 ? (
@@ -217,7 +293,7 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
                   )}
                   <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                   <p className="text-xs opacity-75 mt-1">
-                    {message.timestamp?.toLocaleTimeString()}
+                    {message.timestamp ? new Date(message.timestamp).toLocaleTimeString() : ''}
                     {message.role === 'assistant' && ' • File decrypted locally'}
                   </p>
                 </div>

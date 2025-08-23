@@ -18,6 +18,17 @@ export const encryptedFiles = pgTable("encrypted_files", {
   uploadedAt: timestamp("uploaded_at").defaultNow().notNull(),
 });
 
+export const aiAgents = pgTable("ai_agents", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  name: text("name").notNull(),
+  encryptedSystemPrompt: text("encrypted_system_prompt").notNull(),
+  encryptedDescription: text("encrypted_description").notNull(),
+  icon: text("icon").default("robot"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const chatSessions = pgTable("chat_sessions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull(),
@@ -25,6 +36,7 @@ export const chatSessions = pgTable("chat_sessions", {
   encryptedHistory: text("encrypted_history").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  agentId: varchar("agent_id").references(() => aiAgents.id, { onDelete: 'set null' }),
 });
 
 export const insertUserSchema = createInsertSchema(users).omit({
@@ -37,15 +49,24 @@ export const insertFileSchema = createInsertSchema(encryptedFiles).omit({
   uploadedAt: true,
 });
 
+export const insertAiAgentSchema = createInsertSchema(aiAgents).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertChatSessionSchema = createInsertSchema(chatSessions).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+  agentId: true,
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertFile = z.infer<typeof insertFileSchema>;
 export type EncryptedFile = typeof encryptedFiles.$inferSelect;
+export type InsertAiAgent = z.infer<typeof insertAiAgentSchema>;
+export type AiAgent = typeof aiAgents.$inferSelect;
 export type InsertChatSession = z.infer<typeof insertChatSessionSchema>;
 export type ChatSession = typeof chatSessions.$inferSelect;
