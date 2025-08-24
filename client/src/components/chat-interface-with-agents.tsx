@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -336,8 +337,8 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
             .replace(/\*{1,3}(.+?)\*{1,3}/g, '$1')
             // remove inline code `code`
             .replace(/`([^`]+)`/g, '$1')
-            // remove fenced code blocks ```code```
-            .replace(/```([\s\S]*?)```/g, '$1');
+            // remove fenced code blocks code
+            .replace(/([\s\S]*?)/g, '$1');
         } catch (e) {
           return s;
         }
@@ -385,12 +386,12 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
   
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="px-4 pb-0">
+    <div className="h-full w-full flex flex-col">
+      <div className="flex-shrink-0 px-4 py-3 border-b bg-card">
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle>Chat</CardTitle>
-            <CardDescription>Ask questions and get AI assistance</CardDescription>
+            <h1 className="text-xl font-bold">AI Chat</h1>
+            <p className="text-sm text-muted-foreground">Ask questions and get AI assistance</p>
           </div>
           {selectedAgent && (
             <Badge variant="outline" className="flex items-center gap-1">
@@ -399,143 +400,153 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
             </Badge>
           )}
         </div>
-      </CardHeader>
+      </div>
 
-      <CardContent className="flex-1 flex flex-col h-full px-4 min-h-0">
-        <div className="flex space-x-4 flex-1 min-h-0">
-          {/* Left sidebar - files and agents */}
-          <aside className="w-64 border-r pr-4">
-            <div className="mb-6">
-              <h3 className="text-sm font-medium mb-2">Files</h3>
-              <div className="space-y-2 max-h-64 overflow-y-auto">
+      <div className="flex-1 flex w-full min-h-0">
+        {/* Left sidebar - files and agents */}
+        <aside className="w-[480px] border-r bg-card flex-shrink-0 flex flex-col">
+          <div className="p-8 flex-1 overflow-y-auto">
+            <div className="mb-8">
+              <h3 className="text-xl font-semibold mb-6">Files</h3>
+              <div className="space-y-4 max-h-72 overflow-y-auto">
                 {files.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">No files uploaded</p>
+                  <p className="text-sm text-muted-foreground">No files uploaded</p>
                 ) : (
                   files.map((file) => (
                     <div
                       key={file.id}
-                      className={`text-xs p-2 rounded-md cursor-pointer ${
+                      className={`text-base p-4 rounded-xl cursor-pointer transition-colors ${
                         selectedFileId === file.id
                           ? 'bg-primary text-primary-foreground'
-                          : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                          : 'hover:bg-muted'
                       }`}
                       onClick={() => selectFile(file.id)}
                     >
-                      {file.fileName}
+                      <div className="font-medium truncate text-sm">{file.fileName}</div>
+                      <div className="text-xs opacity-70 mt-2">
+                        {new Date(file.uploadedAt).toLocaleDateString()}
+                      </div>
                     </div>
                   ))
                 )}
               </div>
             </div>
 
-            <AgentList
-              onSelectAgent={handleAgentSelect}
-              selectedAgentId={selectedAgent?.id}
-            />
-          </aside>
+            <div className="border-t pt-8">
+              <AgentList
+                onSelectAgent={handleAgentSelect}
+                selectedAgentId={selectedAgent?.id}
+              />
+            </div>
+          </div>
+        </aside>
 
-          {/* Main chat area */}
-          <main className="flex-1 flex flex-col min-h-0">
-            <header className="flex items-center justify-between px-6 py-4 border-b">
-              <div className="flex items-center space-x-3">
-                <Bot className="h-5 w-5 text-primary" />
-                <div>
-                  <div className="text-sm font-medium text-foreground">{selectedAgent ? selectedAgent.name : 'AI Assistant'}</div>
-                  <div className="text-xs text-muted-foreground">{selectedAgent ? selectedAgent.decryptedDescription : 'Private assistant'}</div>
-                </div>
-              </div>
-
+        {/* Main chat area */}
+        <div className="flex-1 flex flex-col min-h-0 h-full">
+          <header className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b bg-card">
+            <div className="flex items-center space-x-3">
+              <Bot className="h-5 w-5 text-primary" />
               <div>
-                {processedAgents.length > 0 && (
-                  <select
-                    value={selectedAgent?.id || ''}
-                    onChange={(e) => {
-                      const id = e.target.value || null;
-                      const agent = processedAgents.find(a => a.id === id) || null;
-                      handleAgentSelect(agent);
-                    }}
-                    className="px-2 py-1 border rounded text-sm"
-                  >
-                    <option value="">Default Assistant</option>
-                    {processedAgents.map(a => (
-                      <option key={a.id} value={a.id}>{a.name}</option>
-                    ))}
-                  </select>
-                )}
+                <div className="text-base font-medium text-foreground">{selectedAgent ? selectedAgent.name : 'AI Assistant'}</div>
+                <div className="text-xs text-muted-foreground">{selectedAgent ? selectedAgent.decryptedDescription : 'Private assistant'}</div>
               </div>
-            </header>
+            </div>
 
-            <section className="flex-1 overflow-y-auto px-6 py-6 space-y-4 min-h-0" data-testid="chat-messages">
-              {messages.length === 0 ? (
-                <div className="flex items-center justify-center h-56 text-muted-foreground">
-                  <div className="text-center">
-                    <Bot className="w-12 h-12 mx-auto mb-4" />
-                    <p className="text-lg">Start a conversation with {selectedAgent ? selectedAgent.name : 'your AI assistant'}</p>
-                    <p className="text-sm mt-2">Upload files and ask questions — everything is processed locally.</p>
-                  </div>
-                </div>
-              ) : (
-                messages.map((message, index) => (
-                  <div key={index} className="flex items-end" data-testid={`message-${message.role}-${index}`}>
-                    {message.role === 'assistant' && (
-                      <div className="mr-3 hidden sm:block">
-                        <Bot className="h-6 w-6 text-primary" />
-                      </div>
-                    )}
-                    <div className={cn(
-                      'max-w-[75%] px-4 py-3 rounded-lg break-words',
-                      message.role === 'user'
-                        ? 'ml-auto bg-primary text-white rounded-bl-lg rounded-tl-lg rounded-tr-lg'
-                        : 'mr-auto bg-gray-50 dark:bg-gray-800 text-foreground rounded-br-lg rounded-tr-lg rounded-tl-lg'
-                    )}>
-                      <div className="text-sm whitespace-pre-wrap">{message.content}</div>
-                      <div className="text-xs opacity-60 mt-2 text-right">
-                        {message.timestamp ? new Date(message.timestamp).toLocaleTimeString() : ''}
-                        {message.role === 'assistant' && ' • File decrypted locally'}
-                      </div>
-                    </div>
-                    {message.role === 'user' && (
-                      <div className="ml-3 hidden sm:block">
-                        <User className="h-6 w-6 text-muted-foreground" />
-                      </div>
-                    )}
-                  </div>
-                ))
+            <div>
+              {processedAgents.length > 0 && (
+                <select
+                  value={selectedAgent?.id || ''}
+                  onChange={(e) => {
+                    const id = e.target.value || null;
+                    const agent = processedAgents.find(a => a.id === id) || null;
+                    handleAgentSelect(agent);
+                  }}
+                  className="px-3 py-2 border rounded-lg text-sm bg-background"
+                >
+                  <option value="">Default Assistant</option>
+                  {processedAgents.map(a => (
+                    <option key={a.id} value={a.id}>{a.name}</option>
+                  ))}
+                </select>
               )}
-              <div ref={messagesEndRef} />
-            </section>
+            </div>
+          </header>
 
-            <div className="border-t px-6 py-4 bg-card">
-              <div className="flex items-end space-x-3">
-                <div className="flex-1">
-                  <Textarea
-                    placeholder={`Ask a question... (Using ${selectedAgent ? selectedAgent.name : 'Assistant'})`}
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    disabled={isLoading}
-                    className="min-h-[40px] max-h-28"
-                    data-testid="chat-input"
-                  />
-                  <div className="flex items-center justify-between mt-2">
-                    <div className="text-xs text-muted-foreground flex items-center">
-                      <Lock className="w-3 h-3 mr-1 text-secondary" />
-                      Your files and agent prompts are decrypted locally before AI processing
+          <section className="flex-1 overflow-y-auto px-4 py-4 space-y-4" data-testid="chat-messages">
+            {messages.length === 0 ? (
+              <div className="flex items-center justify-center h-full text-muted-foreground">
+                <div className="text-center">
+                  <Bot className="w-16 h-16 mx-auto mb-6 text-muted-foreground/50" />
+                  <p className="text-xl font-medium mb-2">Start a conversation with {selectedAgent ? selectedAgent.name : 'your AI assistant'}</p>
+                  <p className="text-sm mt-2">Upload files and ask questions — everything is processed locally.</p>
+                </div>
+              </div>
+            ) : (
+              messages.map((message, index) => (
+                <div key={index} className="flex items-end gap-3" data-testid={`message-${message.role}-${index}`}>
+                  {message.role === 'assistant' && (
+                    <div className="flex-shrink-0">
+                      <Bot className="h-8 w-8 text-primary" />
                     </div>
-                    <div className="flex items-center space-x-2">
-                      {selectedFileId && <Paperclip className="w-4 h-4 text-primary" />}
-                      <Button onClick={sendMessage} disabled={!inputValue.trim() || isLoading}>
-                        <Send className="w-4 h-4 mr-2" />
-                        Send
-                      </Button>
+                  )}
+                  <div className={cn(
+                    'max-w-[75%] px-4 py-3 rounded-lg break-words',
+                    message.role === 'user'
+                      ? 'ml-auto bg-primary text-white rounded-bl-lg rounded-tl-lg rounded-tr-lg'
+                      : 'mr-auto bg-muted text-foreground rounded-br-lg rounded-tr-lg rounded-tl-lg'
+                  )}>
+                    <div className="text-sm whitespace-pre-wrap">{message.content}</div>
+                    <div className="text-xs opacity-60 mt-2 text-right">
+                      {message.timestamp ? new Date(message.timestamp).toLocaleTimeString() : ''}
+                      {message.role === 'assistant' && ' • File decrypted locally'}
                     </div>
+                  </div>
+                  {message.role === 'user' && (
+                    <div className="flex-shrink-0">
+                      <User className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+            <div ref={messagesEndRef} />
+          </section>
+
+          <div className="flex-shrink-0 border-t px-4 py-3 bg-card">
+            <div className="flex items-end space-x-3">
+              <div className="flex-1">
+                <Textarea
+                  placeholder={`Ask a question... (Using ${selectedAgent ? selectedAgent.name : 'Assistant'})`}
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  disabled={isLoading}
+                  className="min-h-[50px] max-h-24 resize-none"
+                  data-testid="chat-input"
+                />
+                <div className="flex items-center justify-between mt-2">
+                  <div className="text-xs text-muted-foreground flex items-center">
+                    <Lock className="w-3 h-3 mr-1 text-primary" />
+                    Your files and agent prompts are decrypted locally before AI processing
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    {selectedFileId && (
+                      <div className="flex items-center gap-2 text-sm text-primary">
+                        <Paperclip className="w-4 h-4" />
+                        <span>File attached</span>
+                      </div>
+                    )}
+                    <Button onClick={sendMessage} disabled={!inputValue.trim() || isLoading} size="lg">
+                      <Send className="w-4 h-4 mr-2" />
+                      Send
+                    </Button>
                   </div>
                 </div>
               </div>
             </div>
-          </main>
+          </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
