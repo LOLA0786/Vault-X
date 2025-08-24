@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -336,8 +337,8 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
             .replace(/\*{1,3}(.+?)\*{1,3}/g, '$1')
             // remove inline code `code`
             .replace(/`([^`]+)`/g, '$1')
-            // remove fenced code blocks ```code```
-            .replace(/```([\s\S]*?)```/g, '$1');
+            // remove fenced code blocks code
+            .replace(/([\s\S]*?)/g, '$1');
         } catch (e) {
           return s;
         }

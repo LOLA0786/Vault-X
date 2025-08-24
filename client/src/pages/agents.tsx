@@ -5,13 +5,38 @@ import { useAuth } from '@/hooks/use-auth';
 import { EncryptionService } from '@/lib/encryption';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Bot, Plus, Trash2, Settings, Bot as BotIcon, User, LogOut } from 'lucide-react';
+import { SecurityBadge, SecurityStatus, EncryptionIndicator, SecurityIcon } from '@/components/ui/security-badge';
+import { DashboardLayout } from '@/components/dashboard-layout';
+import { 
+  Bot, 
+  Plus, 
+  Trash2, 
+  Settings, 
+  Bot as BotIcon, 
+  User, 
+  LogOut,
+  Shield,
+  Lock,
+  Eye,
+  Key,
+  Database,
+  Zap,
+  CheckCircle,
+  Edit3,
+  Clock,
+  Brain,
+  ArrowRight,
+  Sparkles,
+  Fingerprint,
+  ShieldCheck,
+  MessageSquare,
+  Activity
+} from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { AgentCreationForm } from '@/components/agent-creation-form';
 import { AiAgent } from '@shared/schema';
 import { useToast } from '@/hooks/use-toast';
-import { Sidebar } from '@/components/ui/sidebar';
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -93,196 +118,296 @@ export default function AgentsPage() {
     }
   });
 
-  const handleDeleteAgent = async () => {
-    if (!agentToDelete) return;
-    
+  const handleDeleteAgent = async (agentId: string) => {
     try {
-      const response = await fetch(`/api/ai-agents/${agentToDelete}`, {
+      const response = await fetch(`/api/ai-agents/${agentId}`, {
         method: 'DELETE',
       });
       
       if (response.ok) {
-        toast({
-          title: 'Agent deleted',
-          description: 'The agent has been successfully deleted',
-        });
         queryClient.invalidateQueries({ queryKey: ['/api/ai-agents/user', user?.id] });
-      } else {
-        throw new Error('Failed to delete agent');
+        toast({
+          title: "Agent deleted",
+          description: "The AI agent has been permanently removed",
+        });
+        setAgentToDelete(null);
       }
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to delete the agent',
-        variant: 'destructive',
+        title: "Delete failed",
+        description: "Failed to delete the agent",
+        variant: "destructive",
       });
-    } finally {
-      setAgentToDelete(null);
     }
   };
 
-  return (
-    <div className="min-h-screen flex bg-background text-foreground">
-      <Sidebar 
-        activeTab={activeTab} 
-        onTabChange={handleTabChange}
-        className="fixed h-full bg-sidebar text-sidebar-foreground dark:bg-sidebar dark:text-sidebar-foreground"
-      />
+  const handleAgentCreated = () => {
+    queryClient.invalidateQueries({ queryKey: ['/api/ai-agents/user', user?.id] });
+    setIsCreateDialogOpen(false);
+  };
 
-      <div className="flex-1 ml-64 overflow-hidden bg-background text-foreground">
-        {/* Header */}
-        <header className="bg-background border-b border-border px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold text-foreground capitalize">
-                AI Agents
-              </h2>
-              <p className="text-sm text-muted-foreground mt-1">
-                Create and manage your custom AI assistants
-              </p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                  <User className="text-white h-4 w-4" />
+  return (
+    <DashboardLayout activeTab={activeTab} onTabChange={handleTabChange}>
+      <div className="space-y-8">
+          {/* Enhanced Agents Header */}
+          <div className="bg-gradient-to-br from-security-50 to-primary-50 dark:from-slate-800 dark:to-slate-700 border border-security-200 dark:border-slate-600 rounded-xl p-6 shadow-lg backdrop-blur-sm">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-4">
+                <SecurityIcon type="bot" size="lg" />
+                <div>
+                  <h1 className="text-2xl font-bold text-foreground">AI Agents</h1>
+                  <p className="text-base text-muted-foreground">Create and manage your private, encrypted AI assistants</p>
                 </div>
-                <span className="text-sm font-medium text-foreground" data-testid="user-email">
-                  {user?.email}
-                </span>
               </div>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={logout}
-                data-testid="logout-button"
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-4">
+                <SecurityStatus status="encrypted" message={`${agents.length} agents encrypted`} />
+                <SecurityBadge variant="secure" size="lg" animated>
+                  Privacy Protected
+                </SecurityBadge>
+              </div>
+            </div>
+            
+            {/* Agent Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Card variant="professional">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
+                      <Bot className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-foreground">{agents.length}</p>
+                      <p className="text-sm text-muted-foreground">Active Agents</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card variant="professional">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-security-500 to-security-600 rounded-lg flex items-center justify-center">
+                      <Shield className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-foreground">100%</p>
+                      <p className="text-sm text-muted-foreground">Encrypted</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card variant="professional">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
+                      <Brain className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-foreground">AI</p>
+                      <p className="text-sm text-muted-foreground">Powered</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card variant="professional">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-warning-500 to-warning-600 rounded-lg flex items-center justify-center">
+                      <Activity className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-foreground">24/7</p>
+                      <p className="text-sm text-muted-foreground">Available</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
-        </header>
 
-        {/* Main Content */}
-        <div className="p-6 overflow-y-auto bg-background text-foreground" style={{ height: 'calc(100vh - 88px)' }}>
-          <div className="flex justify-between items-center mb-8">
+          {/* Create Agent Button */}
+          <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">AI Agents</h1>
-              <p className="text-gray-500 dark:text-gray-400 mt-1">
-                Create and manage custom AI agents with specialized capabilities
-              </p>
+              <h2 className="text-xl font-semibold text-foreground">Your AI Agents</h2>
+              <p className="text-sm text-muted-foreground">Manage your private, encrypted AI assistants</p>
             </div>
             <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
               <DialogTrigger asChild>
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" />
-                  New Agent
+                <Button variant="security" className="group">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create New Agent
+                  <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[600px]">
-                <AgentCreationForm onCreated={() => setIsCreateDialogOpen(false)} />
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <AgentCreationForm onCreated={handleAgentCreated} />
               </DialogContent>
             </Dialog>
           </div>
 
+          {/* Agents Grid */}
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3].map((i) => (
-                <Card key={i} className="animate-pulse">
-                  <CardHeader className="bg-gray-100 dark:bg-gray-800 h-32"></CardHeader>
-                  <CardContent className="py-4">
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2 w-2/3"></div>
-                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full mt-4"></div>
-                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-5/6 mt-2"></div>
+              {[...Array(6)].map((_, i) => (
+                <Card key={i} variant="professional">
+                  <CardContent className="p-6">
+                    <div className="animate-pulse">
+                      <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg mb-4"></div>
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+                      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded mb-4"></div>
+                      <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
             </div>
           ) : processedAgents.length === 0 ? (
-            <Card className="text-center p-8">
-              <CardContent className="pt-6">
-                <BotIcon className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-                <h3 className="text-lg font-medium mb-2">No Agents Created Yet</h3>
-                <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-6">
-                  Create your first custom AI agent to provide specialized assistance in your conversations.
+            <Card variant="professional">
+              <CardContent className="p-12 text-center">
+                <div className="w-24 h-24 bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900 dark:to-purple-800 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Bot className="w-12 h-12 text-purple-600 dark:text-purple-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-foreground mb-3">No AI agents yet</h3>
+                <p className="text-base text-muted-foreground mb-6 max-w-md mx-auto">
+                  Create your first AI agent to start having secure, encrypted conversations. All agent data is protected with client-side encryption.
                 </p>
-                <Button onClick={() => setIsCreateDialogOpen(true)}>
-                  <Plus className="mr-2 h-4 w-4" />
+                <Button 
+                  onClick={() => setIsCreateDialogOpen(true)}
+                  variant="security"
+                  className="group"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
                   Create Your First Agent
+                  <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
                 </Button>
               </CardContent>
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {processedAgents.map((agent) => (
-                <Card key={agent.id} className="overflow-hidden">
-                  <CardHeader className="bg-primary/5 pb-4">
-                    <div className="flex justify-between items-start">
-                      <div className="flex items-center">
-                        <div className="bg-primary/10 p-2 rounded-full mr-3">
-                          <Bot className="h-6 w-6 text-primary" />
+                <Card key={agent.id} variant="professional" className="group hover:transform hover:scale-105 transition-all duration-300">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                          <Bot className="h-6 w-6 text-white" />
                         </div>
-                        <CardTitle>{agent.name}</CardTitle>
+                        <div>
+                          <CardTitle className="text-lg font-semibold text-foreground">{agent.name}</CardTitle>
+                          <div className="flex items-center gap-2 mt-1">
+                            <EncryptionIndicator isEncrypted={true} showLabel={false} size="sm" />
+                            <span className="text-xs text-muted-foreground">Encrypted</span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex space-x-1">
-                        <Button 
-                          variant="ghost" 
-                          size="icon"
-                          onClick={() => setAgentToDelete(agent.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        </Button>
+                      <div className="flex items-center gap-2">
+                        <SecurityBadge variant="encrypted" size="sm" animated>
+                          Private
+                        </SecurityBadge>
                       </div>
                     </div>
-                    <CardDescription className="mt-2">
-                      {agent.decryptedDescription}
-                    </CardDescription>
                   </CardHeader>
-                  <CardContent className="p-4">
-                    <Tabs defaultValue="prompt">
-                      <TabsList className="w-full">
-                        <TabsTrigger value="prompt" className="flex-1">System Prompt</TabsTrigger>
-                        <TabsTrigger value="usage" className="flex-1">Usage</TabsTrigger>
-                      </TabsList>
-                      <TabsContent value="prompt" className="mt-4">
-                        <div className="bg-gray-50 dark:bg-gray-900 rounded-md p-3 text-sm font-mono whitespace-pre-wrap max-h-48 overflow-y-auto">
-                          {agent.decryptedSystemPrompt}
-                        </div>
-                      </TabsContent>
-                      <TabsContent value="usage" className="mt-4">
-                        <div className="text-sm text-gray-500">
-                          <p>Created: {new Date(agent.createdAt).toLocaleDateString()}</p>
-                          <p>Last updated: {new Date(agent.updatedAt).toLocaleDateString()}</p>
-                          <p className="mt-3">
-                            To use this agent, select it when starting a new chat session.
-                          </p>
-                        </div>
-                      </TabsContent>
-                    </Tabs>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground line-clamp-3">
+                        {agent.decryptedDescription}
+                      </p>
+                    </div>
+                    
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-3 w-3" />
+                        <span>Created {new Date(agent.createdAt).toLocaleDateString()}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                                                 <Lock className="h-3 w-3 text-emerald-600" />
+                         <span className="text-emerald-600 font-medium">AES-256</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 pt-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 group-hover:bg-blue-50 dark:group-hover:bg-blue-950 transition-colors duration-200"
+                        onClick={() => {
+                          setActiveTab('chat');
+                          setLocation('/chat');
+                        }}
+                      >
+                        <MessageSquare className="h-4 w-4 mr-2" />
+                        Start Chat
+                        <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setAgentToDelete(agent.id)}
+                        className="text-danger-600 hover:text-danger-700 hover:bg-danger-50 dark:hover:bg-danger-950 transition-colors duration-200"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
             </div>
           )}
 
-          <AlertDialog open={!!agentToDelete} onOpenChange={(open) => !open && setAgentToDelete(null)}>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete the AI agent
-                  and remove its data from our servers.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDeleteAgent} className="bg-red-500 hover:bg-red-600">
-                  Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          {/* Security Notice */}
+          <Card variant="professional">
+            <CardContent className="p-6">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-security-500 to-security-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Shield className="h-6 w-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-lg font-semibold text-foreground mb-2">Privacy & Security</h4>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    All AI agents are encrypted with your personal encryption key. Agent descriptions, system prompts, and conversation history are never accessible to our servers.
+                  </p>
+                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <Fingerprint className="h-3 w-3" />
+                      <span>Client-side Encryption</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck className="h-3 w-3" />
+                      <span>Zero-Knowledge</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="h-3 w-3" />
+                      <span>AES-256 Protected</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      </div>
-    </div>
-  );
-}
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={!!agentToDelete} onOpenChange={() => setAgentToDelete(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete AI Agent</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete this AI agent? This action cannot be undone and all encrypted data will be permanently removed.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => agentToDelete && handleDeleteAgent(agentToDelete)}
+                className="bg-danger-600 hover:bg-danger-700"
+              >
+                Delete Permanently
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </DashboardLayout>
+    );
+  }
