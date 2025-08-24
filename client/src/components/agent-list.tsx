@@ -164,7 +164,7 @@ export function AgentList({ onSelectAgent, selectedAgentId, className }: AgentLi
                 New Agent
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
+            <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
               <AgentCreationForm onCreated={() => setIsCreateDialogOpen(false)} />
             </DialogContent>
           </Dialog>

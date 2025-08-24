@@ -36,22 +36,22 @@ export function ThemeToggle() {
       return <Monitor className="w-4 h-4 transition-transform duration-200" />;
     }
     return isDark ? (
-      <Sun className="w-4 h-4 transition-transform duration-200 rotate-0 hover:rotate-12" />
-    ) : (
       <Moon className="w-4 h-4 transition-transform duration-200 rotate-0 hover:-rotate-12" />
+    ) : (
+      <Sun className="w-4 h-4 transition-transform duration-200 rotate-0 hover:rotate-12" />
     );
   };
 
   const getThemeLabel = () => {
     if (isSystem) return 'System';
-    return isDark ? 'Light Mode' : 'Dark Mode';
+    return isDark ? 'Dark Mode' : 'Light Mode';
   };
 
   return (
     <Button
       variant="ghost"
       onClick={toggleTheme}
-      aria-label={`Switch to ${getThemeLabel()}`}
+      aria-label={`Currently ${getThemeLabel()}, click to change theme`}
       data-testid="theme-toggle"
       className={cn(
         "w-full justify-start gap-3 h-10 px-3 rounded-lg transition-all duration-200 group",
@@ -70,7 +70,7 @@ export function ThemeToggle() {
       <div className="flex-1 text-left">
         <div className="font-medium text-sm">{getThemeLabel()}</div>
         <div className="text-xs opacity-70">
-          {isSystem ? 'Auto detect' : isDark ? 'Switch to light' : 'Switch to dark'}
+          {isSystem ? 'Auto detect' : isDark ? 'Currently active' : 'Currently active'}
         </div>
       </div>
       <div className={cn(

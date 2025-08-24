@@ -148,7 +148,8 @@ export default function AgentsPage() {
 
   return (
     <DashboardLayout activeTab={activeTab} onTabChange={handleTabChange}>
-      <div className="space-y-8">
+      <div className="h-full w-full overflow-y-auto p-6">
+        <div className="space-y-8">
           {/* Enhanced Agents Header */}
           <div className="bg-gradient-to-br from-security-50 to-primary-50 dark:from-slate-800 dark:to-slate-700 border border-security-200 dark:border-slate-600 rounded-xl p-6 shadow-lg backdrop-blur-sm">
             <div className="flex items-center justify-between mb-6">
@@ -386,10 +387,9 @@ export default function AgentsPage() {
               </div>
             </CardContent>
           </Card>
-        </div>
 
-        {/* Delete Confirmation Dialog */}
-        <AlertDialog open={!!agentToDelete} onOpenChange={() => setAgentToDelete(null)}>
+          {/* Delete Confirmation Dialog */}
+          <AlertDialog open={!!agentToDelete} onOpenChange={() => setAgentToDelete(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Delete AI Agent</AlertDialogTitle>
@@ -408,6 +408,8 @@ export default function AgentsPage() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      </DashboardLayout>
-    );
-  }
+        </div>
+      </div>
+    </DashboardLayout>
+  );
+}

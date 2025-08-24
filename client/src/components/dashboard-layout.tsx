@@ -21,7 +21,7 @@ export function DashboardLayout({ children, activeTab, onTabChange }: DashboardL
   };
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen w-full bg-background overflow-hidden">
       {/* Sidebar */}
       <Sidebar
         activeTab={activeTab}
@@ -31,11 +31,11 @@ export function DashboardLayout({ children, activeTab, onTabChange }: DashboardL
       />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-h-screen lg:ml-0">
-        <div className="flex-1 overflow-auto p-6">
+      <main className="flex-1 flex flex-col h-full min-h-0 overflow-hidden">
+        <div className="flex-1 w-full h-full min-h-0">
           {children}
         </div>
-      </div>
+      </main>
     </div>
   );
 }

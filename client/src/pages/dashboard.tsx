@@ -74,6 +74,28 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
     queryClient.invalidateQueries({ queryKey: ['/api/chat-sessions/user', user?.id] });
   };
 
+  const handleDeleteChatSession = async (sessionId: string) => {
+    try {
+      const response = await fetch(`/api/chat-sessions/${sessionId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        queryClient.invalidateQueries({ queryKey: ['/api/chat-sessions/user', user?.id] });
+        toast({
+          title: "Chat session deleted",
+          description: "The chat session has been permanently removed from your history",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Delete failed",
+        description: "Failed to delete the chat session",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleDeleteFile = async (fileId: string) => {
     try {
       const response = await fetch(`/api/files/${fileId}`, {
@@ -126,7 +148,8 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
     switch (activeTab) {
       case 'vault':
         return (
-          <div className="space-y-8">
+          <div className="h-full w-full overflow-y-auto p-6">
+            <div className="space-y-8">
             {/* Vault Header */}
             <div className="bg-gradient-to-br from-security-50 to-primary-50 dark:from-slate-800 dark:to-slate-700 border border-security-200 dark:border-slate-600 rounded-xl p-6 shadow-lg backdrop-blur-sm">
               <div className="flex items-center justify-between mb-6">
@@ -298,6 +321,7 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
                 )}
               </CardContent>
             </Card>
+            </div>
           </div>
         );
 
@@ -313,7 +337,8 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
 
       case 'history':
         return (
-          <div className="space-y-8">
+          <div className="h-full w-full overflow-y-auto p-6">
+            <div className="space-y-8">
             <div className="bg-gradient-to-br from-security-50 to-primary-50 dark:from-slate-800 dark:to-slate-700 border border-security-200 dark:border-slate-600 rounded-xl p-6 shadow-lg backdrop-blur-sm">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-4">
@@ -377,6 +402,16 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
                                 <Clock className="h-4 w-4" />
                                 <span>Created {new Date(session.createdAt).toLocaleDateString()}</span>
                               </div>
+                              <div className="flex items-center gap-2">
+                                <Lock className="h-4 w-4 text-security-600" />
+                                <span className="text-security-600 font-medium">End-to-End Encrypted</span>
+                              </div>
+                              {session.agentId && (
+                                <div className="flex items-center gap-2">
+                                  <Eye className="h-4 w-4" />
+                                  <span>Custom Agent</span>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -395,6 +430,29 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
                             Continue
                             <ArrowRight className="h-4 w-4 ml-2" />
                           </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="w-48">
+                              <DropdownMenuItem onClick={() => {
+                                setActiveChatSession(session.id);
+                                handleTabChange('chat');
+                              }}>
+                                <MessageSquare className="w-4 h-4 mr-2" />
+                                Continue Chat
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleDeleteChatSession(session.id)}
+                                className="text-danger-600"
+                              >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Delete Session
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
                     ))}
@@ -402,6 +460,7 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
                 )}
               </CardContent>
             </Card>
+            </div>
           </div>
         );
 

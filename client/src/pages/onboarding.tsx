@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -31,6 +32,7 @@ export default function Onboarding() {
   const [isLoading, setIsLoading] = useState(false);
   const { login, register } = useAuth();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,6 +79,9 @@ export default function Onboarding() {
           ? "You have successfully logged in to your AI Vault"
           : "Your private AI vault has been set up with client-side encryption",
       });
+      
+      // Navigate to dashboard after successful login/registration
+      setLocation('/');
     } catch (error) {
       toast({
         title: isLogin ? "Login failed" : "Registration failed",
@@ -89,7 +94,7 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-12 px-4 sm:px-6 lg:px-8 relative">
       {/* Background Security Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0" style={{
@@ -97,7 +102,7 @@ export default function Onboarding() {
         }} />
       </div>
 
-      <div className="max-w-7xl w-full relative z-10">
+      <div className="max-w-7xl w-full relative z-10 mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Left Side - Enhanced Security Features */}
           <div className="space-y-10">

@@ -111,12 +111,12 @@ const securityFeatures = [
 export function Sidebar({ className, activeTab, onTabChange, user, onLogout }: SidebarProps) {
   return (
     <div className={cn(
-      "w-64 h-full flex-shrink-0",
+      "w-80 h-full flex-shrink-0",
       "bg-gradient-to-b from-sidebar-background to-sidebar-background text-sidebar-foreground",
       "border-r border-sidebar-border flex flex-col shadow-2xl shadow-black/10 dark:shadow-black/50 backdrop-blur-md",
       className
     )}>
-      {/* Enhanced Header */}
+      {/* Enhanced Header - Fixed at top */}
       <div className="flex-shrink-0 p-6 border-b border-sidebar-border">
         <div className="flex items-center gap-3 mb-6">
           <div className="relative">
@@ -159,99 +159,102 @@ export function Sidebar({ className, activeTab, onTabChange, user, onLogout }: S
         )}
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-2">
-        {navigationItems.map((item) => {
-          const isActive = activeTab === item.id;
-          const IconComponent = item.icon;
+      {/* Scrollable Content Area */}
+      <div className="flex-1 overflow-y-auto">
+        {/* Navigation */}
+        <nav className="p-4 space-y-2">
+          {navigationItems.map((item) => {
+            const isActive = activeTab === item.id;
+            const IconComponent = item.icon;
 
-          return (
-            <Button
-              key={item.id}
-              variant="ghost"
-              onClick={() => onTabChange(item.id)}
-              className={cn(
-                "w-full justify-start gap-3 h-12 px-3 rounded-lg transition-all duration-200 group",
-                isActive
-                  ? "bg-gradient-to-r from-primary-500/20 to-primary-600/20 border border-primary-500 border-opacity-30 text-sidebar-foreground shadow-lg shadow-primary-500/25"
-                  : "text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent hover:bg-opacity-50 border border-transparent"
-              )}
-            >
-              <div className={cn(
-                "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200",
-                isActive
-                  ? "bg-gradient-to-br from-primary-500 to-primary-600 shadow-lg"
-                  : "bg-sidebar-accent bg-opacity-50 group-hover:shadow-md"
-              )}>
-                <IconComponent className={cn(
-                  "h-4 w-4 transition-all duration-200",
-                  isActive ? "text-white" : "text-muted-foreground group-hover:text-sidebar-foreground"
-                )} />
-              </div>
-              <div className="flex-1 text-left">
-                <div className="font-medium">{item.label}</div>
-                <div className="text-xs opacity-70">{item.description}</div>
-              </div>
-              {isActive && (
-                <ChevronRight className="h-4 w-4 text-primary-400" />
-              )}
-            </Button>
-          );
-        })}
-      </nav>
-
-      {/* Security Status */}
-      <div className="p-4 border-t border-sidebar-border">
-        <div className="bg-sidebar-accent bg-opacity-50 rounded-lg p-4 border border-sidebar-border">
-          <div className="flex items-center gap-3 mb-4">
-            <SecurityIcon type="shield" size="sm" />
-            <div>
-              <h4 className="text-sm font-semibold text-sidebar-foreground">Security Status</h4>
-              <p className="text-xs text-muted-foreground">All systems secure</p>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            {securityFeatures.map((feature, index) => {
-              const IconComponent = feature.icon;
-              return (
-                <div key={index} className="flex items-center justify-between py-2">
-                  <div className="flex items-center gap-2">
-                    <div className={cn(
-                      "w-6 h-6 rounded-md flex items-center justify-center bg-opacity-20",
-                      `bg-${feature.bgColor}`
-                    )}>
-                      <IconComponent className={cn("h-3 w-3", feature.color)} />
-                    </div>
-                    <span className="text-xs text-muted-foreground">{feature.label}</span>
-                  </div>
-                  <SecurityBadge variant="secure" size="sm" showIcon={false}>
-                    {feature.status}
-                  </SecurityBadge>
+            return (
+              <Button
+                key={item.id}
+                variant="ghost"
+                onClick={() => onTabChange(item.id)}
+                className={cn(
+                  "w-full justify-start gap-3 h-12 px-3 rounded-lg transition-all duration-200 group",
+                  isActive
+                    ? "bg-gradient-to-r from-primary-500/20 to-primary-600/20 border border-primary-500 border-opacity-30 text-sidebar-foreground shadow-lg shadow-primary-500/25"
+                    : "text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent hover:bg-opacity-50 border border-transparent"
+                )}
+              >
+                <div className={cn(
+                  "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200",
+                  isActive
+                    ? "bg-gradient-to-br from-primary-500 to-primary-600 shadow-lg"
+                    : "bg-sidebar-accent bg-opacity-50 group-hover:shadow-md"
+                )}>
+                  <IconComponent className={cn(
+                    "h-4 w-4 transition-all duration-200",
+                    isActive ? "text-white" : "text-muted-foreground group-hover:text-sidebar-foreground"
+                  )} />
                 </div>
-              );
-            })}
-          </div>
+                <div className="flex-1 text-left">
+                  <div className="font-medium">{item.label}</div>
+                  <div className="text-xs opacity-70">{item.description}</div>
+                </div>
+                {isActive && (
+                  <ChevronRight className="h-4 w-4 text-primary-400" />
+                )}
+              </Button>
+            );
+          })}
+        </nav>
 
-          {/* Security Indicators */}
-          <div className="mt-4 pt-4 border-t border-sidebar-border">
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <Fingerprint className="h-3 w-3" />
-                <span>Client-side</span>
+        {/* Security Status */}
+        <div className="p-4 border-t border-sidebar-border">
+          <div className="bg-sidebar-accent bg-opacity-50 rounded-lg p-4 border border-sidebar-border">
+            <div className="flex items-center gap-3 mb-4">
+              <SecurityIcon type="shield" size="sm" />
+              <div>
+                <h4 className="text-sm font-semibold text-sidebar-foreground">Security Status</h4>
+                <p className="text-xs text-muted-foreground">All systems secure</p>
               </div>
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="h-3 w-3" />
-                <span>Protected</span>
+            </div>
+
+            <div className="space-y-2">
+              {securityFeatures.map((feature, index) => {
+                const IconComponent = feature.icon;
+                return (
+                  <div key={index} className="flex items-center justify-between py-2">
+                    <div className="flex items-center gap-2">
+                      <div className={cn(
+                        "w-6 h-6 rounded-md flex items-center justify-center bg-opacity-20",
+                        `bg-${feature.bgColor}`
+                      )}>
+                        <IconComponent className={cn("h-3 w-3", feature.color)} />
+                      </div>
+                      <span className="text-xs text-muted-foreground">{feature.label}</span>
+                    </div>
+                    <SecurityBadge variant="secure" size="sm" showIcon={false}>
+                      {feature.status}
+                    </SecurityBadge>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Security Indicators */}
+            <div className="mt-4 pt-4 border-t border-sidebar-border">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <Fingerprint className="h-3 w-3" />
+                  <span>Client-side</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="h-3 w-3" />
+                  <span>Protected</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Theme Toggle */}
-      <div className="p-4 border-t border-sidebar-border">
-        <ThemeToggle />
+        {/* Theme Toggle */}
+        <div className="p-4 border-t border-sidebar-border">
+          <ThemeToggle />
+        </div>
       </div>
     </div>
   );
