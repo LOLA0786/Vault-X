@@ -20,11 +20,15 @@ interface ChatInterfaceProps {
 
 export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  // prefer an externally-provided sessionId, otherwise keep a local session id
+  const [localSessionId, setLocalSessionId] = useState<string | undefined>(sessionId);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
   const [decryptedFileContent, setDecryptedFileContent] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const messagesRef = useRef<ChatMessage[]>(messages);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -72,24 +76,44 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
 
   useEffect(() => {
     scrollToBottom();
+  // keep ref in sync so event handlers can read latest messages
+  messagesRef.current = messages;
   }, [messages]);
 
+  // Auto-focus the input so first-time users can start typing immediately
   useEffect(() => {
-    // Load chat history if sessionId provided
-    if (sessionId) {
-      loadChatHistory(sessionId);
+    try {
+      inputRef.current?.focus();
+    } catch (e) {}
+  }, []);
+
+  useEffect(() => {
+    // Load chat history if sessionId or localSessionId provided
+    const idToLoad = sessionId || localSessionId;
+    if (idToLoad) {
+      loadChatHistory(idToLoad);
     }
     // eslint-disable-next-line
-  }, [sessionId]);
+  }, [sessionId, localSessionId]);
+
+  // Keep localSessionId in sync if parent provides a sessionId
+  useEffect(() => {
+    if (sessionId && sessionId !== localSessionId) setLocalSessionId(sessionId);
+  }, [sessionId, localSessionId]);
 
   const loadChatHistory = async (id: string) => {
     try {
       const response = await fetch(`/api/chat-sessions/${id}`);
       if (response.ok) {
         const session = await response.json();
+        console.log('[Chat Debug] Loaded session from server:', session.id);
         if (session.encryptedHistory) {
+          console.log('[Chat Debug] Encrypted history length:', String(session.encryptedHistory).length);
           const decryptedHistory = EncryptionService.decrypt(session.encryptedHistory);
           const history: ChatMessage[] = JSON.parse(decryptedHistory);
+          console.log('[Chat Debug] Parsed history messages count:', history.length);
+          // Normalize timestamps
+          history.forEach(msg => { if (msg.timestamp) msg.timestamp = new Date(msg.timestamp); });
           setMessages(history);
         }
       }
@@ -118,13 +142,17 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
       }
       console.log('[Chat Debug] Encrypted history length:', encryptedHistory.length);
       
-      if (sessionId) {
+      const currentSessionId = sessionId || localSessionId;
+
+      if (currentSessionId) {
         // Update existing session
-        console.log('[Chat Debug] Updating existing session:', sessionId);
-        const response = await fetch(`/api/chat-sessions/${sessionId}`, {
+        console.log('[Chat Debug] Updating existing session:', currentSessionId);
+        // Include a friendly title (preview of first message) when updating session
+        const titleToUpdate = newMessages[0]?.content ? (newMessages[0].content.slice(0, 50) + (newMessages[0].content.length > 50 ? '...' : '')) : undefined;
+        const response = await fetch(`/api/chat-sessions/${currentSessionId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ encryptedHistory }),
+          body: JSON.stringify({ encryptedHistory, title: titleToUpdate }),
         });
         
         if (!response.ok) {
@@ -133,10 +161,13 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
           throw new Error(`Failed to update session: ${response.status} ${response.statusText}`);
         } else {
           console.log('[Chat Debug] Session updated successfully');
+          // Notify parent so session list / titles can refresh
+          onNewSession?.(currentSessionId);
         }
-      } else {
+  } else {
         // Create new session
-        const title = newMessages[0]?.content.slice(0, 50) + '...' || 'New Chat';
+  const firstContent = newMessages[0]?.content;
+  const title = firstContent ? (firstContent.slice(0, 50) + (firstContent.length > 50 ? '...' : '')) : 'New Chat';
         console.log('[Chat Debug] Creating new session with title:', title);
         
         const requestData = {
@@ -146,7 +177,7 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
         };
         console.log('[Chat Debug] Request data:', JSON.stringify(requestData, null, 2));
         
-        const response = await fetch('/api/chat-sessions', {
+  const response = await fetch('/api/chat-sessions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(requestData),
@@ -155,7 +186,13 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
         if (response.ok) {
           const newSession = await response.json();
           console.log('[Chat Debug] New session created:', newSession);
+          // Use local session id so this component starts using the session immediately
+          setLocalSessionId(newSession.id);
           onNewSession?.(newSession.id);
+          try {
+            localStorage.setItem(`pv-chat-session-${user?.id ?? 'anon'}`, newSession.id);
+            localStorage.setItem('pv-chat-session', newSession.id);
+          } catch (e) {}
         } else {
           const errorData = await response.json();
           console.error('[Chat Debug] Failed to create session:', errorData);
@@ -171,13 +208,10 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
     if (!inputValue.trim() || !user) return;
     console.log('[Chat Debug] User object:', user);
     
-    const userMessage: ChatMessage = {
-      role: 'user',
-      content: inputValue,
-      timestamp: new Date(),
-    };
-    const newMessages = [...messages, userMessage];
-    setMessages(newMessages);
+  const userMessage: ChatMessage = { role: 'user', content: inputValue, timestamp: new Date() };
+  // Build newMessages from the ref to avoid stale closures
+  const newMessages = [...messagesRef.current, userMessage];
+  setMessages(newMessages);
     setInputValue('');
     setIsLoading(true);
     try {
@@ -200,12 +234,12 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
           }
         }
       }
-      // Send to Gemini
+      // Send to Gemini (pass the latest messages array to avoid stale state)
       const aiResponse = await GeminiService.sendMessage(
         inputValue,
         fileContent,
         fileName,
-        messages
+        newMessages
       );
       const assistantMessage: ChatMessage = {
         role: 'assistant',
@@ -214,7 +248,7 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
       };
       const updatedMessages = [...newMessages, assistantMessage];
       setMessages(updatedMessages);
-      // Save encrypted chat history
+      // Save encrypted chat history (pass latest array)
       await saveChatHistory(updatedMessages);
     } catch (error) {
       console.error('Chat error:', error);
@@ -238,7 +272,19 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
   return (
     <Card className="h-full flex flex-col">
       <CardHeader>
-        <CardTitle className="text-lg font-semibold text-gray-900">AI Assistant</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg font-semibold text-gray-900">AI Assistant</CardTitle>
+          <div>
+            <Button size="sm" variant="ghost" onClick={() => {
+              // Start a fresh local draft — do not create an empty server session yet.
+              setMessages([]);
+              setLocalSessionId(undefined);
+              try { localStorage.removeItem(`pv-chat-session-${user?.id ?? 'anon'}`); localStorage.removeItem('pv-chat-session'); localStorage.removeItem(`pv-chat-${user?.id ?? 'anon'}`); localStorage.removeItem('pv-chat-draft'); } catch (e) {}
+              onNewSession?.(undefined as unknown as string);
+              toast({ title: 'New chat started' });
+            }}>New Chat</Button>
+          </div>
+        </div>
         <CardDescription>
           Ask questions about your uploaded files - all processing happens locally
         </CardDescription>
@@ -342,6 +388,7 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
               <Input
                 type="text"
                 placeholder="Ask a question about your files..."
+                ref={inputRef}
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}

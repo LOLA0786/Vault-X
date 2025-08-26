@@ -1,258 +1,84 @@
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  Shield,
-  LayoutDashboard,
-  FolderOpen,
-  MessageSquare,
-  History,
+import { 
+  Shield, 
+  LayoutDashboard, 
+  FolderOpen, 
+  MessageSquare, 
+  History, 
   Settings,
   Lock,
-  Bot,
-  Database,
-  Eye,
-  Zap,
-  ChevronRight,
-  Home,
-  User,
-  LogOut,
-  ArrowRight,
-  Sparkles,
-  Fingerprint,
-  ShieldCheck,
-  Activity
+  Bot
 } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
-import { SecurityBadge, SecurityIcon } from "./security-badge";
 
 interface SidebarProps {
   className?: string;
   activeTab: string;
   onTabChange: (tab: string) => void;
-  user?: { email: string } | null;
-  onLogout?: () => void;
 }
 
-const navigationItems = [
-  {
-    id: 'dashboard',
-    label: 'Security Dashboard',
-    icon: Home,
-    description: 'Overview & status',
-    color: 'text-blue-500',
-    bgColor: 'bg-blue-500'
-  },
-  {
-    id: 'vault',
-    label: 'Secure Vault',
-    icon: Database,
-    description: 'Encrypted storage',
-    color: 'text-emerald-500',
-    bgColor: 'bg-emerald-500'
-  },
-  {
-    id: 'chat',
-    label: 'AI Assistant',
-    icon: MessageSquare,
-    description: 'Private AI chat',
-    color: 'text-purple-500',
-    bgColor: 'bg-purple-500'
-  },
-  {
-    id: 'history',
-    label: 'Chat Archive',
-    icon: History,
-    description: 'Encrypted history',
-    color: 'text-indigo-500',
-    bgColor: 'bg-indigo-500'
-  },
-  {
-    id: 'agents',
-    label: 'AI Agents',
-    icon: Bot,
-    description: 'Custom assistants',
-    color: 'text-teal-500',
-    bgColor: 'bg-teal-500'
-  },
-  {
-    id: 'settings',
-    label: 'Security Settings',
-    icon: Settings,
-    description: 'Key management',
-    color: 'text-gray-500',
-    bgColor: 'bg-gray-500'
-  }
-];
+export function Sidebar({ className, activeTab, onTabChange }: SidebarProps) {
+  const navItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'vault', label: 'File Vault', icon: FolderOpen },
+    { id: 'chat', label: 'AI Assistant', icon: MessageSquare },
+    { id: 'agents', label: 'AI Agents', icon: Bot },
+    { id: 'history', label: 'Chat History', icon: History },
+  { id: 'settings', label: 'Settings', icon: Settings },
+  { id: 'key-info', label: 'How it works', icon: Lock },
+  ];
 
-const securityFeatures = [
-  {
-    icon: Lock,
-    label: 'AES-256 Encryption',
-    status: 'Active',
-    color: 'text-emerald-500',
-    bgColor: 'bg-emerald-500'
-  },
-  {
-    icon: Eye,
-    label: 'Zero-Knowledge',
-    status: 'Enabled',
-    color: 'text-blue-500',
-    bgColor: 'bg-blue-500'
-  },
-  {
-    icon: Shield,
-    label: 'Enterprise Security',
-    status: 'Maximum',
-    color: 'text-purple-500',
-    bgColor: 'bg-purple-500'
-  }
-];
-
-export function Sidebar({ className, activeTab, onTabChange, user, onLogout }: SidebarProps) {
   return (
-    <div className={cn(
-      "w-80 h-full flex-shrink-0",
-      "bg-gradient-to-b from-sidebar-background to-sidebar-background text-sidebar-foreground",
-      "border-r border-sidebar-border flex flex-col shadow-2xl shadow-black/10 dark:shadow-black/50 backdrop-blur-md",
-      className
-    )}>
-      {/* Enhanced Header - Fixed at top */}
-      <div className="flex-shrink-0 p-6 border-b border-sidebar-border">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="relative">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary-600 via-primary-500 to-primary-700 rounded-xl flex items-center justify-center shadow-lg">
-              <Shield className="h-6 w-6 text-white" />
-            </div>
-            <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-br from-security-500 to-security-600 rounded-full flex items-center justify-center">
-              <Sparkles className="h-2 w-2 text-white" />
-            </div>
+  <div className={cn("w-64 bg-sidebar text-sidebar-foreground dark:bg-sidebar dark:text-sidebar-foreground shadow-lg border-r border-border flex flex-col h-screen", className)}>
+      <div className="p-6">
+        <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+            <Shield className="text-white text-lg" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-sidebar-foreground">Vault-X</h1>
-            <p className="text-xs text-muted-foreground">Enterprise Security</p>
+            <h1 className="text-xl font-bold text-sidebar-foreground dark:text-sidebar-foreground">AI Vault</h1>
+            <p className="text-xs text-sidebar-foreground/70 dark:text-sidebar-foreground/70">Private & Secure</p>
           </div>
         </div>
-
-        {/* User Info */}
-        {user && (
-          <div className="bg-sidebar-accent bg-opacity-50 rounded-lg p-3 border border-sidebar-border">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center">
-                <User className="h-4 w-4 text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-sidebar-foreground truncate">{user.email}</p>
-                <p className="text-xs text-muted-foreground">Authenticated</p>
-              </div>
-              {onLogout && (
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={onLogout}
-                  className="hover:bg-sidebar-accent text-muted-foreground hover:text-sidebar-foreground"
-                >
-                  <LogOut className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto">
-        {/* Navigation */}
-        <nav className="p-4 space-y-2">
-          {navigationItems.map((item) => {
-            const isActive = activeTab === item.id;
-            const IconComponent = item.icon;
-
+      <nav className="mt-6 flex-1 overflow-y-auto">
+        <div className="px-3 space-y-1">
+          {navItems.map((item) => {
+            const Icon = item.icon;
             return (
               <Button
                 key={item.id}
-                variant="ghost"
-                onClick={() => onTabChange(item.id)}
+                variant={activeTab === item.id ? "default" : "ghost"}
                 className={cn(
-                  "w-full justify-start gap-3 h-12 px-3 rounded-lg transition-all duration-200 group",
-                  isActive
-                    ? "bg-gradient-to-r from-primary-500/20 to-primary-600/20 border border-primary-500 border-opacity-30 text-sidebar-foreground shadow-lg shadow-primary-500/25"
-                    : "text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent hover:bg-opacity-50 border border-transparent"
+                  "w-full justify-start text-sm font-medium text-sidebar-foreground dark:text-sidebar-foreground",
+                  activeTab === item.id
+                    ? "text-primary bg-blue-50 dark:bg-sidebar-accent dark:text-sidebar-primary-foreground"
+                    : "hover:text-foreground hover:bg-accent dark:hover:text-foreground dark:hover:bg-accent"
                 )}
+                onClick={() => onTabChange(item.id)}
+                data-testid={`nav-${item.id}`}
               >
-                <div className={cn(
-                  "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200",
-                  isActive
-                    ? "bg-gradient-to-br from-primary-500 to-primary-600 shadow-lg"
-                    : "bg-sidebar-accent bg-opacity-50 group-hover:shadow-md"
-                )}>
-                  <IconComponent className={cn(
-                    "h-4 w-4 transition-all duration-200",
-                    isActive ? "text-white" : "text-muted-foreground group-hover:text-sidebar-foreground"
-                  )} />
-                </div>
-                <div className="flex-1 text-left">
-                  <div className="font-medium">{item.label}</div>
-                  <div className="text-xs opacity-70">{item.description}</div>
-                </div>
-                {isActive && (
-                  <ChevronRight className="h-4 w-4 text-primary-400" />
-                )}
+                <Icon className="mr-3 h-4 w-4" />
+                {item.label}
               </Button>
             );
           })}
-        </nav>
-
-        {/* Security Status */}
-        <div className="p-4 border-t border-sidebar-border">
-          <div className="bg-sidebar-accent bg-opacity-50 rounded-lg p-4 border border-sidebar-border">
-            <div className="flex items-center gap-3 mb-4">
-              <SecurityIcon type="shield" size="sm" />
-              <div>
-                <h4 className="text-sm font-semibold text-sidebar-foreground">Security Status</h4>
-                <p className="text-xs text-muted-foreground">All systems secure</p>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              {securityFeatures.map((feature, index) => {
-                const IconComponent = feature.icon;
-                return (
-                  <div key={index} className="flex items-center justify-between py-2">
-                    <div className="flex items-center gap-2">
-                      <div className={cn(
-                        "w-6 h-6 rounded-md flex items-center justify-center bg-opacity-20",
-                        `bg-${feature.bgColor}`
-                      )}>
-                        <IconComponent className={cn("h-3 w-3", feature.color)} />
-                      </div>
-                      <span className="text-xs text-muted-foreground">{feature.label}</span>
-                    </div>
-                    <SecurityBadge variant="secure" size="sm" showIcon={false}>
-                      {feature.status}
-                    </SecurityBadge>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Security Indicators */}
-            <div className="mt-4 pt-4 border-t border-sidebar-border">
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <Fingerprint className="h-3 w-3" />
-                  <span>Client-side</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-3 w-3" />
-                  <span>Protected</span>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
+      </nav>
 
-        {/* Theme Toggle */}
-        <div className="p-4 border-t border-sidebar-border">
+      {/* Security Status & Theme Toggle */}
+      <div className="mt-auto p-4 border-t border-gray-200 bg-white dark:bg-gray-900">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center space-x-2 text-sm">
+            <div className="w-3 h-3 bg-secondary rounded-full"></div>
+            <span className="text-gray-600 dark:text-gray-300">Encryption Active</span>
+          </div>
+          <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center">
+            <Lock className="w-3 h-3 mr-1" />
+            AES-256 Client-side
+          </p>
           <ThemeToggle />
         </div>
       </div>

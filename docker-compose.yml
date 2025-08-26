@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: vault-x-dev:latest
+    command: >
+      /bin/sh -c "npm run db:push -- --force && npm run dev"
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: development
+      PORT: "8080"
+      # Point DATABASE_URL to the internal postgres service
+      DATABASE_URL: "postgresql://postgres:root@db:5432/ai_vault"
+    ports:
+      - "8080:8080"
+      - "5173:5173"
+    volumes:
+      - ./:/usr/src/app:delegated
+      - node_modules:/usr/src/app/node_modules
+    restart: unless-stopped
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: ai_vault
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  node_modules:
+  pgdata:

@@ -174,12 +174,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/chat-sessions/:id", async (req, res) => {
     try {
-      const { encryptedHistory } = req.body;
+      const { encryptedHistory, title } = req.body;
       if (!encryptedHistory) {
         return res.status(400).json({ error: "encryptedHistory is required" });
       }
-      
-      const session = await storage.updateChatSession(req.params.id, encryptedHistory);
+
+      const session = await storage.updateChatSession(req.params.id, encryptedHistory, title);
       if (!session) {
         return res.status(404).json({ error: "Session not found" });
       }

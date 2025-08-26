@@ -12,7 +12,7 @@ import {
   Plus, 
   Trash2, 
   Settings, 
-  Bot as BotIcon, 
+  
   User, 
   LogOut,
   Shield,
@@ -148,7 +148,7 @@ export default function AgentsPage() {
 
   return (
     <DashboardLayout activeTab={activeTab} onTabChange={handleTabChange}>
-      <div className="h-full w-full overflow-y-auto p-6">
+      <div className="w-full p-6">
         <div className="space-y-8">
           {/* Enhanced Agents Header */}
           <div className="bg-gradient-to-br from-security-50 to-primary-50 dark:from-slate-800 dark:to-slate-700 border border-security-200 dark:border-slate-600 rounded-xl p-6 shadow-lg backdrop-blur-sm">

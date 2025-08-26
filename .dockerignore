@@ -1,0 +1,30 @@
+# Node
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Build outputs
+dist
+build
+.vite
+
+# Local env and editor files
+.env
+.env.local
+.env.*.local
+.vscode
+.idea
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+
+# Logs
+logs
+.log
+
+# Optional lockfiles if not used
+pnpm-lock.yaml

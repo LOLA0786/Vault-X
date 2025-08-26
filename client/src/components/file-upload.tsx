@@ -123,19 +123,23 @@ export function FileUpload({ onFileUploaded }: FileUploadProps) {
       // Encrypt the file
       const encryptedData = await EncryptionService.encryptFile(file);
 
-      // Upload to server
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('encryptedData', encryptedData);
-      formData.append('fileName', file.name);
-      formData.append('fileType', file.type);
+      // Upload encrypted payload as JSON to server (do not send raw file)
+      const payload = {
+        userId: user.id,
+        fileName: file.name,
+        fileType: file.type || 'application/octet-stream',
+        encryptedData,
+      };
 
-      const response = await fetch('/api/files/upload', {
+      const response = await fetch('/api/files', {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
+        const errText = await response.text().catch(() => '');
+        console.error('Upload response not ok:', response.status, errText);
         throw new Error('Upload failed');
       }
 
