@@ -1,9 +1,5 @@
-import { useState } from 'react';
 import { useLocation } from 'wouter';
 import { Sidebar } from '@/components/ui/sidebar';
-import { Container } from '@/components/ui/container';
-import { Layout, MainContent, Section } from '@/components/ui/layout';
-import { useAuth } from '@/hooks/use-auth';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -13,7 +9,6 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children, activeTab, onTabChange }: DashboardLayoutProps) {
   const [location, setLocation] = useLocation();
-  const { user, logout } = useAuth();
 
   const handleTabChange = (tab: string) => {
     onTabChange(tab);
@@ -26,13 +21,11 @@ export function DashboardLayout({ children, activeTab, onTabChange }: DashboardL
       <Sidebar
         activeTab={activeTab}
         onTabChange={handleTabChange}
-        user={user}
-        onLogout={logout}
       />
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col h-full min-h-0 overflow-hidden">
-        <div className="flex-1 w-full h-full min-h-0">
+      <main className="flex-1 flex flex-col min-h-0">
+        <div className="flex-1 w-full min-h-0 overflow-y-auto">
           {children}
         </div>
       </main>

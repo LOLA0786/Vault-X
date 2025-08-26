@@ -41,6 +41,9 @@ function Router() {
       <Route path="/history">
         {isAuthenticated ? <Dashboard initialTab="history" /> : <Onboarding />}
       </Route>
+      <Route path="/key-info">
+        {isAuthenticated ? <Dashboard initialTab="key-info" /> : <Onboarding />}
+      </Route>
       <Route path="/settings">
         {isAuthenticated ? <Dashboard initialTab="settings" /> : <Onboarding />}
       </Route>

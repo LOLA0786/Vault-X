@@ -1,11 +1,10 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Paperclip, Send, Bot, User, Shield, Lock } from 'lucide-react';
+import { Paperclip, Send, Bot, User, Shield, Lock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { GeminiService, type ChatMessage } from '@/lib/gemini';
 import { EncryptionService } from '@/lib/encryption';
 import { extractPdfText } from '@/lib/pdf-utils';
@@ -37,6 +36,11 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
   const [selectedAgent, setSelectedAgent] = useState<AgentWithDecrypted | null>(null);
   const [decryptedFileContent, setDecryptedFileContent] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
+  const messagesRef = useRef<ChatMessage[]>(messages);
+  const [sidebarWidth, setSidebarWidth] = useState<number>(480);
+  const [isDragging, setIsDragging] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -109,10 +113,52 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
     showDecrypted();
   }, [selectedFileId, files, toast]);
 
+  // Persist and restore sidebar width
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('pv-chat-sidebar-width');
+      if (stored) setSidebarWidth(Number(stored));
+    } catch (e) {}
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('pv-chat-sidebar-width', String(sidebarWidth));
+    } catch (e) {}
+  }, [sidebarWidth]);
+
+  useEffect(() => {
+    if (!isDragging) return;
+    const handleMove = (e: MouseEvent) => {
+      const newWidth = e.clientX;
+      // enforce min/max widths
+      const min = 220;
+      const max = Math.max(360, window.innerWidth - 480);
+      const clamped = Math.max(min, Math.min(newWidth, max));
+      setSidebarWidth(clamped);
+    };
+    const handleUp = () => setIsDragging(false);
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMove);
+      window.removeEventListener('mouseup', handleUp);
+    };
+  }, [isDragging]);
+
   // Scroll to bottom of messages when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  // keep ref in sync so sendMessage reads latest messages
+  messagesRef.current = messages;
   }, [messages]);
+
+  // Auto-focus the textarea so first-time users can start typing immediately
+  useEffect(() => {
+    try {
+      inputRef.current?.focus();
+    } catch (e) {}
+  }, []);
 
   // Persist messages locally while there is no server session id
   useEffect(() => {
@@ -180,72 +226,72 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
     try {
       console.log('[Chat Debug] Loading chat history for session:', sessionId);
       const response = await fetch(`/api/chat-sessions/${sessionId}`);
-      if (response.ok) {
-        const session = await response.json();
-        console.log('[Chat Debug] Session loaded:', session);
-        
-        try {
-          // Decrypt history
-          const key = EncryptionService.getStoredKey();
-          if (!key) {
-            toast({
-              title: 'Encryption Key Missing',
-              description: 'Unable to decrypt chat history without encryption key',
-              variant: 'destructive',
-            });
-            return;
-          }
-
-          const decryptedHistoryJson = EncryptionService.decrypt(session.encryptedHistory);
-          const historyMessages = JSON.parse(decryptedHistoryJson) as ChatMessage[];
-          
-          // Convert string dates back to Date objects
-          historyMessages.forEach(msg => {
-            if (msg.timestamp) {
-              msg.timestamp = new Date(msg.timestamp);
-            }
-          });
-          
-          setMessages(historyMessages);
-        } catch (error) {
-          console.error('[Chat Debug] Failed to decrypt history:', error);
-          toast({
-            title: 'Decryption Failed',
-            description: 'Could not decrypt chat history',
-            variant: 'destructive',
-          });
-        }
-      } else {
+      if (!response.ok) {
         console.error('[Chat Debug] Failed to load session:', response.status);
+        return;
+      }
+      const session = await response.json();
+      console.log('[Chat Debug] Session loaded (id):', session.id);
+
+      if (!session.encryptedHistory) {
+        console.warn('[Chat Debug] Session has no encryptedHistory');
+        setMessages([]);
+        return;
+      }
+
+      console.log('[Chat Debug] Encrypted history length:', String(session.encryptedHistory).length);
+      try {
+        const decryptedHistoryJson = EncryptionService.decrypt(session.encryptedHistory);
+        const historyMessages = JSON.parse(decryptedHistoryJson) as ChatMessage[];
+        console.log('[Chat Debug] Parsed history messages count:', historyMessages.length);
+        // Convert string dates back to Date objects
+        historyMessages.forEach(msg => {
+          if (msg.timestamp) {
+            msg.timestamp = new Date(msg.timestamp);
+          }
+        });
+        setMessages(historyMessages);
+      } catch (err) {
+        console.error('[Chat Debug] Failed to decrypt history:', err);
+        toast({
+          title: 'Decryption Failed',
+          description: 'Could not decrypt chat history',
+          variant: 'destructive',
+        });
       }
     } catch (error) {
       console.error('[Chat Debug] Error loading chat history:', error);
     }
   };
 
-  const saveChatHistory = async () => {
+  const saveChatHistory = async (msgs?: ChatMessage[]) => {
     try {
-      if (!user || messages.length === 0) return;
-      
-      const messagesJson = JSON.stringify(messages);
+      const toSave = msgs ?? messages;
+      if (!user || toSave.length === 0) return;
+
+      const messagesJson = JSON.stringify(toSave);
       const encryptedHistory = EncryptionService.encrypt(messagesJson);
-      
+
       const currentSessionId = localSessionId || sessionId;
 
       if (currentSessionId) {
         // Update existing session
+        const titleToUpdate = toSave[0]?.content ? (toSave[0].content.substring(0, 50) + (toSave[0].content.length > 50 ? '...' : '')) : undefined;
         const response = await fetch(`/api/chat-sessions/${currentSessionId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ encryptedHistory }),
+          body: JSON.stringify({ encryptedHistory, title: titleToUpdate }),
         });
 
         if (!response.ok) {
           throw new Error(`Failed to update session: ${response.status} ${response.statusText}`);
+        } else {
+          onNewSession?.(currentSessionId);
         }
       } else {
         // Create new session on the server and persist the id locally
-        const title = messages[0].content.substring(0, 50) + (messages[0].content.length > 50 ? '...' : '');
+  const firstContent = toSave[0]?.content;
+  const title = firstContent ? (firstContent.substring(0, 50) + (firstContent.length > 50 ? '...' : '')) : 'New Chat';
         const requestData = {
           userId: user.id,
           title,
@@ -285,13 +331,9 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
     if (!inputValue.trim() || !user) return;
     console.log('[Chat Debug] User object:', user);
     
-    const userMessage: ChatMessage = {
-      role: 'user',
-      content: inputValue,
-      timestamp: new Date(),
-    };
-    const newMessages = [...messages, userMessage];
-    setMessages(newMessages);
+  const userMessage: ChatMessage = { role: 'user', content: inputValue, timestamp: new Date() };
+  const newMessages = [...messagesRef.current, userMessage];
+  setMessages(newMessages);
     setInputValue('');
     setIsLoading(true);
     try {
@@ -322,10 +364,10 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
       }
       
       const aiResponse = await GeminiService.sendMessage(
-        inputValue, 
-        fileContent, 
+        inputValue,
+        fileContent,
         fileName,
-        messages,
+        newMessages,
         systemPrompt
       );
       
@@ -352,11 +394,11 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
         timestamp: new Date(),
       };
       
-      const updatedMessages = [...newMessages, aiMessage];
-      setMessages(updatedMessages);
-      
-      // Save chat history after updating with AI response
-      await saveChatHistory();
+  const updatedMessages = [...newMessages, aiMessage];
+  setMessages(updatedMessages);
+
+  // Save chat history after updating with AI response (pass latest messages to avoid stale state)
+  await saveChatHistory(updatedMessages);
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
@@ -403,14 +445,26 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
       </div>
 
       <div className="flex-1 flex w-full min-h-0">
-        {/* Left sidebar - files and agents */}
-        <aside className="w-[480px] border-r bg-card flex-shrink-0 flex flex-col">
+        {/* Left sidebar - files and agents (resizable / collapsible) */}
+        <aside
+          className={"relative border-r bg-card flex-shrink-0 flex flex-col transition-width duration-150"}
+          style={{ width: collapsed ? 64 : sidebarWidth }}
+        >
+          <div className="flex items-center justify-end px-2 py-1">
+            <button
+              onClick={() => setCollapsed(c => { const next = !c; if (!next && sidebarWidth < 240) setSidebarWidth(360); return next; })}
+              aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              className="p-1 rounded hover:bg-muted"
+            >
+              {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+            </button>
+          </div>
           <div className="p-8 flex-1 overflow-y-auto">
             <div className="mb-8">
-              <h3 className="text-xl font-semibold mb-6">Files</h3>
+              {!collapsed && <h3 className="text-xl font-semibold mb-6">Files</h3>}
               <div className="space-y-4 max-h-72 overflow-y-auto">
                 {files.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No files uploaded</p>
+                  !collapsed && <p className="text-sm text-muted-foreground">No files uploaded</p>
                 ) : (
                   files.map((file) => (
                     <div
@@ -422,10 +476,14 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
                       }`}
                       onClick={() => selectFile(file.id)}
                     >
-                      <div className="font-medium truncate text-sm">{file.fileName}</div>
-                      <div className="text-xs opacity-70 mt-2">
-                        {new Date(file.uploadedAt).toLocaleDateString()}
-                      </div>
+                      {!collapsed && (
+                        <>
+                          <div className="font-medium truncate text-sm">{file.fileName}</div>
+                          <div className="text-xs opacity-70 mt-2">
+                            {new Date(file.uploadedAt).toLocaleDateString()}
+                          </div>
+                        </>
+                      )}
                     </div>
                   ))
                 )}
@@ -439,6 +497,12 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
               />
             </div>
           </div>
+          {/* draggable divider */}
+          <div
+            onMouseDown={() => setIsDragging(true)}
+            className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-border"
+            style={{ transform: 'translateX(0.5px)' }}
+          />
         </aside>
 
         {/* Main chat area */}
@@ -453,22 +517,34 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
             </div>
 
             <div>
-              {processedAgents.length > 0 && (
-                <select
-                  value={selectedAgent?.id || ''}
-                  onChange={(e) => {
-                    const id = e.target.value || null;
-                    const agent = processedAgents.find(a => a.id === id) || null;
-                    handleAgentSelect(agent);
-                  }}
-                  className="px-3 py-2 border rounded-lg text-sm bg-background"
-                >
-                  <option value="">Default Assistant</option>
-                  {processedAgents.map(a => (
-                    <option key={a.id} value={a.id}>{a.name}</option>
-                  ))}
-                </select>
-              )}
+                <div className="flex items-center space-x-2">
+                  <Button size="sm" variant="ghost" onClick={() => {
+                    // Reset local draft and do not create an empty server session yet
+                    setMessages([]);
+                    setLocalSessionId(undefined);
+                    try { localStorage.removeItem(`pv-chat-session-${user?.id ?? 'anon'}`); localStorage.removeItem('pv-chat-session'); localStorage.removeItem(`pv-chat-${user?.id ?? 'anon'}`); localStorage.removeItem('pv-chat-draft'); } catch (e) {}
+                    onNewSession?.(undefined as unknown as string);
+                    toast({ title: 'New chat started' });
+                  }}>
+                    New Chat
+                  </Button>
+                  {processedAgents.length > 0 && (
+                    <select
+                      value={selectedAgent?.id || ''}
+                      onChange={(e) => {
+                        const id = e.target.value || null;
+                        const agent = processedAgents.find(a => a.id === id) || null;
+                        handleAgentSelect(agent);
+                      }}
+                      className="px-3 py-2 border rounded-lg text-sm bg-background"
+                    >
+                      <option value="">Default Assistant</option>
+                      {processedAgents.map(a => (
+                        <option key={a.id} value={a.id}>{a.name}</option>
+                      ))}
+                    </select>
+                  )}
+                </div>
             </div>
           </header>
 
@@ -516,6 +592,7 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
             <div className="flex items-end space-x-3">
               <div className="flex-1">
                 <Textarea
+                  ref={inputRef}
                   placeholder={`Ask a question... (Using ${selectedAgent ? selectedAgent.name : 'Assistant'})`}
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}

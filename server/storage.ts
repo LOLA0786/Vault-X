@@ -99,16 +99,16 @@ export class DrizzleStorage implements IStorage {
     }
   }
   
-  async updateChatSession(id: string, encryptedHistory: string): Promise<ChatSession | undefined> {
+  async updateChatSession(id: string, encryptedHistory: string, title?: string): Promise<ChatSession | undefined> {
     await this.ensureReady();
     const session = await this.getChatSession(id);
     if (!session) return undefined;
     
+    const updateData: any = { encryptedHistory, updatedAt: new Date() };
+    if (typeof title === 'string' && title.length > 0) updateData.title = title;
+
     const [updated] = await this.db.update(this.schema.chatSessions)
-      .set({ 
-        encryptedHistory, 
-        updatedAt: new Date() 
-      })
+      .set(updateData)
       .where((s: any, { eq }: any) => eq(s.id, id))
       .returning();
     
@@ -201,7 +201,7 @@ export interface IStorage {
   getChatSessionsByUserId(userId: string): Promise<ChatSession[]>;
   getChatSession(id: string): Promise<ChatSession | undefined>;
   createChatSession(session: InsertChatSession, agentId?: string): Promise<ChatSession>;
-  updateChatSession(id: string, encryptedHistory: string): Promise<ChatSession | undefined>;
+  updateChatSession(id: string, encryptedHistory: string, title?: string): Promise<ChatSession | undefined>;
   deleteChatSession(id: string): Promise<void>;
   
   // AI Agent methods
@@ -295,13 +295,14 @@ export class MemStorage implements IStorage {
     return session;
   }
 
-  async updateChatSession(id: string, encryptedHistory: string): Promise<ChatSession | undefined> {
+  async updateChatSession(id: string, encryptedHistory: string, title?: string): Promise<ChatSession | undefined> {
     const session = this.chatSessions.get(id);
     if (!session) return undefined;
-    
+
     const updatedSession: ChatSession = {
       ...session,
       encryptedHistory,
+      title: typeof title === 'string' && title.length > 0 ? title : session.title,
       updatedAt: new Date()
     };
     this.chatSessions.set(id, updatedSession);

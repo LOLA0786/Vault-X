@@ -39,7 +39,7 @@ const MainContent = React.forwardRef<HTMLDivElement, MainContentProps>(
       <div
         className={cn(
           "flex-1 flex flex-col min-h-screen",
-          hasSidebar && "lg:ml-64",
+          hasSidebar && "lg:ml-80",
           className
         )}
         ref={ref}
