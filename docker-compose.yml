@@ -14,7 +14,7 @@ services:
       NODE_ENV: development
       PORT: "8080"
       # Point DATABASE_URL to the internal postgres service
-      DATABASE_URL: "postgresql://postgres:root@db:5432/ai_vault"
+      DATABASE_URL: "${DATABASE_URL:- }"
     ports:
       - "8080:8080"
       - "5173:5173"
