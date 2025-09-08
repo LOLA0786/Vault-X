@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Paperclip, Send, Bot, User, Shield, Lock, ChevronLeft, ChevronRight } from 'lucide-react';
-import { GeminiService, type ChatMessage } from '@/lib/gemini';
+import { GrokService, type ChatMessage } from '@/lib/grok';
 import { EncryptionService } from '@/lib/encryption';
 import { extractPdfText } from '@/lib/pdf-utils';
 import { useAuth } from '@/hooks/use-auth';
@@ -277,6 +277,11 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
       if (currentSessionId) {
         // Update existing session
         const titleToUpdate = toSave[0]?.content ? (toSave[0].content.substring(0, 50) + (toSave[0].content.length > 50 ? '...' : '')) : undefined;
+        
+        console.log('[Chat Debug] Updating session:', currentSessionId);
+        console.log('[Chat Debug] Encrypted history length:', encryptedHistory.length);
+        console.log('[Chat Debug] Title to update:', titleToUpdate);
+        
         const response = await fetch(`/api/chat-sessions/${currentSessionId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -363,7 +368,7 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
         systemPrompt = selectedAgent.decryptedSystemPrompt;
       }
       
-      const aiResponse = await GeminiService.sendMessage(
+      const aiResponse = await GrokService.sendMessage(
         inputValue,
         fileContent,
         fileName,

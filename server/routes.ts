@@ -185,7 +185,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.json(session);
     } catch (error) {
-      res.status(500).json({ error: "Internal server error" });
+      console.error('[Server Debug] Error updating chat session:', error);
+      res.status(500).json({ error: "Internal server error", details: (error instanceof Error) ? error.message : error });
     }
   });
 

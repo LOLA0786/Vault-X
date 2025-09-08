@@ -10,12 +10,12 @@ export class DrizzleStorage implements IStorage {
     this.ready = this.init();
   }
   private async init() {
-  const { drizzle } = await import('drizzle-orm/node-postgres');
-  const pgModule = await import('pg');
-  const schema = await import('../shared/schema');
-  const pool = new pgModule.default.Pool({ connectionString: process.env.DATABASE_URL });
-  this.db = drizzle(pool, { schema });
-  this.schema = schema;
+    const { drizzle } = await import('drizzle-orm/node-postgres');
+    const pgModule = await import('pg');
+    const schema = await import('../shared/schema');
+    const pool = new pgModule.default.Pool({ connectionString: process.env.DATABASE_URL });
+    this.db = drizzle(pool, { schema });
+    this.schema = schema;
   }
   private async ensureReady() { await this.ready; }
   async getUser(id: string): Promise<User | undefined> {
@@ -35,7 +35,10 @@ export class DrizzleStorage implements IStorage {
   }
   async getFilesByUserId(userId: string): Promise<EncryptedFile[]> {
     await this.ensureReady();
-    const files = await this.db.query.encryptedFiles.findMany({ where: (f: any, { eq }: any) => eq(f.userId, userId) });
+    const { eq } = await import('drizzle-orm');
+    const files = await this.db.query.encryptedFiles.findMany({ 
+      where: eq(this.schema.encryptedFiles.userId, userId) 
+    });
     return files;
   }
   async getFile(id: string): Promise<EncryptedFile | undefined> { return undefined; }
@@ -53,19 +56,20 @@ export class DrizzleStorage implements IStorage {
     const [created] = await this.db.insert(this.schema.encryptedFiles).values(insertData).returning();
     return created;
   }
-  
+
   async deleteFile(id: string): Promise<void> {
     await this.ensureReady();
     await this.db.delete(this.schema.encryptedFiles).where((f: any, { eq }: any) => eq(f.id, id));
   }
-  
+
   async getChatSessionsByUserId(userId: string): Promise<ChatSession[]> {
     await this.ensureReady();
     console.log('[Storage Debug] Getting chat sessions for user:', userId);
     try {
-      const sessions = await this.db.query.chatSessions.findMany({ 
-        where: (s: any, { eq }: any) => eq(s.userId, userId),
-        orderBy: (s: any, { desc }: any) => desc(s.updatedAt)
+      const { eq, desc } = await import('drizzle-orm');
+      const sessions = await this.db.query.chatSessions.findMany({
+        where: eq(this.schema.chatSessions.userId, userId),
+        orderBy: desc(this.schema.chatSessions.updatedAt)
       });
       console.log('[Storage Debug] Found sessions count:', sessions.length);
       return sessions;
@@ -74,15 +78,16 @@ export class DrizzleStorage implements IStorage {
       throw error;
     }
   }
-  
+
   async getChatSession(id: string): Promise<ChatSession | undefined> {
     await this.ensureReady();
-    const session = await this.db.query.chatSessions.findFirst({ 
-      where: (s: any, { eq }: any) => eq(s.id, id) 
+    const { eq } = await import('drizzle-orm');
+    const session = await this.db.query.chatSessions.findFirst({
+      where: eq(this.schema.chatSessions.id, id)
     });
     return session || undefined;
   }
-  
+
   async createChatSession(session: InsertChatSession, agentId?: string): Promise<ChatSession> {
     await this.ensureReady();
     console.log('[Storage Debug] Creating chat session:', session, 'with agent:', agentId);
@@ -98,36 +103,54 @@ export class DrizzleStorage implements IStorage {
       throw error;
     }
   }
-  
+
   async updateChatSession(id: string, encryptedHistory: string, title?: string): Promise<ChatSession | undefined> {
     await this.ensureReady();
-    const session = await this.getChatSession(id);
-    if (!session) return undefined;
+    console.log('[Storage Debug] Updating chat session:', id);
+    console.log('[Storage Debug] Encrypted history length:', encryptedHistory.length);
+    console.log('[Storage Debug] Title:', title);
     
+    const session = await this.getChatSession(id);
+    if (!session) {
+      console.log('[Storage Debug] Session not found:', id);
+      return undefined;
+    }
+
     const updateData: any = { encryptedHistory, updatedAt: new Date() };
     if (typeof title === 'string' && title.length > 0) updateData.title = title;
 
-    const [updated] = await this.db.update(this.schema.chatSessions)
-      .set(updateData)
-      .where((s: any, { eq }: any) => eq(s.id, id))
-      .returning();
-    
-    return updated;
+    console.log('[Storage Debug] Update data:', { ...updateData, encryptedHistory: `[${encryptedHistory.length} chars]` });
+
+    try {
+      const { eq } = await import('drizzle-orm');
+      const [updated] = await this.db.update(this.schema.chatSessions)
+        .set(updateData)
+        .where(eq(this.schema.chatSessions.id, id))
+        .returning();
+
+      console.log('[Storage Debug] Update successful:', updated ? 'YES' : 'NO');
+      return updated;
+    } catch (error) {
+      console.error('[Storage Debug] Update failed:', error);
+      throw error;
+    }
   }
-  
+
   async deleteChatSession(id: string): Promise<void> {
     await this.ensureReady();
-    await this.db.delete(this.schema.chatSessions).where((s: any, { eq }: any) => eq(s.id, id));
+    const { eq } = await import('drizzle-orm');
+    await this.db.delete(this.schema.chatSessions).where(eq(this.schema.chatSessions.id, id));
   }
-  
+
   // AI Agent methods
   async getAiAgentsByUserId(userId: string): Promise<AiAgent[]> {
     await this.ensureReady();
     console.log('[Storage Debug] Getting AI agents for user:', userId);
     try {
-      const agents = await this.db.query.aiAgents.findMany({ 
-        where: (a: any, { eq }: any) => eq(a.userId, userId),
-        orderBy: (a: any, { desc }: any) => desc(a.updatedAt)
+      const { eq, desc } = await import('drizzle-orm');
+      const agents = await this.db.query.aiAgents.findMany({
+        where: eq(this.schema.aiAgents.userId, userId),
+        orderBy: desc(this.schema.aiAgents.updatedAt)
       });
       console.log('[Storage Debug] Found agents count:', agents.length);
       return agents;
@@ -136,15 +159,16 @@ export class DrizzleStorage implements IStorage {
       throw error;
     }
   }
-  
+
   async getAiAgent(id: string): Promise<AiAgent | undefined> {
     await this.ensureReady();
-    const agent = await this.db.query.aiAgents.findFirst({ 
-      where: (a: any, { eq }: any) => eq(a.id, id) 
+    const { eq } = await import('drizzle-orm');
+    const agent = await this.db.query.aiAgents.findFirst({
+      where: eq(this.schema.aiAgents.id, id)
     });
     return agent || undefined;
   }
-  
+
   async createAiAgent(agent: InsertAiAgent): Promise<AiAgent> {
     await this.ensureReady();
     console.log('[Storage Debug] Creating AI agent:', agent);
@@ -157,26 +181,27 @@ export class DrizzleStorage implements IStorage {
       throw error;
     }
   }
-  
+
   async updateAiAgent(id: string, data: Partial<Omit<InsertAiAgent, 'userId'>>): Promise<AiAgent | undefined> {
     await this.ensureReady();
     const agent = await this.getAiAgent(id);
     if (!agent) return undefined;
-    
+
     const [updated] = await this.db.update(this.schema.aiAgents)
-      .set({ 
+      .set({
         ...data,
-        updatedAt: new Date() 
+        updatedAt: new Date()
       })
       .where((a: any, { eq }: any) => eq(a.id, id))
       .returning();
-    
+
     return updated;
   }
-  
+
   async deleteAiAgent(id: string): Promise<void> {
     await this.ensureReady();
-    await this.db.delete(this.schema.aiAgents).where((a: any, { eq }: any) => eq(a.id, id));
+    const { eq } = await import('drizzle-orm');
+    await this.db.delete(this.schema.aiAgents).where(eq(this.schema.aiAgents.id, id));
   }
 }
 
@@ -190,20 +215,20 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  
+
   // File methods
   getFilesByUserId(userId: string): Promise<EncryptedFile[]>;
   getFile(id: string): Promise<EncryptedFile | undefined>;
   createFile(file: InsertFile): Promise<EncryptedFile>;
   deleteFile(id: string): Promise<void>;
-  
+
   // Chat session methods
   getChatSessionsByUserId(userId: string): Promise<ChatSession[]>;
   getChatSession(id: string): Promise<ChatSession | undefined>;
   createChatSession(session: InsertChatSession, agentId?: string): Promise<ChatSession>;
   updateChatSession(id: string, encryptedHistory: string, title?: string): Promise<ChatSession | undefined>;
   deleteChatSession(id: string): Promise<void>;
-  
+
   // AI Agent methods
   getAiAgentsByUserId(userId: string): Promise<AiAgent[]>;
   getAiAgent(id: string): Promise<AiAgent | undefined>;
@@ -237,8 +262,8 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
-    const user: User = { 
-      ...insertUser, 
+    const user: User = {
+      ...insertUser,
       id,
       createdAt: new Date()
     };
@@ -312,18 +337,18 @@ export class MemStorage implements IStorage {
   async deleteChatSession(id: string): Promise<void> {
     this.chatSessions.delete(id);
   }
-  
+
   // AI Agent methods
   async getAiAgentsByUserId(userId: string): Promise<AiAgent[]> {
     return Array.from(this.aiAgents.values()).filter(
       (agent) => agent.userId === userId,
     );
   }
-  
+
   async getAiAgent(id: string): Promise<AiAgent | undefined> {
     return this.aiAgents.get(id);
   }
-  
+
   async createAiAgent(insertAgent: InsertAiAgent): Promise<AiAgent> {
     const id = randomUUID();
     const now = new Date();
@@ -337,11 +362,11 @@ export class MemStorage implements IStorage {
     this.aiAgents.set(id, agent);
     return agent;
   }
-  
+
   async updateAiAgent(id: string, data: Partial<Omit<InsertAiAgent, 'userId'>>): Promise<AiAgent | undefined> {
     const agent = this.aiAgents.get(id);
     if (!agent) return undefined;
-    
+
     const updatedAgent: AiAgent = {
       ...agent,
       ...data,
@@ -350,7 +375,7 @@ export class MemStorage implements IStorage {
     this.aiAgents.set(id, updatedAgent);
     return updatedAgent;
   }
-  
+
   async deleteAiAgent(id: string): Promise<void> {
     this.aiAgents.delete(id);
   }
