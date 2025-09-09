@@ -297,6 +297,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Database health check endpoint (development only)
+  if (process.env.NODE_ENV === 'development') {
+    app.get('/api/debug/storage-info', async (req, res) => {
+      try {
+        const storageType = storage.constructor.name;
+        const hasDbUrl = !!process.env.DATABASE_URL;
+        const dbUrlPreview = process.env.DATABASE_URL ? 
+          process.env.DATABASE_URL.substring(0, 20) + '...' + process.env.DATABASE_URL.substring(process.env.DATABASE_URL.length - 10) : 
+          'Not configured';
+        
+        res.json({ 
+          storageType,
+          hasDbUrl,
+          dbUrlPreview,
+          timestamp: new Date().toISOString()
+        });
+      } catch (error) {
+        res.status(500).json({ error: 'Storage info error', details: error });
+      }
+    });
+  }
+
   const httpServer = createServer(app);
   return httpServer;
 }
