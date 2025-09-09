@@ -1,46 +1,23 @@
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from '@/components/ui/select';
 import { EncryptionService } from '@/lib/encryption';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { 
-  Bot, 
-  Save, 
-  Plus, 
-  AlertCircle, 
-  Sparkles, 
-  Shield, 
-  Zap, 
-  Brain, 
-  Dna, 
-  Activity, 
-  ChefHat, 
-  Pencil, 
-  Code, 
-  Calculator, 
-  GraduationCap,
-  CheckCircle,
-  Loader2,
-  Eye
-} from 'lucide-react';
+import { Bot, Save, Plus, AlertCircle } from 'lucide-react';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Badge } from '@/components/ui/badge';
-import { SecurityBadge } from '@/components/ui/security-badge';
-import { cn } from '@/lib/utils';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -53,7 +30,6 @@ export function AgentCreationForm({ onCreated }: { onCreated?: () => void }) {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [selectedIcon, setSelectedIcon] = useState('robot');
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -115,227 +91,134 @@ export function AgentCreationForm({ onCreated }: { onCreated?: () => void }) {
   };
 
   const iconOptions = [
-    { value: 'robot', label: 'Robot', icon: Bot, color: 'from-blue-500 to-blue-600' },
-    { value: 'brain', label: 'Brain', icon: Brain, color: 'from-purple-500 to-purple-600' },
-    { value: 'dna', label: 'DNA', icon: Dna, color: 'from-green-500 to-green-600' },
-    { value: 'doctor', label: 'Doctor', icon: Activity, color: 'from-red-500 to-red-600' },
-    { value: 'chef', label: 'Chef', icon: ChefHat, color: 'from-orange-500 to-orange-600' },
-    { value: 'teacher', label: 'Teacher', icon: GraduationCap, color: 'from-indigo-500 to-indigo-600' },
-    { value: 'code', label: 'Code', icon: Code, color: 'from-cyan-500 to-cyan-600' },
-    { value: 'pen', label: 'Writer', icon: Pencil, color: 'from-pink-500 to-pink-600' },
-    { value: 'calculator', label: 'Math', icon: Calculator, color: 'from-teal-500 to-teal-600' },
+    { value: 'robot', label: 'Robot' },
+    { value: 'brain', label: 'Brain' },
+    { value: 'dna', label: 'DNA' },
+    { value: 'doctor', label: 'Doctor' },
+    { value: 'chef', label: 'Chef' },
+    { value: 'teacher', label: 'Teacher' },
+    { value: 'code', label: 'Code' },
+    { value: 'pen', label: 'Writer' },
+    { value: 'calculator', label: 'Math' },
   ];
 
-  const getIconComponent = (iconName: string) => {
-    const option = iconOptions.find(opt => opt.value === iconName);
-    if (!option) return Bot;
-    return option.icon;
-  };
-
-  const getIconColor = (iconName: string) => {
-    const option = iconOptions.find(opt => opt.value === iconName);
-    return option?.color || 'from-primary-500 to-primary-600';
-  };
-
   return (
-    <div className="w-full">
-      <Card className="border-2 border-primary/20 shadow-xl">
-        <CardHeader className="bg-gradient-to-r from-primary-50 to-purple-50 dark:from-primary-950 dark:to-purple-950 border-b pb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
-              <Sparkles className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <CardTitle className="text-lg font-bold">Create Custom AI Agent</CardTitle>
-              <CardDescription className="text-sm">
-                Design a specialized AI assistant with unique personality and expertise
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        
-        <CardContent className="p-4 space-y-4">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              {/* Agent Name */}
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-semibold">Agent Name</FormLabel>
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle className="flex items-center">
+          <Bot className="mr-2 h-5 w-5" />
+          Create Custom AI Agent
+        </CardTitle>
+        <CardDescription>
+          Create a specialized AI agent with a specific personality or expertise
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Agent Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., Dietitian Assistant" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    A distinctive name for your AI agent
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="e.g., An AI assistant specialized in providing nutritional advice and diet plans"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Briefly describe what this agent does
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="systemPrompt"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>System Prompt</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="e.g., You are a professional dietitian with expertise in nutrition science..."
+                      className="min-h-[120px]"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    The instructions that define how the AI agent behaves
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="icon"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Icon</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <Input 
-                        placeholder="e.g., Dietitian Assistant, Code Mentor, Writing Coach" 
-                        className="h-10 text-sm"
-                        {...field} 
-                      />
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an icon" />
+                      </SelectTrigger>
                     </FormControl>
-                    <FormDescription className="text-xs">
-                      Choose a distinctive name that reflects your agent's purpose
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                    <SelectContent>
+                      {iconOptions.map((icon) => (
+                        <SelectItem key={icon.value} value={icon.value}>
+                          {icon.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    Choose an icon to represent your agent
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              {/* Icon Selection */}
-              <FormField
-                control={form.control}
-                name="icon"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-semibold">Agent Icon</FormLabel>
-                    <FormControl>
-                      <div className="grid grid-cols-4 gap-2">
-                        {iconOptions.map((iconOption) => {
-                          const IconComponent = iconOption.icon;
-                          const isSelected = field.value === iconOption.value;
-                          return (
-                            <div
-                              key={iconOption.value}
-                              className={cn(
-                                "flex flex-col items-center p-2 rounded-md border-2 cursor-pointer transition-all duration-200",
-                                isSelected
-                                  ? "border-primary/50 bg-primary/5 shadow-md"
-                                  : "border-border hover:border-primary/30 hover:bg-muted/50"
-                              )}
-                              onClick={() => {
-                                field.onChange(iconOption.value);
-                                setSelectedIcon(iconOption.value);
-                              }}
-                            >
-                              <div className={cn(
-                                "w-8 h-8 rounded-lg flex items-center justify-center shadow-md mb-1 bg-gradient-to-br",
-                                iconOption.color
-                              )}>
-                                <IconComponent className="h-4 w-4 text-white" />
-                              </div>
-                              <span className="text-xs font-medium text-center">{iconOption.label}</span>
-                              {isSelected && (
-                                <CheckCircle className="h-3 w-3 text-primary mt-1" />
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </FormControl>
-                    <FormDescription className="text-sm">
-                      Select an icon that represents your agent's domain
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Description */}
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-semibold">Description</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="e.g., An AI assistant specialized in providing nutritional advice, meal planning, and dietary recommendations based on scientific research" 
-                        className="min-h-[60px] text-sm"
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormDescription className="text-xs">
-                      Briefly describe what this agent does and its expertise area
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* System Prompt */}
-              <FormField
-                control={form.control}
-                name="systemPrompt"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-semibold">System Instructions</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="e.g., You are a professional dietitian with expertise in nutrition science. You provide evidence-based dietary advice, create personalized meal plans, and help users understand nutritional concepts. Always prioritize health and safety in your recommendations..." 
-                        className="min-h-[80px] text-sm"
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormDescription className="text-xs">
-                      Define the personality, expertise, and behavior of your AI agent
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Preview */}
-              <div className="p-4 bg-muted/30 rounded-lg border">
-                <h4 className="font-semibold mb-3 flex items-center gap-2">
-                  <Eye className="h-4 w-4" />
-                  Agent Preview
-                </h4>
-                <div className="flex items-start gap-3">
-                  <div className={cn(
-                    "w-10 h-10 rounded-lg flex items-center justify-center shadow-md bg-gradient-to-br",
-                    getIconColor(form.watch('icon'))
-                  )}>
-                    {(() => {
-                      const IconComponent = getIconComponent(form.watch('icon'));
-                      return <IconComponent className="h-5 w-5 text-white" />;
-                    })()}
-                  </div>
-                  <div className="flex-1">
-                    <h5 className="font-medium text-foreground">
-                      {form.watch('name') || 'Your Agent Name'}
-                    </h5>
-                    <p className="text-sm text-muted-foreground">
-                      {form.watch('description') || 'Agent description will appear here'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Security Notice */}
-              <div className="p-4 bg-security-50 dark:bg-security-950/20 rounded-lg border border-security-200 dark:border-security-800">
-                <div className="flex items-start gap-3">
-                  <Shield className="h-5 w-5 text-security-600 mt-0.5" />
-                  <div>
-                    <h4 className="font-semibold text-security-900 dark:text-security-100 mb-1">
-                      End-to-End Encrypted
-                    </h4>
-                    <p className="text-sm text-security-700 dark:text-security-300">
-                      Your agent's instructions and description are encrypted locally before being stored. 
-                      Only you can decrypt and access this information.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <Button 
-                type="submit" 
-                className="w-full h-10 text-sm font-semibold"
-                disabled={createAgentMutation.isPending}
-              >
-                {createAgentMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating Agent...
-                  </>
-                ) : (
-                  <>
-                    <Save className="mr-2 h-4 w-4" />
-                    Create AI Agent
-                  </>
-                )}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
-    </div>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={createAgentMutation.isPending}
+            >
+              {createAgentMutation.isPending ? (
+                <>Creating Agent...</>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Create Agent
+                </>
+              )}
+            </Button>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
   );
 }

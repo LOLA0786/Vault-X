@@ -78,24 +78,27 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
     }
   };
 
-  // Local chat sessions state loaded on-demand for the history tab
-  const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
+  // Use React Query for chat sessions like files and agents
+  const { data: chatSessions = [], refetch: refetchChatSessions } = useQuery<ChatSession[]>({
+    queryKey: ['/api/chat-sessions/user', user?.id],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      console.log('[Dashboard Debug] React Query fetching chat sessions...');
+      const response = await fetch(`/api/chat-sessions/user/${user?.id}`);
+      if (!response.ok) throw new Error('Failed to fetch chat sessions');
+      const data = await response.json();
+      console.log('[Dashboard Debug] React Query loaded chat sessions:', data.length, 'sessions');
+      return data;
+    },
+  });
+
+  // Refetch chat sessions when history tab is accessed
   useEffect(() => {
-    let mounted = true;
-    const loadSessions = async () => {
-      if (activeTab !== 'history' || !user?.id) return;
-      try {
-        const response = await fetch(`/api/chat-sessions/user/${user.id}`);
-        if (!response.ok) throw new Error('Failed to fetch chat sessions');
-        const data = await response.json();
-        if (mounted) setChatSessions(data);
-      } catch (err) {
-        console.error('[Dashboard] Failed to load chat sessions', err);
-      }
-    };
-    loadSessions();
-    return () => { mounted = false; };
-  }, [activeTab, user?.id]);
+    if (activeTab === 'history' && user?.id) {
+      console.log('[Dashboard Debug] History tab accessed, refetching sessions...');
+      refetchChatSessions();
+    }
+  }, [activeTab, user?.id, refetchChatSessions]);
 
   const { data: files = [] } = useQuery<EncryptedFile[]>({
     queryKey: ['/api/files/user', user?.id],
@@ -115,20 +118,8 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
 
   const handleNewChatSession = (sessionId: string) => {
     setActiveChatSession(sessionId);
-    // Immediately refresh chat sessions list so titles reflect latest changes
-    (async () => {
-      try {
-        const resp = await fetch(`/api/chat-sessions/user/${user?.id}`);
-        if (resp.ok) {
-          const data = await resp.json();
-          setChatSessions(data);
-        } else {
-          queryClient.invalidateQueries({ queryKey: ['/api/chat-sessions/user', user?.id] });
-        }
-      } catch (e) {
-        queryClient.invalidateQueries({ queryKey: ['/api/chat-sessions/user', user?.id] });
-      }
-    })();
+    // Invalidate chat sessions query to refresh the list
+    queryClient.invalidateQueries({ queryKey: ['/api/chat-sessions/user', user?.id] });
   };
 
   const handleDeleteFile = async (fileId: string) => {
@@ -286,6 +277,7 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
         );
         
       case 'history':
+        console.log('[Dashboard Debug] Rendering history tab, chatSessions:', chatSessions.length, 'sessions');
         return (
           <Card>
             <CardHeader>

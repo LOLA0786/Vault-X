@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Paperclip, Send, Bot, User, Shield, Lock } from 'lucide-react';
-import { GeminiService, type ChatMessage } from '@/lib/gemini';
+import { GrokService, type ChatMessage } from '@/lib/grok';
 import { EncryptionService } from '@/lib/encryption';
 import { extractPdfText } from '@/lib/pdf-utils';
 import { useAuth } from '@/hooks/use-auth';
@@ -234,8 +234,8 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
           }
         }
       }
-      // Send to Gemini (pass the latest messages array to avoid stale state)
-      const aiResponse = await GeminiService.sendMessage(
+      // Send to Grok (pass the latest messages array to avoid stale state)
+      const aiResponse = await GrokService.sendMessage(
         inputValue,
         fileContent,
         fileName,
