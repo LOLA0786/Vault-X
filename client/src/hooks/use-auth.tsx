@@ -18,10 +18,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in and has valid encryption key
+    // Check if user is logged in
     const userEmail = localStorage.getItem('user_email');
-    if (userEmail && EncryptionService.hasValidKey()) {
-      // Fetch user data
+    if (userEmail) {
+      // Fetch user data (encryption key will be handled by onboarding if needed)
       fetchUser(userEmail);
     } else {
       setLoading(false);
@@ -62,11 +62,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const userData = await response.json();
       
-      // Generate and store encryption key
-      const encryptionKey = EncryptionService.deriveKeyFromPassword(password);
-      EncryptionService.storeKey(encryptionKey);
+      // Mark as new user for onboarding
+      localStorage.setItem('vault_x_is_new_user', 'true');
       
-      // Store user session
+      // Store user session (encryption key will be handled by onboarding)
       localStorage.setItem('user_email', email);
       setUser(userData);
     } catch (error) {
@@ -84,11 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const userData = await response.json();
       
-      // Derive encryption key from password
-      const encryptionKey = EncryptionService.deriveKeyFromPassword(password);
-      EncryptionService.storeKey(encryptionKey);
-      
-      // Store user session
+      // Store user session (encryption key will be handled by onboarding if needed)
       localStorage.setItem('user_email', email);
       setUser(userData);
     } catch (error) {
@@ -99,6 +94,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     EncryptionService.removeKey();
     localStorage.removeItem('user_email');
+    localStorage.removeItem('vault_x_is_new_user');
+    localStorage.removeItem('vault_x_encryption_onboarding_complete');
     setUser(null);
   };
 

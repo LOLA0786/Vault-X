@@ -84,7 +84,10 @@ export class DrizzleStorage implements IStorage {
 
   async deleteFile(id: string): Promise<void> {
     await this.ensureReady();
-    await this.db.delete(this.schema.encryptedFiles).where((f: any, { eq }: any) => eq(f.id, id));
+    console.log('[Storage Debug] Deleting file with ID:', id);
+    const { eq } = await import('drizzle-orm');
+    await this.db.delete(this.schema.encryptedFiles).where(eq(this.schema.encryptedFiles.id, id));
+    console.log('[Storage Debug] File deletion query completed');
   }
 
   async getChatSessionsByUserId(userId: string): Promise<ChatSession[]> {

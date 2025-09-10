@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   Key, 
   RefreshCw, 
@@ -11,7 +12,13 @@ import {
   Download, 
   AlertTriangle,
   Shield,
-  CheckCircle
+  CheckCircle,
+  Info,
+  Lock,
+  Eye,
+  EyeOff,
+  Copy,
+  HelpCircle
 } from 'lucide-react';
 import { EncryptionService } from '@/lib/encryption';
 import { useToast } from '@/hooks/use-toast';
@@ -29,26 +36,20 @@ import {
 
 export function KeyManagement() {
   const [importKey, setImportKey] = useState('');
+  const [showImportKey, setShowImportKey] = useState(false);
+  const [showExportKey, setShowExportKey] = useState(false);
+  const [exportedKey, setExportedKey] = useState('');
   const { toast } = useToast();
 
   const handleExportKey = () => {
     try {
-      const exportedKey = EncryptionService.exportKey();
-      
-      // Create download link
-      const blob = new Blob([exportedKey], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'ai-vault-encryption-key.txt';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      const key = EncryptionService.exportKey();
+      setExportedKey(key);
+      setShowExportKey(true);
       
       toast({
-        title: "Key exported successfully",
-        description: "Store your encryption key backup in a safe place",
+        title: "Key ready for export",
+        description: "Copy or download your encryption key",
       });
     } catch (error) {
       toast({
@@ -57,6 +58,31 @@ export function KeyManagement() {
         variant: "destructive",
       });
     }
+  };
+
+  const handleDownloadKey = () => {
+    const blob = new Blob([exportedKey], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `vault-x-encryption-key-${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    toast({
+      title: "Key downloaded",
+      description: "Store this file in a secure location like a password manager",
+    });
+  };
+
+  const handleCopyKey = () => {
+    navigator.clipboard.writeText(exportedKey);
+    toast({
+      title: "Key copied",
+      description: "Paste it into your password manager or secure note app",
+    });
   };
 
   const handleImportKey = () => {
@@ -110,7 +136,7 @@ export function KeyManagement() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg font-semibold text-gray-900">
+        <CardTitle className="text-lg font-semibold text-foreground">
           Encryption Key Management
         </CardTitle>
         <CardDescription>
@@ -119,12 +145,12 @@ export function KeyManagement() {
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Key Status */}
-        <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
+        <div className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
           <div className="flex items-center space-x-3">
-            <Key className="text-secondary text-xl h-6 w-6" />
+            <Key className="text-green-600 dark:text-green-400 text-xl h-6 w-6" />
             <div>
-              <p className="font-medium text-gray-900">Master Encryption Key</p>
-              <p className="text-sm text-gray-600">Generated locally, AES-256 encryption</p>
+              <p className="font-medium text-foreground">Master Encryption Key</p>
+              <p className="text-sm text-muted-foreground">Generated locally, AES-256 encryption</p>
             </div>
           </div>
           <Badge variant={hasValidKey ? "default" : "destructive"}>
@@ -134,55 +160,148 @@ export function KeyManagement() {
                 Active
               </>
             ) : (
-              'Missing'
+              <>
+                <AlertTriangle className="text-yellow-600 dark:text-yellow-400 w-3 h-3 mr-1" />
+                Missing
+              </>
             )}
           </Badge>
         </div>
 
-        {/* Key Information */}
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-gray-900">Key Storage Location</p>
-            <p className="text-sm text-gray-600">Browser localStorage (device-specific)</p>
+        {/* Educational Information */}
+        <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800">
+          <Info className="h-4 w-4 text-blue-600" />
+          <AlertDescription className="text-blue-800 dark:text-blue-200">
+            <div className="space-y-2">
+              <p className="font-semibold">How Encryption Keys Work:</p>
+              <ul className="text-sm space-y-1 ml-4 list-disc">
+                <li><strong>Device-Specific:</strong> Your key is stored only on this device/browser</li>
+                <li><strong>Required for Access:</strong> You need your key to decrypt files and chat history</li>
+                <li><strong>Your Responsibility:</strong> We cannot recover your data if you lose your key</li>
+                <li><strong>New Devices:</strong> Import your key backup when signing in elsewhere</li>
+              </ul>
+            </div>
+          </AlertDescription>
+        </Alert>
+
+        {/* Export Key Section */}
+        <div className="space-y-4 pt-4 border-t border-border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-foreground">Export Encryption Key</p>
+              <p className="text-sm text-muted-foreground">Create a backup of your encryption key</p>
+            </div>
+            <Button
+              variant="outline"
+              onClick={handleExportKey}
+              disabled={!hasValidKey}
+              data-testid="export-key-button"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Show Key
+            </Button>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleExportKey}
-            disabled={!hasValidKey}
-            data-testid="export-key-button"
-          >
-            <Download className="w-4 h-4 mr-2" />
-            Export Backup
-          </Button>
+
+          {showExportKey && exportedKey && (
+            <div className="space-y-4 p-4 bg-muted/50 rounded-lg border">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Your Encryption Key:</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowExportKey(!showExportKey)}
+                >
+                  <EyeOff className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="font-mono text-xs bg-background border rounded p-3 break-all select-all">
+                {exportedKey}
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={handleCopyKey} variant="outline" size="sm" className="flex-1">
+                  <Copy className="w-4 h-4 mr-2" />
+                  Copy Key
+                </Button>
+                <Button onClick={handleDownloadKey} variant="outline" size="sm" className="flex-1">
+                  <Download className="w-4 h-4 mr-2" />
+                  Download File
+                </Button>
+              </div>
+              <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
+                <HelpCircle className="h-4 w-4 text-amber-600" />
+                <AlertDescription className="text-amber-800 dark:text-amber-200">
+                  <div className="space-y-2">
+                    <p className="font-semibold">Recommended Storage Options:</p>
+                    <ul className="text-sm space-y-1 ml-4 list-disc">
+                      <li>Password manager (1Password, Bitwarden, etc.)</li>
+                      <li>Encrypted cloud storage</li>
+                      <li>Secure physical backup (USB drive, paper)</li>
+                      <li>Multiple secure locations for redundancy</li>
+                    </ul>
+                  </div>
+                </AlertDescription>
+              </Alert>
+            </div>
+          )}
         </div>
 
         {/* Import Key Section */}
-        <div className="space-y-3 pt-4 border-t border-gray-200">
-          <Label htmlFor="import-key">Import Encryption Key</Label>
-          <div className="flex space-x-2">
-            <Input
-              id="import-key"
-              type="text"
-              placeholder="Paste your encryption key backup here"
-              value={importKey}
-              onChange={(e) => setImportKey(e.target.value)}
-              data-testid="import-key-input"
-            />
-            <Button
-              variant="outline"
-              onClick={handleImportKey}
-              disabled={!importKey.trim()}
-              data-testid="import-key-button"
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              Import
-            </Button>
+        <div className="space-y-4 pt-4 border-t border-border">
+          <div>
+            <Label htmlFor="import-key" className="text-sm font-medium">Import Encryption Key</Label>
+            <p className="text-sm text-muted-foreground mt-1">
+              Restore your encryption key from a backup to access your encrypted data
+            </p>
+          </div>
+          
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Input
+                id="import-key"
+                type={showImportKey ? "text" : "password"}
+                placeholder="Paste your encryption key backup here..."
+                value={importKey}
+                onChange={(e) => setImportKey(e.target.value)}
+                data-testid="import-key-input"
+                className="flex-1"
+              />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowImportKey(!showImportKey)}
+                className="px-3"
+              >
+                {showImportKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </Button>
+              <Button
+                onClick={handleImportKey}
+                disabled={!importKey.trim()}
+                data-testid="import-key-button"
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                Import Key
+              </Button>
+            </div>
+            
+            <Alert className="border-green-200 bg-green-50 dark:bg-green-950/20 dark:border-green-800">
+              <Lock className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-800 dark:text-green-200">
+                <div className="space-y-1">
+                  <p className="font-semibold">When to Import Your Key:</p>
+                  <ul className="text-sm space-y-1 ml-4 list-disc">
+                    <li>Signing in from a new device or browser</li>
+                    <li>After clearing browser data or reinstalling</li>
+                    <li>When you see "Missing" key status above</li>
+                    <li>To access previously encrypted files and chats</li>
+                  </ul>
+                </div>
+              </AlertDescription>
+            </Alert>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="pt-4 border-t border-gray-200">
+        <div className="pt-4 border-t border-border">
           <div className="flex space-x-3">
             <AlertDialog>
               <AlertDialogTrigger asChild>
@@ -215,8 +334,8 @@ export function KeyManagement() {
               </AlertDialogContent>
             </AlertDialog>
           </div>
-          <p className="text-xs text-gray-500 mt-2 flex items-center">
-            <AlertTriangle className="w-4 h-4 text-accent mr-1" />
+          <p className="text-xs text-muted-foreground mt-2 flex items-center">
+            <AlertTriangle className="w-4 h-4 text-yellow-600 dark:text-yellow-400 mr-1" />
             Regenerating will make existing files inaccessible
           </p>
         </div>

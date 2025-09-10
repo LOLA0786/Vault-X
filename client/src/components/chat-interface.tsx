@@ -273,7 +273,7 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
     <Card className="h-full flex flex-col">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold text-gray-900">AI Assistant</CardTitle>
+          <CardTitle className="text-lg font-semibold text-foreground">AI Assistant</CardTitle>
           <div>
             <Button size="sm" variant="ghost" onClick={() => {
               // Start a fresh local draft — do not create an empty server session yet.
@@ -293,8 +293,8 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
         {/* Decrypted file preview */}
         {selectedFileId && decryptedFileContent && (
           <div className="mb-4">
-            <label className="block text-xs font-medium text-gray-700 mb-1">Decrypted File Content Preview</label>
-            <div className="border rounded bg-gray-50 p-2 text-xs max-h-40 overflow-y-auto whitespace-pre-wrap" style={{ fontFamily: 'monospace' }}>
+            <label className="block text-xs font-medium text-foreground mb-1">Decrypted File Content Preview</label>
+            <div className="border rounded bg-muted p-2 text-xs max-h-40 overflow-y-auto whitespace-pre-wrap text-foreground" style={{ fontFamily: 'monospace' }}>
               {decryptedFileContent}
             </div>
           </div>
@@ -302,7 +302,7 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
         {/* Chat Messages */}
         <div className="flex-1 space-y-4 mb-6 max-h-96 overflow-y-auto" data-testid="chat-messages">
           {messages.length === 0 ? (
-            <div className="flex items-center justify-center h-32 text-gray-500">
+            <div className="flex items-center justify-center h-32 text-muted-foreground">
               <div className="text-center">
                 <Bot className="w-8 h-8 mx-auto mb-2" />
                 <p>Start a conversation with your AI assistant</p>
@@ -324,13 +324,13 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
                     "max-w-xs lg:max-w-md rounded-lg px-4 py-2",
                     message.role === 'user'
                       ? "bg-primary text-white"
-                      : "bg-gray-100 text-gray-900"
+                      : "bg-muted text-foreground"
                   )}
                 >
                   {message.role === 'assistant' && (
                     <div className="flex items-center space-x-2 mb-2">
                       <Bot className="w-4 h-4 text-primary" />
-                      <span className="text-xs font-medium text-gray-600">AI Assistant</span>
+                      <span className="text-xs font-medium text-muted-foreground">AI Assistant</span>
                       <Badge variant="secondary" className="text-xs">
                         <Shield className="w-3 h-3 mr-1" />
                         Private
@@ -348,10 +348,10 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
           )}
           {isLoading && (
             <div className="flex justify-start">
-              <div className="bg-gray-100 rounded-lg px-4 py-2 max-w-xs">
+              <div className="bg-muted rounded-lg px-4 py-2 max-w-xs">
                 <div className="flex items-center space-x-2">
                   <Bot className="w-4 h-4 text-primary animate-pulse" />
-                  <span className="text-sm text-gray-600">AI is thinking...</span>
+                  <span className="text-sm text-muted-foreground">AI is thinking...</span>
                 </div>
               </div>
             </div>
@@ -362,13 +362,13 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
         {/* File Selection */}
         {files.length > 0 && (
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Reference File (Optional)
             </label>
             <select
               value={selectedFileId || ''}
               onChange={(e) => setSelectedFileId(e.target.value || null)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-sm"
+              className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent outline-none text-sm"
               data-testid="file-select"
             >
               <option value="">No file selected</option>
@@ -402,7 +402,7 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
                 </div>
               )}
             </div>
-            <p className="text-xs text-gray-500 mt-2 flex items-center">
+            <p className="text-xs text-muted-foreground mt-2 flex items-center">
               <Lock className="w-3 h-3 mr-1 text-secondary" />
               Your files are decrypted locally before AI processing
             </p>

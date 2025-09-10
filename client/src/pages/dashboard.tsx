@@ -17,7 +17,14 @@ import {
   MoreVertical,
   Trash2,
   Download,
-  Bot
+  Bot,
+  Menu,
+  X,
+  LayoutDashboard,
+  FolderOpen,
+  History,
+  Settings,
+  Lock
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
@@ -30,6 +37,152 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+
+// Mobile Dashboard Component
+function MobileDashboard({ 
+  activeTab, 
+  onTabChange, 
+  renderContent 
+}: { 
+  activeTab: string; 
+  onTabChange: (tab: string) => void; 
+  renderContent: () => React.ReactNode;
+}) {
+  const { user, logout } = useAuth();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const navItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'vault', label: 'File Vault', icon: FolderOpen },
+    { id: 'chat', label: 'AI Assistant', icon: MessageSquare },
+    { id: 'agents', label: 'AI Agents', icon: Bot },
+    { id: 'history', label: 'Chat History', icon: History },
+    { id: 'settings', label: 'Settings', icon: Settings },
+    { id: 'key-info', label: 'How it works', icon: Lock },
+  ];
+
+  const getCurrentPageTitle = () => {
+    const currentItem = navItems.find(item => item.id === activeTab);
+    return currentItem ? currentItem.label : 'Dashboard';
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Mobile Header */}
+      <header className="sticky top-0 z-50 bg-background border-b border-border px-4 py-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="sm" className="lg:hidden">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-64 p-0">
+                <div className="flex flex-col h-full bg-sidebar">
+                  {/* Mobile Sidebar Header */}
+                  <div className="p-6 border-b border-border">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                        <Shield className="text-white h-5 w-5" />
+                      </div>
+                      <div>
+                        <h1 className="text-lg font-bold text-sidebar-foreground">Private Vault</h1>
+                        <p className="text-xs text-sidebar-foreground/70">Your Secure AI Assistant</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Mobile Navigation */}
+                  <nav className="flex-1 overflow-y-auto py-4">
+                    <div className="px-3 space-y-1">
+                      {navItems.map((item) => {
+                        const Icon = item.icon;
+                        return (
+                          <Button
+                            key={item.id}
+                            variant={activeTab === item.id ? "default" : "ghost"}
+                            className="w-full justify-start text-sm font-medium"
+                            onClick={() => {
+                              onTabChange(item.id);
+                              setIsMobileMenuOpen(false);
+                            }}
+                          >
+                            <Icon className="mr-3 h-4 w-4" />
+                            {item.label}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  </nav>
+
+                  {/* Mobile Sidebar Footer */}
+                  <div className="mt-auto p-4 border-t border-border">
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center space-x-2 text-sm">
+                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                        <span className="text-sidebar-foreground/80">Encryption Active</span>
+                      </div>
+                      <div className="text-xs text-sidebar-foreground/60 flex items-center">
+                        <Lock className="w-3 h-3 mr-1" />
+                        AES-256 Client-side
+                      </div>
+                      {user && (
+                        <div className="pt-2 border-t border-border">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-sidebar-foreground truncate">
+                              {user.email}
+                            </span>
+                            <Button variant="ghost" size="sm" onClick={logout}>
+                              <LogOut className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
+
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <Shield className="text-white h-4 w-4" />
+              </div>
+              <h1 className="text-lg font-semibold text-foreground">
+                {getCurrentPageTitle()}
+              </h1>
+            </div>
+          </div>
+
+          {/* Mobile User Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm">
+                <User className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <div className="px-2 py-1.5">
+                <p className="text-sm font-medium">{user?.email}</p>
+              </div>
+              <DropdownMenuItem onClick={logout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign Out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </header>
+
+      {/* Mobile Content */}
+      <main className="pb-4">
+        {renderContent()}
+      </main>
+    </div>
+  );
+}
 
 export default function Dashboard({ initialTab }: { initialTab?: string }) {
   const [location, setLocation] = useLocation();
@@ -190,7 +343,7 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
                     </div>
                     {showImportKeyBanner && (
                       <div className="flex items-center gap-2">
-                        <input className="flex-1 px-2 py-1 rounded border border-gray-300" placeholder="Paste exported key here" value={bannerImportKey} onChange={(e) => setBannerImportKey(e.target.value)} />
+                        <input className="flex-1 px-2 py-1 rounded border border-input bg-background text-foreground" placeholder="Paste exported key here" value={bannerImportKey} onChange={(e) => setBannerImportKey(e.target.value)} />
                         <Button size="sm" onClick={handleBannerImportKey}>Import</Button>
                       </div>
                     )}
@@ -207,7 +360,7 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
               </CardHeader>
               <CardContent>
                 {files.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-8 text-muted-foreground">
                     <FileText className="w-12 h-12 mx-auto mb-4" />
                     <p>No files uploaded yet</p>
                     <p className="text-sm">Upload your first file to get started</p>
@@ -217,11 +370,11 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
                     {files.map((file) => (
                       <div
                         key={file.id}
-                        className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0"
+                        className="flex items-center justify-between py-3 border-b border-border last:border-b-0"
                         data-testid={`file-item-${file.id}`}
                       >
                         <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                          <div className="w-10 h-10 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center">
                             <FileText className="text-red-600 h-5 w-5" />
                           </div>
                           <div>
@@ -296,7 +449,7 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
                   {chatSessions.map((session) => (
                     <div
                       key={session.id}
-                      className="flex items-center justify-between p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50"
+                      className="flex items-center justify-between p-3 border border-border rounded-lg cursor-pointer hover:bg-muted"
                       onClick={() => {
                         console.log('[Dashboard] History clicked, sessionId:', session.id);
                         setActiveChatSession(session.id);
@@ -391,7 +544,7 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
                 </CardHeader>
                 <CardContent>
                   {files.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">
+                    <div className="text-center py-8 text-muted-foreground">
                       <FileText className="w-8 h-8 mx-auto mb-2" />
                       <p className="text-sm">No files uploaded yet</p>
                     </div>
@@ -400,10 +553,10 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
                       {files.slice(0, 3).map((file) => (
                         <div
                           key={file.id}
-                          className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0"
+                          className="flex items-center justify-between py-3 border-b border-border last:border-b-0"
                         >
                           <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                            <div className="w-10 h-10 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center">
                               <FileText className="text-red-600 h-5 w-5" />
                             </div>
                             <div>
@@ -443,6 +596,11 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
 
   const handleTabChange = (tab: string) => {
     // Use client-side navigation for known routes
+    if (tab === 'dashboard') {
+      setLocation('/');
+      setActiveTab('dashboard');
+      return;
+    }
     if (tab === 'agents') {
       setLocation('/agents');
       return;
@@ -509,14 +667,25 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
   }, [location]);
 
   return (
-    <div className="min-h-screen flex bg-background text-foreground">
-      <Sidebar 
-        activeTab={activeTab} 
-        onTabChange={handleTabChange}
-        className="fixed h-full bg-sidebar text-sidebar-foreground dark:bg-sidebar dark:text-sidebar-foreground"
-      />
+    <div className="min-h-screen bg-background text-foreground">
+      {/* Mobile Layout */}
+      <div className="lg:hidden">
+        <MobileDashboard 
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          renderContent={renderContent}
+        />
+      </div>
 
-  <div className="flex-1 ml-80 overflow-hidden bg-background text-foreground">
+      {/* Desktop Layout */}
+      <div className="hidden lg:flex min-h-screen">
+        <Sidebar 
+          activeTab={activeTab} 
+          onTabChange={handleTabChange}
+          className="fixed h-full w-64 bg-sidebar text-sidebar-foreground dark:bg-sidebar dark:text-sidebar-foreground"
+        />
+
+        <div className="flex-1 ml-64 overflow-hidden bg-background text-foreground">
         {/* Header */}
         <header className="bg-background border-b border-border px-6 py-4">
           <div className="flex items-center justify-between">
@@ -549,9 +718,10 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
           </div>
         </header>
 
-        {/* Main Content */}
-        <div className="p-6 overflow-y-auto bg-background text-foreground">
-          {renderContent()}
+          {/* Main Content */}
+          <div className="p-6 overflow-y-auto bg-background text-foreground">
+            {renderContent()}
+          </div>
         </div>
       </div>
     </div>
