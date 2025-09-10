@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -15,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { EncryptionService } from '@/lib/encryption';
+import { useAuth } from '@/hooks/use-auth';
 
 interface KeyImportPromptProps {
   onComplete: () => void;
@@ -23,6 +25,8 @@ interface KeyImportPromptProps {
 export function KeyImportPrompt({ onComplete }: KeyImportPromptProps) {
   const [importKey, setImportKey] = useState('');
   const [showKey, setShowKey] = useState(false);
+  const [, setLocation] = useLocation();
+  const { logout } = useAuth();
   const { toast } = useToast();
 
   const handleImportKey = () => {
@@ -47,6 +51,23 @@ export function KeyImportPrompt({ onComplete }: KeyImportPromptProps) {
       toast({
         title: 'Import failed',
         description: 'Invalid encryption key format. Please check your key and try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleCreateNewAccount = async () => {
+    try {
+      await logout();
+      toast({
+        title: 'Logged out',
+        description: 'You can now create a new account',
+      });
+      setLocation('/');
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to log out. Please try again.',
         variant: 'destructive',
       });
     }
@@ -146,7 +167,13 @@ export function KeyImportPrompt({ onComplete }: KeyImportPromptProps) {
 
           <div className="text-center pt-4 border-t border-border">
             <p className="text-base text-muted-foreground">
-              Don't have your key? <span className="text-primary font-semibold">Contact support</span> or <span className="text-primary font-semibold">create a new account</span>.
+              Don't have your key? <span className="text-primary font-semibold">Contact support</span> or{' '}
+              <button
+                onClick={handleCreateNewAccount}
+                className="text-primary font-semibold hover:text-primary/80 underline underline-offset-2 transition-colors"
+              >
+                create a new account
+              </button>.
             </p>
           </div>
         </CardContent>
