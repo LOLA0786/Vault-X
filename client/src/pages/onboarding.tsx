@@ -76,7 +76,7 @@ export default function Onboarding() {
       toast({
         title: isLogin ? "Welcome back!" : "Welcome to Private Vault!",
         description: isLogin 
-          ? "You have successfully signed in to your secure AI assistant"
+          ? "Please import your encryption key to access your data"
           : "Your private, encrypted AI workspace is ready to use",
       });
       

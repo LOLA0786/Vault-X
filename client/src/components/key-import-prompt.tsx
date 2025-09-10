@@ -53,44 +53,62 @@ export function KeyImportPrompt({ onComplete }: KeyImportPromptProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md mx-auto">
-        <CardHeader className="text-center">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-600 rounded-full flex items-center justify-center mb-4">
-            <Key className="w-8 h-8 text-white" />
+    <div className="min-h-screen bg-gradient-to-br from-red-50 via-amber-50 to-orange-50 dark:from-slate-900 dark:via-red-950/20 dark:to-slate-900 flex items-center justify-center p-4">
+      <Card className="w-full max-w-2xl mx-auto border-amber-300 shadow-xl">
+        <CardHeader className="text-center pb-6">
+          <div className="mx-auto w-20 h-20 bg-gradient-to-br from-amber-500 to-orange-600 rounded-full flex items-center justify-center mb-6">
+            <Key className="w-10 h-10 text-white" />
           </div>
-          <CardTitle className="text-2xl">Welcome Back to Private Vault</CardTitle>
-          <CardDescription>
-            Please import your encryption key to access your secure AI assistant
+          <CardTitle className="text-3xl mb-4">🔑 Import Your Encryption Key</CardTitle>
+          <CardDescription className="text-lg">
+            <strong>Important:</strong> You must import your encryption key before you can access your files, chat history, and AI assistant.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
-            <AlertTriangle className="h-4 w-4 text-amber-600" />
-            <AlertDescription className="text-amber-800 dark:text-amber-200">
-              You need your encryption key to access your files and chat history. 
-              Check your password manager or secure backup location.
-            </AlertDescription>
-          </Alert>
+        <CardContent className="space-y-8 px-8 pb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Alert className="border-red-200 bg-red-50 dark:bg-red-950/20 dark:border-red-800">
+              <Shield className="h-5 w-5 text-red-600" />
+              <AlertDescription className="text-red-800 dark:text-red-200">
+                <div className="space-y-3">
+                  <p className="font-semibold text-base">🚫 Access Blocked</p>
+                  <p>Your data is encrypted and cannot be accessed without your encryption key. This is a security feature to protect your privacy.</p>
+                </div>
+              </AlertDescription>
+            </Alert>
 
-          <div className="space-y-3">
-            <Label htmlFor="import-key">Encryption Key</Label>
-            <div className="flex items-center gap-2">
+            <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
+              <AlertTriangle className="h-5 w-5 text-amber-600" />
+              <AlertDescription className="text-amber-800 dark:text-amber-200">
+                <div className="space-y-3">
+                  <p className="font-semibold text-base">📋 What to do:</p>
+                  <ol className="space-y-2 ml-4 list-decimal">
+                    <li>Find your encryption key from your secure backup</li>
+                    <li>Paste it in the field below</li>
+                    <li>Click "Import Key & Continue" to access your data</li>
+                  </ol>
+                </div>
+              </AlertDescription>
+            </Alert>
+          </div>
+
+          <div className="space-y-4">
+            <Label htmlFor="import-key" className="text-base font-semibold">Encryption Key</Label>
+            <div className="flex items-center gap-3">
               <Input
                 id="import-key"
                 type={showKey ? "text" : "password"}
                 placeholder="Paste your encryption key here..."
                 value={importKey}
                 onChange={(e) => setImportKey(e.target.value)}
-                className="flex-1"
+                className="flex-1 h-12 text-base px-4"
               />
               <Button
                 variant="ghost"
-                size="sm"
+                size="lg"
                 onClick={() => setShowKey(!showKey)}
-                className="px-3"
+                className="px-4 h-12"
               >
-                {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showKey ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </Button>
             </div>
           </div>
@@ -98,30 +116,37 @@ export function KeyImportPrompt({ onComplete }: KeyImportPromptProps) {
           <Button 
             onClick={handleImportKey} 
             disabled={!importKey.trim()}
-            className="w-full"
+            className="w-full h-14 text-lg font-semibold"
             size="lg"
           >
-            <Upload className="w-4 h-4 mr-2" />
+            <Upload className="w-5 h-5 mr-3" />
             Import Key & Continue
           </Button>
 
           <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800">
-            <HelpCircle className="h-4 w-4 text-blue-600" />
+            <HelpCircle className="h-5 w-5 text-blue-600" />
             <AlertDescription className="text-blue-800 dark:text-blue-200">
-              <div className="space-y-2">
-                <p className="font-semibold">Where to find your key:</p>
-                <ul className="text-sm space-y-1 ml-4 list-disc">
-                  <li>Password manager (1Password, Bitwarden, etc.)</li>
-                  <li>Secure note or encrypted file</li>
-                  <li>Previous key export/backup</li>
-                </ul>
+              <div className="space-y-4">
+                <p className="font-semibold text-base">🔍 Where to find your key:</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <div><strong>Password Manager:</strong> Check 1Password, Bitwarden, LastPass, etc.</div>
+                    <div><strong>Secure Notes:</strong> Look for saved encryption keys or backup files</div>
+                    <div><strong>Email:</strong> Search for "Private Vault" or "encryption key"</div>
+                  </div>
+                  <div className="space-y-2">
+                    <div><strong>Downloads:</strong> Check for exported key files (.txt, .key)</div>
+                    <div><strong>Cloud Storage:</strong> Look in secure folders (Google Drive, iCloud, etc.)</div>
+                    <div><strong>Physical Storage:</strong> USB drives, secure documents</div>
+                  </div>
+                </div>
               </div>
             </AlertDescription>
           </Alert>
 
-          <div className="text-center">
-            <p className="text-sm text-muted-foreground">
-              Don't have your key? Contact support or create a new account.
+          <div className="text-center pt-4 border-t border-border">
+            <p className="text-base text-muted-foreground">
+              Don't have your key? <span className="text-primary font-semibold">Contact support</span> or <span className="text-primary font-semibold">create a new account</span>.
             </p>
           </div>
         </CardContent>

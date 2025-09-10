@@ -29,11 +29,22 @@ function Router() {
       if (isNewUser && !onboardingComplete) {
         // Show encryption onboarding for new users who haven't completed it
         setShowEncryptionOnboarding(true);
+        setShowKeyImportPrompt(false);
         setIsFirstTime(true);
-      } else if (!hasValidKey && onboardingComplete) {
-        // Show key import prompt for returning users who need their key
+      } else if (!hasValidKey) {
+        // Show key import prompt for ALL users who don't have a valid key
+        // This ensures it shows immediately after login if no key is present
         setShowKeyImportPrompt(true);
+        setShowEncryptionOnboarding(false);
+      } else {
+        // User has a valid key, hide all prompts
+        setShowKeyImportPrompt(false);
+        setShowEncryptionOnboarding(false);
       }
+    } else {
+      // User not authenticated, reset all states
+      setShowKeyImportPrompt(false);
+      setShowEncryptionOnboarding(false);
     }
   }, [isAuthenticated, user]);
 
