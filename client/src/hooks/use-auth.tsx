@@ -92,6 +92,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
+    // Check if user has encrypted data before removing key
+    const hasEncryptedData = localStorage.getItem('ai_vault_encryption_key') !== null;
+    
+    if (hasEncryptedData) {
+      // Show warning about data loss
+      const shouldProceed = window.confirm(
+        '⚠️ Logging out will remove your encryption key!\n\n' +
+        'Your agents and chat history will become unreadable unless you:\n' +
+        '1. Export your encryption key backup first, OR\n' +
+        '2. Clear corrupted data after logout\n\n' +
+        'Do you want to continue logging out?'
+      );
+      
+      if (!shouldProceed) {
+        return; // Cancel logout
+      }
+    }
+    
     EncryptionService.removeKey();
     localStorage.removeItem('user_email');
     localStorage.removeItem('vault_x_is_new_user');

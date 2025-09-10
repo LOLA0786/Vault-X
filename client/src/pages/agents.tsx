@@ -3,6 +3,7 @@ import { useLocation } from 'wouter';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/use-auth';
 import { EncryptionService } from '@/lib/encryption';
+import { AgentUtils } from '@/lib/agent-utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { SecurityBadge, SecurityStatus, EncryptionIndicator, SecurityIcon } from '@/components/ui/security-badge';
@@ -100,22 +101,20 @@ export default function AgentsPage() {
 
   // Process agents to include decrypted content
   const processedAgents: AgentWithDecrypted[] = agents.map(agent => {
-    try {
-      const decryptedDescription = EncryptionService.decrypt(agent.encryptedDescription);
-      const decryptedSystemPrompt = EncryptionService.decrypt(agent.encryptedSystemPrompt);
-      return {
-        ...agent,
-        decryptedDescription,
-        decryptedSystemPrompt
-      } as AgentWithDecrypted;
-    } catch (error) {
-      console.error('Failed to decrypt agent data:', error);
-      return {
-        ...agent,
-        decryptedDescription: 'Failed to decrypt description',
-        decryptedSystemPrompt: ''
-      } as AgentWithDecrypted;
-    }
+    const decryptedDescription = AgentUtils.safeDecrypt(
+      agent.encryptedDescription, 
+      '⚠️ Encrypted data corrupted - please recreate this agent'
+    );
+    const decryptedSystemPrompt = AgentUtils.safeDecrypt(
+      agent.encryptedSystemPrompt, 
+      'System prompt unavailable - please recreate this agent'
+    );
+    
+    return {
+      ...agent,
+      decryptedDescription,
+      decryptedSystemPrompt
+    } as AgentWithDecrypted;
   });
 
   const handleDeleteAgent = async (agentId: string) => {
