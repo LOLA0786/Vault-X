@@ -54,14 +54,14 @@ export function KeyImportPrompt({ onComplete }: KeyImportPromptProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md mx-auto">
         <CardHeader className="text-center">
           <div className="mx-auto w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-600 rounded-full flex items-center justify-center mb-4">
             <Key className="w-8 h-8 text-white" />
           </div>
-          <CardTitle className="text-2xl">Import Your Encryption Key</CardTitle>
+          <CardTitle className="text-2xl">Welcome Back to Private Vault</CardTitle>
           <CardDescription>
-            Please import your encryption key to access your encrypted data
+            Please import your encryption key to access your secure AI assistant
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">

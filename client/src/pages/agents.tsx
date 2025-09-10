@@ -148,11 +148,11 @@ export default function AgentsPage() {
 
   return (
     <DashboardLayout activeTab={activeTab} onTabChange={handleTabChange}>
-      <div className="w-full p-6">
-        <div className="space-y-8">
+      <div className="w-full p-4 lg:p-6">
+        <div className="space-y-6 lg:space-y-8">
           {/* Enhanced Agents Header */}
-          <div className="bg-gradient-to-br from-security-50 to-primary-50 dark:from-slate-800 dark:to-slate-700 border border-security-200 dark:border-slate-600 rounded-xl p-6 shadow-lg backdrop-blur-sm">
-            <div className="flex items-center justify-between mb-6">
+          <div className="bg-gradient-to-br from-security-50 to-primary-50 dark:from-slate-800 dark:to-slate-700 border border-security-200 dark:border-slate-600 rounded-xl p-4 lg:p-6 shadow-lg backdrop-blur-sm">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-4 lg:mb-6 gap-4 lg:gap-0">
               <div className="flex items-center gap-4">
                 <SecurityIcon type="bot" size="lg" />
                 <div>
@@ -160,7 +160,7 @@ export default function AgentsPage() {
                   <p className="text-base text-muted-foreground">Create and manage your private, encrypted AI assistants</p>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
                 <SecurityStatus status="encrypted" message={`${agents.length} agents encrypted`} />
                 <SecurityBadge variant="secure" size="lg" animated>
                   Privacy Protected
@@ -169,7 +169,7 @@ export default function AgentsPage() {
             </div>
             
             {/* Agent Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
               <Card variant="professional">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
@@ -250,10 +250,10 @@ export default function AgentsPage() {
 
           {/* Agents Grid */}
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
               {[...Array(6)].map((_, i) => (
                 <Card key={i} variant="professional">
-                  <CardContent className="p-6">
+                  <CardContent className="p-4 lg:p-6">
                     <div className="animate-pulse">
                       <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg mb-4"></div>
                       <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
@@ -286,7 +286,7 @@ export default function AgentsPage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
               {processedAgents.map((agent) => (
                 <Card key={agent.id} variant="professional" className="group hover:transform hover:scale-105 transition-all duration-300">
                   <CardHeader className="pb-4">
@@ -328,7 +328,7 @@ export default function AgentsPage() {
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-2 pt-2">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-2">
                       <Button
                         variant="outline"
                         size="sm"
@@ -346,9 +346,10 @@ export default function AgentsPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => setAgentToDelete(agent.id)}
-                        className="text-danger-600 hover:text-danger-700 hover:bg-danger-50 dark:hover:bg-danger-950 transition-colors duration-200"
+                        className="sm:w-auto w-full text-danger-600 hover:text-danger-700 hover:bg-danger-50 dark:hover:bg-danger-950 transition-colors duration-200"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4 mr-2 sm:mr-0" />
+                        <span className="sm:hidden">Delete Agent</span>
                       </Button>
                     </div>
                   </CardContent>

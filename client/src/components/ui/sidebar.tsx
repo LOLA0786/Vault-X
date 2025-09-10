@@ -37,8 +37,8 @@ export function Sidebar({ className, activeTab, onTabChange }: SidebarProps) {
             <Shield className="text-white text-lg" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-sidebar-foreground dark:text-sidebar-foreground">AI Vault</h1>
-            <p className="text-xs text-sidebar-foreground/70 dark:text-sidebar-foreground/70">Private & Secure</p>
+            <h1 className="text-xl font-bold text-sidebar-foreground dark:text-sidebar-foreground">Private Vault</h1>
+            <p className="text-xs text-sidebar-foreground/70 dark:text-sidebar-foreground/70">Your Secure AI Assistant</p>
           </div>
         </div>
       </div>

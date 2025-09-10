@@ -100,7 +100,7 @@ export function EncryptionOnboarding({ onComplete, isFirstTime = true }: Encrypt
       </div>
       <div>
         <h2 className="text-2xl font-bold text-foreground mb-2">
-          {isFirstTime ? 'Welcome to Vault-X!' : 'Encryption Key Setup'}
+          {isFirstTime ? 'Welcome to Private Vault!' : 'Encryption Key Setup'}
         </h2>
         <p className="text-muted-foreground">
           Your privacy and security are our top priority. Let's set up your personal encryption key.
@@ -307,7 +307,7 @@ export function EncryptionOnboarding({ onComplete, isFirstTime = true }: Encrypt
 
       <Button onClick={completeOnboarding} className="w-full" size="lg">
         <ArrowRight className="w-4 h-4 mr-2" />
-        Start Using Vault-X
+        Start Using Private Vault
       </Button>
     </div>
   );
@@ -322,13 +322,13 @@ export function EncryptionOnboarding({ onComplete, isFirstTime = true }: Encrypt
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl">
+      <Card className="w-full max-w-2xl mx-auto">
         <CardHeader className="text-center pb-2">
           <div className="flex items-center justify-center gap-2 mb-4">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
               <Shield className="w-4 h-4 text-primary-foreground" />
             </div>
-            <span className="text-lg font-bold">Vault-X</span>
+            <span className="text-lg font-bold">Private Vault</span>
           </div>
           <div className="flex justify-center space-x-2 mb-4">
             {(['welcome', 'generate', 'backup', 'verify', 'complete'] as Step[]).map((step, index) => (

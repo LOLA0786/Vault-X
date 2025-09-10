@@ -488,11 +488,11 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
           </button>
         )}
 
-        {/* Left sidebar - files and agents (resizable / collapsible) */}
+        {/* Left sidebar - files and agents (responsive) */}
         <aside
-          className={`relative bg-card flex-shrink-0 flex flex-col transition-all duration-150 ${
+          className={`relative bg-card flex-shrink-0 flex-col transition-all duration-150 ${
             collapsed ? 'w-0 border-0 overflow-hidden' : 'border-r'
-          }`}
+          } hidden lg:flex`}
           style={{ width: collapsed ? 0 : sidebarWidth }}
         >
           {!collapsed && (
@@ -554,7 +554,7 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
 
         {/* Main chat area */}
         <div className="flex-1 flex flex-col min-h-0 h-full">
-          <header className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b bg-card">
+          <header className="flex-shrink-0 flex flex-col lg:flex-row lg:items-center justify-between px-4 py-3 border-b bg-card gap-3 lg:gap-0">
             <div className="flex items-center space-x-3">
               <Bot className="h-5 w-5 text-primary" />
               <div>
@@ -564,7 +564,7 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
             </div>
 
             <div>
-                <div className="flex items-center space-x-2">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                   <Button size="sm" variant="ghost" onClick={() => {
                     // Reset local draft and do not create an empty server session yet
                     setMessages([]);
@@ -574,6 +574,7 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
                     toast({ title: 'New chat started', description: 'Fresh conversation ready' });
                   }}
                   title="Start a new conversation (helps resolve decryption issues)"
+                  className="w-full sm:w-auto"
                   >
                     <RefreshCw className="w-3 h-3 mr-1" />
                     New Chat
@@ -586,7 +587,7 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
                         const agent = processedAgents.find(a => a.id === id) || null;
                         handleAgentSelect(agent);
                       }}
-                      className="px-3 py-2 border rounded-lg text-sm bg-background"
+                      className="w-full sm:w-auto px-3 py-2 border rounded-lg text-sm bg-background border-input text-foreground"
                     >
                       <option value="">Default Assistant</option>
                       {processedAgents.map(a => (
@@ -597,6 +598,71 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
                 </div>
             </div>
           </header>
+
+          {/* Mobile Files & Agents Section */}
+          <div className="lg:hidden border-b bg-muted/30">
+            <div className="px-4 py-3">
+              <details className="group">
+                <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-foreground">
+                  <span>Files & AI Agents</span>
+                  <ChevronRight className="w-4 h-4 group-open:rotate-90 transition-transform" />
+                </summary>
+                <div className="mt-3 space-y-4">
+                  {/* Mobile Files */}
+                  <div>
+                    <h4 className="text-sm font-medium text-foreground mb-2">Files</h4>
+                    <div className="space-y-2 max-h-32 overflow-y-auto">
+                      {files.length === 0 ? (
+                        <p className="text-xs text-muted-foreground">No files uploaded</p>
+                      ) : (
+                        files.map((file) => (
+                          <div
+                            key={file.id}
+                            className={`text-sm p-2 rounded-lg cursor-pointer transition-colors ${
+                              selectedFileId === file.id
+                                ? 'bg-primary text-primary-foreground'
+                                : 'bg-muted hover:bg-muted/80'
+                            }`}
+                            onClick={() => selectFile(file.id)}
+                          >
+                            <div className="font-medium truncate">{file.fileName}</div>
+                            <div className="text-xs opacity-70 mt-1">
+                              {file.fileType} • {new Date(file.uploadedAt).toLocaleDateString()}
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Mobile Agents */}
+                  {processedAgents.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-medium text-foreground mb-2">AI Agents</h4>
+                      <div className="space-y-2">
+                        {processedAgents.map((agent) => (
+                          <div
+                            key={agent.id}
+                            className={`text-sm p-2 rounded-lg cursor-pointer transition-colors ${
+                              selectedAgent?.id === agent.id
+                                ? 'bg-primary text-primary-foreground'
+                                : 'bg-muted hover:bg-muted/80'
+                            }`}
+                            onClick={() => handleAgentSelect(agent)}
+                          >
+                            <div className="font-medium">{agent.name}</div>
+                            <div className="text-xs opacity-70 mt-1 line-clamp-2">
+                              {agent.decryptedDescription}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </details>
+            </div>
+          </div>
 
           <section className="flex-1 overflow-y-auto px-4 py-4 space-y-4" data-testid="chat-messages">
             {messages.length === 0 ? (

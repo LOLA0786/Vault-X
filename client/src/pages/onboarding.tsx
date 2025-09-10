@@ -74,10 +74,10 @@ export default function Onboarding() {
       }
       
       toast({
-        title: isLogin ? "Welcome back!" : "Account created!",
+        title: isLogin ? "Welcome back!" : "Welcome to Private Vault!",
         description: isLogin 
-          ? "You have successfully logged in to your AI Vault"
-          : "Your private AI vault has been set up with client-side encryption",
+          ? "You have successfully signed in to your secure AI assistant"
+          : "Your private, encrypted AI workspace is ready to use",
       });
       
       // Navigate to dashboard after successful login/registration
@@ -102,8 +102,8 @@ export default function Onboarding() {
         }} />
       </div>
 
-      <div className="max-w-7xl w-full relative z-10 mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+      <div className="max-w-7xl w-full relative z-10 mx-auto px-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           {/* Left Side - Enhanced Security Features */}
           <div className="space-y-10">
             {/* Enhanced Header */}
@@ -119,9 +119,9 @@ export default function Onboarding() {
                 </div>
                 <div>
                   <h1 className="text-4xl font-bold text-foreground bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                    Vault-X
+                    Private Vault
                   </h1>
-                  <p className="text-sm text-muted-foreground font-medium">Enterprise Security Platform</p>
+                  <p className="text-sm text-muted-foreground font-medium">Your Secure AI Assistant</p>
                 </div>
               </div>
               <h2 className="text-5xl font-bold text-foreground mb-6 leading-tight">
@@ -140,7 +140,7 @@ export default function Onboarding() {
             </div>
 
             {/* Enhanced Security Features Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
               <div className="security-panel group hover:transform hover:scale-105 transition-all duration-300">
                 <div className="flex items-center gap-4 mb-4">
                   <SecurityIcon type="lock" size="md" />
@@ -233,12 +233,12 @@ export default function Onboarding() {
                   </div>
                 </div>
                 <CardTitle className="text-3xl font-bold mb-2">
-                  {isLogin ? 'Secure Login' : 'Create Secure Account'}
+                  {isLogin ? 'Welcome Back' : 'Join Private Vault'}
                 </CardTitle>
                 <CardDescription className="text-base text-muted-foreground">
                   {isLogin 
-                    ? 'Access your encrypted AI workspace'
-                    : 'Set up your private, zero-knowledge AI assistant'
+                    ? 'Sign in to your secure AI assistant'
+                    : 'Create your private, encrypted AI workspace'
                   }
                 </CardDescription>
               </CardHeader>
