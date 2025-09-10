@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Paperclip, Send, Bot, User, Shield, Lock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Paperclip, Send, Bot, User, Shield, Lock, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import { GrokService, type ChatMessage } from '@/lib/grok';
 import { EncryptionService } from '@/lib/encryption';
 import { extractPdfText } from '@/lib/pdf-utils';
@@ -228,6 +228,8 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
       const response = await fetch(`/api/chat-sessions/${sessionId}`);
       if (!response.ok) {
         console.error('[Chat Debug] Failed to load session:', response.status);
+        // If session doesn't exist, start fresh
+        setMessages([]);
         return;
       }
       const session = await response.json();
@@ -253,14 +255,27 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
         setMessages(historyMessages);
       } catch (err) {
         console.error('[Chat Debug] Failed to decrypt history:', err);
-        toast({
-          title: 'Decryption Failed',
-          description: 'Could not decrypt chat history',
-          variant: 'destructive',
-        });
+        console.log('[Chat Debug] This chat was encrypted with a different key. Starting fresh conversation.');
+        
+        // Clear the old encrypted history and start fresh
+        setMessages([]);
+        
+        // Show a user-friendly message only once per session
+        if (!sessionStorage.getItem(`key-mismatch-warned-${sessionId}`)) {
+          toast({
+            title: 'Chat History Unavailable',
+            description: 'This chat was encrypted with a different key. Starting a new conversation.',
+            variant: 'default',
+          });
+          sessionStorage.setItem(`key-mismatch-warned-${sessionId}`, 'true');
+        }
+        
+        // Don't prevent new messages from being sent - just start with empty history
       }
     } catch (error) {
       console.error('[Chat Debug] Error loading chat history:', error);
+      // Always ensure we can start fresh even if there are errors
+      setMessages([]);
     }
   };
 
@@ -273,6 +288,7 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
       const encryptedHistory = EncryptionService.encrypt(messagesJson);
 
       const currentSessionId = localSessionId || sessionId;
+      console.log('[Chat Debug] Saving chat history with current key');
 
       if (currentSessionId) {
         // Update existing session
@@ -330,6 +346,17 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
     } catch (error) {
       console.error('[Chat Debug] Failed to save chat history:', error);
     }
+  };
+
+  const startFreshConversation = () => {
+    console.log('[Chat Debug] Starting fresh conversation');
+    setMessages([]);
+    setLocalSessionId(undefined);
+    // Clear any stored session references
+    if (user?.id) {
+      localStorage.removeItem(`pv-chat-session-${user.id}`);
+    }
+    localStorage.removeItem('pv-chat-session');
   };
 
   const sendMessage = async () => {
@@ -449,21 +476,36 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
         </div>
       </div>
 
-      <div className="flex-1 flex w-full min-h-0">
+      <div className="flex-1 flex w-full min-h-0 relative">
+        {/* Floating expand button when sidebar is collapsed */}
+        {collapsed && (
+          <button
+            onClick={() => setCollapsed(false)}
+            aria-label="Expand sidebar"
+            className="absolute top-2 left-2 z-20 p-2 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-all hover:scale-105 border-2 border-background"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        )}
+
         {/* Left sidebar - files and agents (resizable / collapsible) */}
         <aside
-          className={"relative border-r bg-card flex-shrink-0 flex flex-col transition-width duration-150"}
-          style={{ width: collapsed ? 64 : sidebarWidth }}
+          className={`relative bg-card flex-shrink-0 flex flex-col transition-all duration-150 ${
+            collapsed ? 'w-0 border-0 overflow-hidden' : 'border-r'
+          }`}
+          style={{ width: collapsed ? 0 : sidebarWidth }}
         >
-          <div className="flex items-center justify-end px-2 py-1">
-            <button
-              onClick={() => setCollapsed(c => { const next = !c; if (!next && sidebarWidth < 240) setSidebarWidth(360); return next; })}
-              aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              className="p-1 rounded hover:bg-muted"
-            >
-              {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-            </button>
-          </div>
+          {!collapsed && (
+            <div className="flex items-center justify-end px-2 py-1">
+              <button
+                onClick={() => setCollapsed(true)}
+                aria-label="Collapse sidebar"
+                className="p-1 rounded hover:bg-muted"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+            </div>
+          )}
           <div className="p-8 flex-1 overflow-y-auto">
             <div className="mb-8">
               {!collapsed && <h3 className="text-xl font-semibold mb-6">Files</h3>}
@@ -529,8 +571,11 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
                     setLocalSessionId(undefined);
                     try { localStorage.removeItem(`pv-chat-session-${user?.id ?? 'anon'}`); localStorage.removeItem('pv-chat-session'); localStorage.removeItem(`pv-chat-${user?.id ?? 'anon'}`); localStorage.removeItem('pv-chat-draft'); } catch (e) {}
                     onNewSession?.(undefined as unknown as string);
-                    toast({ title: 'New chat started' });
-                  }}>
+                    toast({ title: 'New chat started', description: 'Fresh conversation ready' });
+                  }}
+                  title="Start a new conversation (helps resolve decryption issues)"
+                  >
+                    <RefreshCw className="w-3 h-3 mr-1" />
                     New Chat
                   </Button>
                   {processedAgents.length > 0 && (

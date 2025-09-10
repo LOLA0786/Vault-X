@@ -92,10 +92,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/files/:id", async (req, res) => {
     try {
+      console.log('[Routes Debug] Deleting file with ID:', req.params.id);
       await storage.deleteFile(req.params.id);
+      console.log('[Routes Debug] File deletion successful');
       res.json({ success: true });
     } catch (error) {
-      res.status(500).json({ error: "Internal server error" });
+      console.error('[Routes Debug] File deletion error:', error);
+      res.status(500).json({ error: "Internal server error", details: error });
     }
   });
 

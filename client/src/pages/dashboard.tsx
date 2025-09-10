@@ -190,7 +190,7 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
                     </div>
                     {showImportKeyBanner && (
                       <div className="flex items-center gap-2">
-                        <input className="flex-1 px-2 py-1 rounded border border-gray-300" placeholder="Paste exported key here" value={bannerImportKey} onChange={(e) => setBannerImportKey(e.target.value)} />
+                        <input className="flex-1 px-2 py-1 rounded border border-input bg-background text-foreground" placeholder="Paste exported key here" value={bannerImportKey} onChange={(e) => setBannerImportKey(e.target.value)} />
                         <Button size="sm" onClick={handleBannerImportKey}>Import</Button>
                       </div>
                     )}
@@ -207,7 +207,7 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
               </CardHeader>
               <CardContent>
                 {files.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-8 text-muted-foreground">
                     <FileText className="w-12 h-12 mx-auto mb-4" />
                     <p>No files uploaded yet</p>
                     <p className="text-sm">Upload your first file to get started</p>
@@ -217,11 +217,11 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
                     {files.map((file) => (
                       <div
                         key={file.id}
-                        className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0"
+                        className="flex items-center justify-between py-3 border-b border-border last:border-b-0"
                         data-testid={`file-item-${file.id}`}
                       >
                         <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                          <div className="w-10 h-10 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center">
                             <FileText className="text-red-600 h-5 w-5" />
                           </div>
                           <div>
@@ -296,7 +296,7 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
                   {chatSessions.map((session) => (
                     <div
                       key={session.id}
-                      className="flex items-center justify-between p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50"
+                      className="flex items-center justify-between p-3 border border-border rounded-lg cursor-pointer hover:bg-muted"
                       onClick={() => {
                         console.log('[Dashboard] History clicked, sessionId:', session.id);
                         setActiveChatSession(session.id);
@@ -391,7 +391,7 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
                 </CardHeader>
                 <CardContent>
                   {files.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">
+                    <div className="text-center py-8 text-muted-foreground">
                       <FileText className="w-8 h-8 mx-auto mb-2" />
                       <p className="text-sm">No files uploaded yet</p>
                     </div>
@@ -400,10 +400,10 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
                       {files.slice(0, 3).map((file) => (
                         <div
                           key={file.id}
-                          className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0"
+                          className="flex items-center justify-between py-3 border-b border-border last:border-b-0"
                         >
                           <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                            <div className="w-10 h-10 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center">
                               <FileText className="text-red-600 h-5 w-5" />
                             </div>
                             <div>
@@ -443,6 +443,11 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
 
   const handleTabChange = (tab: string) => {
     // Use client-side navigation for known routes
+    if (tab === 'dashboard') {
+      setLocation('/');
+      setActiveTab('dashboard');
+      return;
+    }
     if (tab === 'agents') {
       setLocation('/agents');
       return;
