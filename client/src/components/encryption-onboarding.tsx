@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Footer } from '@/components/ui/footer';
 import { 
   Shield, 
   Key, 
@@ -322,8 +323,9 @@ export function EncryptionOnboarding({ onComplete, isFirstTime = true }: Encrypt
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center p-2 sm:p-4">
-      <Card className="w-full max-w-2xl mx-auto max-h-[95vh] overflow-y-auto">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex flex-col">
+      <div className="flex-1 flex items-center justify-center p-2 sm:p-4">
+        <Card className="w-full max-w-2xl mx-auto">
         <CardHeader className="text-center pb-2">
           <div className="flex items-center justify-center gap-2 mb-4">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
@@ -347,7 +349,10 @@ export function EncryptionOnboarding({ onComplete, isFirstTime = true }: Encrypt
         <CardContent className="pt-4 px-3 sm:px-6">
           {stepComponents[currentStep]()}
         </CardContent>
-      </Card>
+        </Card>
+      </div>
+      
+      <Footer />
     </div>
   );
 }

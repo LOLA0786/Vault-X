@@ -23,6 +23,7 @@ import {
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { SecurityBadge, SecurityStatus, TrustScore, SecurityIcon } from '@/components/ui/security-badge';
+import { Footer } from '@/components/ui/footer';
 
 export default function Onboarding() {
   const [isLogin, setIsLogin] = useState(false);
@@ -94,7 +95,7 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-12 px-4 sm:px-6 lg:px-8 relative">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex flex-col relative">
       {/* Background Security Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0" style={{
@@ -102,8 +103,9 @@ export default function Onboarding() {
         }} />
       </div>
 
-      <div className="max-w-7xl w-full relative z-10 mx-auto px-4">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+      <div className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl w-full relative z-10 mx-auto px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           {/* Left Side - Enhanced Security Features */}
           <div className="space-y-10">
             {/* Enhanced Header */}
@@ -345,8 +347,10 @@ export default function Onboarding() {
               </CardContent>
             </Card>
           </div>
+          </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

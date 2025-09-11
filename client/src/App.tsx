@@ -8,6 +8,9 @@ import Dashboard from "@/pages/dashboard";
 import Onboarding from "@/pages/onboarding";
 import NotFound from "@/pages/not-found";
 import Agents from "@/pages/agents";
+import PrivacyPolicy from "@/pages/privacy-policy";
+import TermsConditions from "@/pages/terms-conditions";
+import RefundPolicy from "@/pages/refund-policy";
 import { EncryptionOnboarding } from "@/components/encryption-onboarding";
 import { KeyImportPrompt } from "@/components/key-import-prompt";
 import { EncryptionService } from "@/lib/encryption";
@@ -104,6 +107,12 @@ function Router() {
       <Route path="/settings">
         {isAuthenticated ? <Dashboard initialTab="settings" /> : <Onboarding />}
       </Route>
+      
+      {/* Legal Pages - Publicly Accessible */}
+      <Route path="/privacy-policy" component={PrivacyPolicy} />
+      <Route path="/terms-conditions" component={TermsConditions} />
+      <Route path="/refund-policy" component={RefundPolicy} />
+      
       <Route component={NotFound} />
     </Switch>
   );

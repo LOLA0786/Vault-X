@@ -704,6 +704,33 @@
   }
 }
 
+/* Ensure footer links are always clickable and above other elements */
+footer {
+  position: relative !important;
+  z-index: 1 !important;
+  pointer-events: auto !important;
+}
+
+footer a {
+  pointer-events: auto !important;
+  position: relative !important;
+  z-index: 2 !important;
+  display: inline-block !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  user-select: auto !important;
+  -webkit-user-select: auto !important;
+}
+
+footer a:hover {
+  text-decoration: underline !important;
+}
+
+footer a:focus {
+  outline: 2px solid hsl(var(--primary)) !important;
+  outline-offset: 2px !important;
+}
+
 /* Mobile responsiveness improvements */
 @media (max-width: 640px) {
   .container {
