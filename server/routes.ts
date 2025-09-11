@@ -64,7 +64,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { adminEmail } = req.query;
       
       // Check if the requesting user is admin
-      if (adminEmail !== "Lolasolution27@gmail.com") {
+      if (adminEmail !== "Lolasolution27@gmail.com" && adminEmail !== "lolasolution27@gmail.com") {
         return res.status(403).json({ error: "Admin access required" });
       }
       

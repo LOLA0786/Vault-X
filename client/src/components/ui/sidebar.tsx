@@ -22,7 +22,7 @@ interface SidebarProps {
 
 export function Sidebar({ className, activeTab, onTabChange }: SidebarProps) {
   const { user } = useAuth();
-  const isAdmin = user?.email === 'Lolasolution27@gmail.com';
+  const isAdmin = user?.email === 'Lolasolution27@gmail.com' || user?.email === "lolasolution27@gmail.com";;
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
