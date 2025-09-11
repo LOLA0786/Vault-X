@@ -24,6 +24,7 @@ import { useToast } from '@/hooks/use-toast';
 import { type EncryptedFile, type ChatSession, type AiAgent } from '@shared/schema';
 import { EncryptionService } from '@/lib/encryption';
 import KeyInfo from './key-info';
+import AdminDashboard from './admin-dashboard';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -327,6 +328,9 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
 
       case 'key-info':
         return <KeyInfo />;
+        
+      case 'admin':
+        return <AdminDashboard />;
         
       default:
         return (

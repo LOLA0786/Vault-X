@@ -8,9 +8,11 @@ import {
   History, 
   Settings,
   Lock,
-  Bot
+  Bot,
+  ShieldCheck
 } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
+import { useAuth } from "@/hooks/use-auth";
 
 interface SidebarProps {
   className?: string;
@@ -19,14 +21,18 @@ interface SidebarProps {
 }
 
 export function Sidebar({ className, activeTab, onTabChange }: SidebarProps) {
+  const { user } = useAuth();
+  const isAdmin = user?.email === 'Lolasolution27@gmail.com';
+
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'vault', label: 'File Vault', icon: FolderOpen },
     { id: 'chat', label: 'AI Assistant', icon: MessageSquare },
     { id: 'agents', label: 'AI Agents', icon: Bot },
     { id: 'history', label: 'Chat History', icon: History },
-  { id: 'settings', label: 'Settings', icon: Settings },
-  { id: 'key-info', label: 'How it works', icon: Lock },
+    { id: 'settings', label: 'Settings', icon: Settings },
+    { id: 'key-info', label: 'How it works', icon: Lock },
+    ...(isAdmin ? [{ id: 'admin', label: 'Admin Dashboard', icon: ShieldCheck }] : []),
   ];
 
   return (
