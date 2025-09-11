@@ -58,6 +58,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin route to get all users
+  app.get("/api/admin/users", async (req, res) => {
+    try {
+      const { adminEmail } = req.query;
+      
+      // Check if the requesting user is admin
+      if (adminEmail !== "Lolasolution27@gmail.com") {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+      
+      // Get all users (add this method to storage if it doesn't exist)
+      const users = await storage.getAllUsers?.() || [];
+      res.json(users);
+    } catch (error) {
+      console.error("Get users error:", error);
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
   // File routes
   app.post("/api/files", async (req, res) => {
     try {

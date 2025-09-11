@@ -58,6 +58,12 @@ export class DrizzleStorage implements IStorage {
     const [created] = await this.db.insert(this.schema.users).values(user).returning();
     return created;
   }
+  
+  async getAllUsers(): Promise<User[]> {
+    await this.ensureReady();
+    const users = await this.db.query.users.findMany();
+    return users;
+  }
   async getFilesByUserId(userId: string): Promise<EncryptedFile[]> {
     await this.ensureReady();
     const { eq } = await import('drizzle-orm');
@@ -243,6 +249,7 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  getAllUsers?(): Promise<User[]>;
 
   // File methods
   getFilesByUserId(userId: string): Promise<EncryptedFile[]>;
@@ -297,6 +304,10 @@ export class MemStorage implements IStorage {
     };
     this.users.set(id, user);
     return user;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
   }
 
   async getFilesByUserId(userId: string): Promise<EncryptedFile[]> {
