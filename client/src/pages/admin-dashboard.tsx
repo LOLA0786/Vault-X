@@ -59,7 +59,7 @@ export default function AdminDashboard() {
     window.location.href = '/';
   };
 
-  if (user?.email !== 'Lolasolution27@gmail.com') {
+  if (user?.email !== 'Lolasolution27@gmail.com' && user?.email !== "lolasolution27@gmail.com") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Card className="w-96">
@@ -187,9 +187,9 @@ export default function AdminDashboard() {
                       <TableRow key={user.id}>
                         <TableCell className="font-medium">
                           {user.email}
-                          {user.email === 'Lolasolution27@gmail.com' && (
-                            <Badge variant="secondary" className="ml-2">Admin</Badge>
-                          )}
+                          {(user.email === "Lolasolution27@gmail.com" || user.email === "lolasolution27@gmail.com") && (
+  <Badge variant="secondary" className="ml-2">Admin</Badge>
+)}
                         </TableCell>
                         <TableCell className="font-mono text-sm">{user.id.slice(0, 8)}...</TableCell>
                         <TableCell>
