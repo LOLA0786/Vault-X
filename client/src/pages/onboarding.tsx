@@ -4,25 +4,24 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  Shield, 
-  Info, 
-  Lock, 
-  Eye, 
-  Key, 
-  Database, 
-  CheckCircle, 
-  Zap,
-  Globe,
-  Server,
-  ArrowRight,
+import {
+  Shield,
+  Info,
+  Lock,
+  Eye,
+  Key,
+  Database,
+  CheckCircle,
   Sparkles,
+  Globe,
+  ArrowRight,
   Fingerprint,
   ShieldCheck
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { SecurityBadge, SecurityStatus, TrustScore, SecurityIcon } from '@/components/ui/security-badge';
+import { Footer } from '@/components/ui/footer';
 
 export default function Onboarding() {
   const [isLogin, setIsLogin] = useState(false);
@@ -36,7 +35,7 @@ export default function Onboarding() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email || !password) {
       toast({
         title: "Missing fields",
@@ -65,22 +64,21 @@ export default function Onboarding() {
     }
 
     setIsLoading(true);
-    
+
     try {
       if (isLogin) {
         await login(email, password);
       } else {
         await register(email, password);
       }
-      
+
       toast({
-        title: isLogin ? "Welcome back!" : "Welcome to Private Vault!",
-        description: isLogin 
-          ? "Please import your encryption key to access your data"
-          : "Your private, encrypted AI workspace is ready to use",
+        title: isLogin ? "Welcome back!" : "Account created!",
+        description: isLogin
+          ? "You have successfully logged in to your AI Vault"
+          : "Your private AI vault has been set up with client-side encryption",
       });
-      
-      // Navigate to dashboard after successful login/registration
+
       setLocation('/');
     } catch (error) {
       toast({
@@ -94,7 +92,7 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-12 px-4 sm:px-6 lg:px-8 relative">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex flex-col relative">
       {/* Background Security Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0" style={{
@@ -102,11 +100,11 @@ export default function Onboarding() {
         }} />
       </div>
 
-      <div className="max-w-7xl w-full relative z-10 mx-auto px-4">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+      <div className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl w-full relative z-10 mx-auto px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           {/* Left Side - Enhanced Security Features */}
           <div className="space-y-10">
-            {/* Enhanced Header */}
             <div className="text-center lg:text-left">
               <div className="flex items-center justify-center lg:justify-start gap-4 mb-8">
                 <div className="relative">
@@ -132,95 +130,105 @@ export default function Onboarding() {
                 </span>
               </h2>
               <p className="text-xl text-muted-foreground mb-10 leading-relaxed">
-                {isLogin 
+                {isLogin
                   ? 'Sign in to access your private, encrypted AI assistant with enterprise-grade security.'
                   : 'Your private AI workspace with client-side encryption. We never see your data.'
                 }
               </p>
             </div>
 
-            {/* Enhanced Security Features Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-              <div className="security-panel group hover:transform hover:scale-105 transition-all duration-300">
-                <div className="flex items-center gap-4 mb-4">
-                  <SecurityIcon type="lock" size="md" />
-                  <h3 className="font-semibold text-foreground text-lg">AES-256 Encryption</h3>
-                </div>
-                <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                  Military-grade encryption protects your files before they leave your device.
-                </p>
-                <SecurityBadge variant="encrypted" size="sm" className="group-hover:scale-110 transition-transform duration-200">
-                  End-to-End
-                </SecurityBadge>
-              </div>
+            {/* Security Features */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card variant="security" className="group hover:transform hover:scale-105 transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4 mb-4">
+                    <SecurityIcon type="lock" size="md" />
+                    <h3 className="font-semibold text-foreground text-lg">AES-256 Encryption</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                    Military-grade encryption protects your files before they leave your device.
+                  </p>
+                  <SecurityBadge variant="encrypted" size="sm" className="group-hover:scale-110 transition-transform duration-200">
+                    End-to-End
+                  </SecurityBadge>
+                </CardContent>
+              </Card>
 
-              <div className="security-panel group hover:transform hover:scale-105 transition-all duration-300">
-                <div className="flex items-center gap-4 mb-4">
-                  <SecurityIcon type="eye" size="md" />
-                  <h3 className="font-semibold text-foreground text-lg">Zero-Knowledge</h3>
-                </div>
-                <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                  We can't access your data even if we wanted to. Complete privacy guaranteed.
-                </p>
-                <SecurityBadge variant="verified" size="sm" className="group-hover:scale-110 transition-transform duration-200">
-                  Privacy First
-                </SecurityBadge>
-              </div>
+              <Card variant="security" className="group hover:transform hover:scale-105 transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4 mb-4">
+                    <SecurityIcon type="eye" size="md" />
+                    <h3 className="font-semibold text-foreground text-lg">Zero-Knowledge</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                    We can't access your data even if we wanted to. Complete privacy guaranteed.
+                  </p>
+                  <SecurityBadge variant="verified" size="sm" className="group-hover:scale-110 transition-transform duration-200">
+                    Privacy First
+                  </SecurityBadge>
+                </CardContent>
+              </Card>
 
-              <div className="security-panel group hover:transform hover:scale-105 transition-all duration-300">
-                <div className="flex items-center gap-4 mb-4">
-                  <SecurityIcon type="key" size="md" />
-                  <h3 className="font-semibold text-foreground text-lg">Local Key Management</h3>
-                </div>
-                <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                  Encryption keys generated and stored locally. Never transmitted to our servers.
-                </p>
-                <SecurityBadge variant="secure" size="sm" className="group-hover:scale-110 transition-transform duration-200">
-                  Local Control
-                </SecurityBadge>
-              </div>
+              <Card variant="security" className="group hover:transform hover:scale-105 transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4 mb-4">
+                    <SecurityIcon type="key" size="md" />
+                    <h3 className="font-semibold text-foreground text-lg">Local Key Management</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                    Encryption keys generated and stored locally. Never transmitted to our servers.
+                  </p>
+                  <SecurityBadge variant="secure" size="sm" className="group-hover:scale-110 transition-transform duration-200">
+                    Local Control
+                  </SecurityBadge>
+                </CardContent>
+              </Card>
 
-              <div className="security-panel group hover:transform hover:scale-105 transition-all duration-300">
-                <div className="flex items-center gap-4 mb-4">
-                  <SecurityIcon type="database" size="md" />
-                  <h3 className="font-semibold text-foreground text-lg">Secure Storage</h3>
-                </div>
-                <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                  Enterprise-grade infrastructure with encrypted data at rest and in transit.
-                </p>
-                <SecurityBadge variant="secure" size="sm" className="group-hover:scale-110 transition-transform duration-200">
-                  Enterprise Grade
-                </SecurityBadge>
-              </div>
+              <Card variant="security" className="group hover:transform hover:scale-105 transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4 mb-4">
+                    <SecurityIcon type="database" size="md" />
+                    <h3 className="font-semibold text-foreground text-lg">Secure Storage</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                    Enterprise-grade infrastructure with encrypted data at rest and in transit.
+                  </p>
+                  <SecurityBadge variant="secure" size="sm" className="group-hover:scale-110 transition-transform duration-200">
+                    Enterprise Grade
+                  </SecurityBadge>
+                </CardContent>
+              </Card>
             </div>
 
-            {/* Enhanced Trust Score */}
-            <div className="security-panel">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h3 className="text-xl font-semibold text-foreground mb-2">Security Rating</h3>
-                  <p className="text-sm text-muted-foreground">Independently verified security standards</p>
+            {/* Trust Score */}
+            <Card variant="security">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-xl font-semibold text-foreground mb-2">Security Rating</h3>
+                    <p className="text-sm text-muted-foreground">Independently verified security standards</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-security-500" />
+                    <span className="text-sm font-medium text-security-600 dark:text-security-400">Certified</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-security-500" />
-                                     <span className="text-sm font-medium text-emerald-600">Certified</span>
+                <TrustScore score={98} label="Security Score" size="lg" />
+                <div className="mt-4 flex items-center gap-4 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <Fingerprint className="h-4 w-4" />
+                    <span>FIPS 140-2 Compliant</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="h-4 w-4" />
+                    <span>SOC 2 Type II</span>
+                  </div>
                 </div>
-              </div>
-              <TrustScore score={98} label="Security Score" size="lg" />
-              <div className="mt-4 flex items-center gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <Fingerprint className="h-4 w-4" />
-                  <span>FIPS 140-2 Compliant</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4" />
-                  <span>SOC 2 Type II</span>
-                </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Right Side - Enhanced Auth Form */}
+          {/* Right Side - Auth Form */}
           <div className="max-w-md mx-auto w-full">
             <Card className="card-professional shadow-2xl border-0">
               <CardHeader className="text-center pb-8">
@@ -236,9 +244,9 @@ export default function Onboarding() {
                   {isLogin ? 'Welcome Back' : 'Join Private Vault'}
                 </CardTitle>
                 <CardDescription className="text-base text-muted-foreground">
-                  {isLogin 
-                    ? 'Sign in to your secure AI assistant'
-                    : 'Create your private, encrypted AI workspace'
+                  {isLogin
+                    ? 'Access your encrypted AI workspace'
+                    : 'Set up your private, zero-knowledge AI assistant'
                   }
                 </CardDescription>
               </CardHeader>
@@ -259,7 +267,7 @@ export default function Onboarding() {
                       required
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="password" className="text-sm font-medium flex items-center gap-2">
                       <Lock className="h-4 w-4 text-blue-500" />
@@ -275,7 +283,7 @@ export default function Onboarding() {
                       required
                     />
                   </div>
-                  
+
                   {!isLogin && (
                     <div className="space-y-2">
                       <Label htmlFor="confirmPassword" className="text-sm font-medium flex items-center gap-2">
@@ -293,7 +301,7 @@ export default function Onboarding() {
                       />
                     </div>
                   )}
-                  
+
                   <Button
                     type="submit"
                     disabled={isLoading}
@@ -312,7 +320,7 @@ export default function Onboarding() {
                     )}
                   </Button>
                 </form>
-                
+
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
                     <span className="w-full border-t border-gray-200 dark:border-gray-700" />
@@ -321,7 +329,7 @@ export default function Onboarding() {
                     <span className="bg-card px-2 text-muted-foreground">Or</span>
                   </div>
                 </div>
-                
+
                 <Button
                   variant="outline"
                   onClick={() => setIsLogin(!isLogin)}
@@ -329,8 +337,7 @@ export default function Onboarding() {
                 >
                   {isLogin ? 'Create New Account' : 'Sign In to Existing Account'}
                 </Button>
-                
-                {/* Security Notice */}
+
                 <div className="mt-6 p-4 bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-slate-800 dark:to-slate-700 rounded-lg border border-emerald-200 dark:border-slate-600">
                   <div className="flex items-start gap-3">
                     <Info className="h-5 w-5 text-emerald-600 dark:text-emerald-400 mt-0.5 flex-shrink-0" />
@@ -345,8 +352,10 @@ export default function Onboarding() {
               </CardContent>
             </Card>
           </div>
+          </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

@@ -31,6 +31,7 @@ import { useToast } from '@/hooks/use-toast';
 import { type EncryptedFile, type ChatSession, type AiAgent } from '@shared/schema';
 import { EncryptionService } from '@/lib/encryption';
 import KeyInfo from './key-info';
+import { Footer } from '@/components/ui/footer';
 import AdminDashboard from './admin-dashboard';
 import {
   DropdownMenu,
@@ -69,7 +70,7 @@ function MobileDashboard({
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Mobile Header */}
       <header className="sticky top-0 z-50 bg-background border-b border-border px-4 py-3">
         <div className="flex items-center justify-between">
@@ -178,9 +179,12 @@ function MobileDashboard({
       </header>
 
       {/* Mobile Content */}
-      <main className="pb-4">
+      <main className="flex-1 pb-4">
         {renderContent()}
       </main>
+      
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }
@@ -689,7 +693,7 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
           className="fixed h-full w-64 bg-sidebar text-sidebar-foreground dark:bg-sidebar dark:text-sidebar-foreground"
         />
 
-        <div className="flex-1 ml-64 overflow-hidden bg-background text-foreground">
+        <div className="flex-1 ml-64 flex flex-col min-h-screen bg-background text-foreground">
         {/* Header */}
         <header className="bg-background border-b border-border px-6 py-4">
           <div className="flex items-center justify-between">
@@ -723,9 +727,12 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
         </header>
 
           {/* Main Content */}
-          <div className="p-6 overflow-y-auto bg-background text-foreground">
+          <div className="flex-1 p-6 overflow-y-auto bg-background text-foreground">
             {renderContent()}
           </div>
+          
+          {/* Footer */}
+          <Footer />
         </div>
       </div>
     </div>

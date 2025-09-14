@@ -9,6 +9,9 @@ interface AuthContextType {
   register: (email: string, password: string) => Promise<void>;
   logout: () => void;
   loading: boolean;
+  showLogoutDialog: boolean;
+  setShowLogoutDialog: (show: boolean) => void;
+  confirmLogout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -16,6 +19,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
   useEffect(() => {
     // Check if user is logged in
@@ -92,11 +96,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
+    // Check if user has encrypted data before removing key
+    const hasEncryptedData = localStorage.getItem('ai_vault_encryption_key') !== null;
+    
+    if (hasEncryptedData) {
+      // Show custom dialog instead of window.confirm
+      setShowLogoutDialog(true);
+    } else {
+      // No encrypted data, proceed with logout directly
+      confirmLogout();
+    }
+  };
+
+  const confirmLogout = () => {
     EncryptionService.removeKey();
     localStorage.removeItem('user_email');
     localStorage.removeItem('vault_x_is_new_user');
     localStorage.removeItem('vault_x_encryption_onboarding_complete');
     setUser(null);
+    setShowLogoutDialog(false);
   };
 
   return (
@@ -108,6 +126,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         logout,
         loading,
+        showLogoutDialog,
+        setShowLogoutDialog,
+        confirmLogout,
       }}
     >
       {children}

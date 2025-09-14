@@ -109,7 +109,7 @@ export class GrokService {
       const prompt = `You are a helpful assistant that provides concise summaries of documents. Focus on key points and main themes.\n\nPlease provide a concise summary of this file "${fileName}":\n\n${fileContent}`;
 
       const requestBody = {
-        model: 'grok-4',
+        model: 'grok-2-1212',
         messages: [
           {
             role: 'system',
@@ -147,4 +147,3 @@ export class GrokService {
     }
   }
 }
-

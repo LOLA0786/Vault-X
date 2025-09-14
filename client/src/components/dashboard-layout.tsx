@@ -23,6 +23,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Footer } from '@/components/ui/footer';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -167,6 +168,9 @@ function MobileDashboardLayout({
       <main className="pb-4">
         {children}
       </main>
+      
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }
@@ -204,6 +208,9 @@ export function DashboardLayout({ children, activeTab, onTabChange }: DashboardL
             <div className="flex-1 w-full min-h-0 overflow-y-auto">
               {children}
             </div>
+            
+            {/* Footer */}
+            <Footer />
           </main>
         </div>
       </div>
