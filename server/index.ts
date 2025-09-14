@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { storage } from "./storage";
 
 const app = express();
 app.use(express.json({ limit: '50mb' }));
@@ -38,6 +39,10 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Log storage initialization status
+  console.log('[Server] Storage system initialized:', storage.constructor.name);
+  console.log('[Server] DATABASE_URL configured:', !!process.env.DATABASE_URL);
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

@@ -32,6 +32,7 @@ import { type EncryptedFile, type ChatSession, type AiAgent } from '@shared/sche
 import { EncryptionService } from '@/lib/encryption';
 import KeyInfo from './key-info';
 import { Footer } from '@/components/ui/footer';
+import AdminDashboard from './admin-dashboard';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -484,6 +485,9 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
 
       case 'key-info':
         return <KeyInfo />;
+        
+      case 'admin':
+        return <AdminDashboard />;
         
       default:
         return (
