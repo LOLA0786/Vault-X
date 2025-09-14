@@ -1,6 +1,6 @@
 // Unified AI service interface and factory
 import { GeminiService } from './gemini';
-import { grokService } from './grok';
+import { GrokService } from './grok';
 
 export interface AIService {
   generateResponse(prompt: string, systemPrompt?: string): Promise<string>;
@@ -51,19 +51,50 @@ class GeminiServiceWrapper implements AIService {
   }
 }
 
+// Create a wrapper for GrokService to match the interface
+class GrokServiceWrapper implements AIService {
+  async generateResponse(prompt: string, systemPrompt?: string): Promise<string> {
+    return await GrokService.sendMessage(prompt, undefined, undefined, [], systemPrompt);
+  }
+
+  async generateStreamResponse(
+    prompt: string, 
+    systemPrompt?: string,
+    onChunk?: (chunk: string) => void
+  ): Promise<string> {
+    // GrokService doesn't have streaming, so we'll use regular response
+    return await this.generateResponse(prompt, systemPrompt);
+  }
+
+  async sendMessage(
+    message: string, 
+    fileContent?: string, 
+    fileName?: string,
+    conversationHistory: any[] = [],
+    systemPrompt?: string
+  ): Promise<string> {
+    return await GrokService.sendMessage(message, fileContent, fileName, conversationHistory, systemPrompt);
+  }
+
+  isInitialized(): boolean {
+    return true;
+  }
+}
+
 const geminiServiceWrapper = new GeminiServiceWrapper();
+const grokServiceWrapper = new GrokServiceWrapper();
 
 export const createAIService = (): AIService => {
   const provider = import.meta.env.VITE_AI_PROVIDER || 'grok';
   
   switch (provider.toLowerCase()) {
     case 'grok':
-      return grokService;
+      return grokServiceWrapper;
     case 'gemini':
       return geminiServiceWrapper;
     default:
       console.warn(`Unknown AI provider: ${provider}, falling back to Grok`);
-      return grokService;
+      return grokServiceWrapper;
   }
 };
 

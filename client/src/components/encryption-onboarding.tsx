@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Footer } from '@/components/ui/footer';
 import { 
   Shield, 
   Key, 
@@ -180,13 +181,13 @@ export function EncryptionOnboarding({ onComplete, isFirstTime = true }: Encrypt
   );
 
   const renderBackupStep = () => (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="text-center">
-        <div className="mx-auto w-20 h-20 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center mb-4">
-          <AlertTriangle className="w-10 h-10 text-white" />
+        <div className="mx-auto w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center mb-3 sm:mb-4">
+          <AlertTriangle className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
         </div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">Backup Your Key</h2>
-        <p className="text-muted-foreground">
+        <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-2">Backup Your Key</h2>
+        <p className="text-sm sm:text-base text-muted-foreground">
           <strong>Critical Step:</strong> Save your encryption key in a secure location.
         </p>
       </div>
@@ -199,36 +200,37 @@ export function EncryptionOnboarding({ onComplete, isFirstTime = true }: Encrypt
         </AlertDescription>
       </Alert>
 
-      <div className="bg-muted rounded-lg p-4 space-y-3">
+      <div className="bg-muted rounded-lg p-3 sm:p-4 space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium">Your Encryption Key:</span>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setShowKey(!showKey)}
+            className="shrink-0"
           >
             {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </Button>
         </div>
-        <div className="font-mono text-sm bg-background border rounded p-3 break-all">
+        <div className="font-mono text-xs sm:text-sm bg-background border rounded p-2 sm:p-3 break-all overflow-x-auto max-w-full">
           {showKey ? encryptionKey : '•'.repeat(encryptionKey.length)}
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Button onClick={downloadKey} variant="outline" className="flex-1">
+        <Button onClick={downloadKey} variant="outline" className="flex-1 h-10 sm:h-auto">
           <Download className="w-4 h-4 mr-2" />
           Download as File
         </Button>
-        <Button onClick={copyKey} variant="outline" className="flex-1">
+        <Button onClick={copyKey} variant="outline" className="flex-1 h-10 sm:h-auto">
           <Copy className="w-4 h-4 mr-2" />
           Copy to Clipboard
         </Button>
       </div>
 
-      <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
-        <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">Recommended Storage Options:</h3>
-        <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+      <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-3 sm:p-4 border border-blue-200 dark:border-blue-800">
+        <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2 text-sm sm:text-base">Recommended Storage Options:</h3>
+        <ul className="text-xs sm:text-sm text-blue-700 dark:text-blue-300 space-y-1">
           <li>• Password manager (1Password, Bitwarden, etc.)</li>
           <li>• Encrypted cloud storage</li>
           <li>• Secure physical backup (USB drive, paper)</li>
@@ -239,7 +241,7 @@ export function EncryptionOnboarding({ onComplete, isFirstTime = true }: Encrypt
       <Button 
         onClick={() => setCurrentStep('verify')} 
         disabled={!keyBackedUp}
-        className="w-full" 
+        className="w-full h-10 sm:h-auto" 
         size="lg"
       >
         <CheckCircle className="w-4 h-4 mr-2" />
@@ -321,8 +323,9 @@ export function EncryptionOnboarding({ onComplete, isFirstTime = true }: Encrypt
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex flex-col">
+      <div className="flex-1 flex items-center justify-center p-2 sm:p-4">
+        <Card className="w-full max-w-2xl mx-auto">
         <CardHeader className="text-center pb-2">
           <div className="flex items-center justify-center gap-2 mb-4">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
@@ -343,10 +346,13 @@ export function EncryptionOnboarding({ onComplete, isFirstTime = true }: Encrypt
             ))}
           </div>
         </CardHeader>
-        <CardContent className="pt-4">
+        <CardContent className="pt-4 px-3 sm:px-6">
           {stepComponents[currentStep]()}
         </CardContent>
-      </Card>
+        </Card>
+      </div>
+      
+      <Footer />
     </div>
   );
 }
