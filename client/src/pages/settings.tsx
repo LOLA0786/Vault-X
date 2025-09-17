@@ -22,6 +22,7 @@ import { SecurityBadge, EncryptionIndicator } from '@/components/ui/security-bad
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { PrivateVaultLogo } from '@/components/ui/private-vault-logo';
 
 // Icons
 import { 
@@ -132,9 +133,11 @@ function MobileSettings({
                 <div className="flex flex-col h-full bg-sidebar">
                   <div className="p-6 border-b border-border">
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                        <Shield className="text-white h-5 w-5" />
-                      </div>
+                      <PrivateVaultLogo 
+                        size="sm" 
+                        animated={true}
+                        className="drop-shadow-lg"
+                      />
                       <div>
                         <h1 className="text-lg font-bold text-sidebar-foreground">Private Vault</h1>
                         <p className="text-xs text-sidebar-foreground/70">Your Secure AI Assistant</p>
@@ -242,9 +245,11 @@ function MobileSettings({
             </Sheet>
 
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <SettingsIcon className="text-white h-4 w-4" />
-              </div>
+              <PrivateVaultLogo 
+                size="sm" 
+                animated={true}
+                className="drop-shadow-md"
+              />
               <h1 className="text-lg font-semibold text-foreground">
                 Settings
               </h1>

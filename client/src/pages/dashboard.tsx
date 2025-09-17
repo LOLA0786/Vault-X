@@ -156,7 +156,7 @@ function MobileDashboard({
               <PrivateVaultLogo
                 size="sm"
                 animated={true}
-                className="w-8 h-8 drop-shadow-md"
+                className="drop-shadow-md"
               />
               <h1 className="text-lg font-semibold text-foreground">
                 {getCurrentPageTitle()}

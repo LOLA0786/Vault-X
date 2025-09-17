@@ -14,6 +14,14 @@ export function PrivateVaultLogo({ size = 'md', className = '', animated = true 
     xl: 'w-32 h-32'
   };
 
+  // Generate unique IDs for this component instance
+  const uniqueId = React.useMemo(() => Math.random().toString(36).substr(2, 9), []);
+  const vaultGradientId = `vaultGradient-${uniqueId}`;
+  const lockGradientId = `lockGradient-${uniqueId}`;
+  const keyGradientId = `keyGradient-${uniqueId}`;
+  const shadowId = `shadow-${uniqueId}`;
+  const glowId = `glow-${uniqueId}`;
+
   return (
     <div className={`${sizeClasses[size]} ${className} relative`}>
       <svg
@@ -23,29 +31,29 @@ export function PrivateVaultLogo({ size = 'md', className = '', animated = true 
       >
         <defs>
           {/* Gradient definitions */}
-          <linearGradient id="vaultGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <linearGradient id={vaultGradientId} x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#3B82F6" />
             <stop offset="50%" stopColor="#8B5CF6" />
             <stop offset="100%" stopColor="#6366F1" />
           </linearGradient>
           
-          <linearGradient id="lockGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <linearGradient id={lockGradientId} x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#10B981" />
             <stop offset="100%" stopColor="#059669" />
           </linearGradient>
           
-          <linearGradient id="keyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <linearGradient id={keyGradientId} x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#F59E0B" />
             <stop offset="100%" stopColor="#D97706" />
           </linearGradient>
 
           {/* Shadow filter */}
-          <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+          <filter id={shadowId} x="-50%" y="-50%" width="200%" height="200%">
             <feDropShadow dx="2" dy="4" stdDeviation="3" floodColor="#000000" floodOpacity="0.3"/>
           </filter>
 
           {/* Glow effect */}
-          <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+          <filter id={glowId} x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
             <feMerge> 
               <feMergeNode in="coloredBlur"/>
@@ -59,8 +67,8 @@ export function PrivateVaultLogo({ size = 'md', className = '', animated = true 
           cx="50"
           cy="50"
           r="45"
-          fill="url(#vaultGradient)"
-          filter="url(#shadow)"
+          fill={`url(#${vaultGradientId})`}
+          filter={`url(#${shadowId})`}
           className={animated ? "animate-pulse" : ""}
           style={{ animationDuration: '3s' }}
         />
@@ -113,13 +121,13 @@ export function PrivateVaultLogo({ size = 'md', className = '', animated = true 
             width="8"
             height="6"
             rx="1"
-            fill="url(#lockGradient)"
-            filter="url(#glow)"
+            fill={`url(#${lockGradientId})`}
+            filter={`url(#${glowId})`}
           />
           <path
             d="M -2,-2 A 2,2 0 0,1 2,-2"
             fill="none"
-            stroke="url(#lockGradient)"
+            stroke={`url(#${lockGradientId})`}
             strokeWidth="1.5"
             strokeLinecap="round"
           />
@@ -144,9 +152,9 @@ export function PrivateVaultLogo({ size = 'md', className = '', animated = true 
 
         {/* Key accent - representing access/encryption */}
         <g transform="translate(28,72)" opacity="0.8">
-          <rect x="0" y="-1" width="6" height="2" rx="1" fill="url(#keyGradient)" />
-          <rect x="6" y="-2" width="2" height="1" fill="url(#keyGradient)" />
-          <rect x="6" y="1" width="2" height="1" fill="url(#keyGradient)" />
+          <rect x="0" y="-1" width="6" height="2" rx="1" fill={`url(#${keyGradientId})`} />
+          <rect x="6" y="-2" width="2" height="1" fill={`url(#${keyGradientId})`} />
+          <rect x="6" y="1" width="2" height="1" fill={`url(#${keyGradientId})`} />
         </g>
 
         {/* Data flow particles */}

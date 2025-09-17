@@ -25,6 +25,7 @@ import { Badge } from '@/components/ui/badge';
 import { SecurityBadge, EncryptionIndicator } from '@/components/ui/security-badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
+import { PrivateVaultLogo } from '@/components/ui/private-vault-logo';
 
 // Icons
 import { 
@@ -114,9 +115,7 @@ function MobileChat({
                 <div className="flex flex-col h-full bg-sidebar">
                   <div className="p-6 border-b border-border">
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                        <Shield className="text-white h-5 w-5" />
-                      </div>
+                      <PrivateVaultLogo size="sm" animated={true} className="drop-shadow-lg" />
                       <div>
                         <h1 className="text-lg font-bold text-sidebar-foreground">Private Vault</h1>
                         <p className="text-xs text-sidebar-foreground/70">Your Secure AI Assistant</p>
@@ -224,9 +223,7 @@ function MobileChat({
             </Sheet>
 
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <MessageSquare className="text-white h-4 w-4" />
-              </div>
+              <PrivateVaultLogo size="sm" animated={true} className="drop-shadow-lg" />
               <h1 className="text-lg font-semibold text-foreground">
                 AI Chat
               </h1>

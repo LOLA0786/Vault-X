@@ -23,6 +23,7 @@ import { Badge } from '@/components/ui/badge';
 import { SecurityBadge, EncryptionIndicator } from '@/components/ui/security-badge';
 import { ModernInput } from '@/components/ui/modern-input';
 import { GridLoading } from '@/components/ui/modern-loading';
+import { PrivateVaultLogo } from '@/components/ui/private-vault-logo';
 
 // Icons
 import {
@@ -118,9 +119,7 @@ function MobileHistory({
                 <div className="flex flex-col h-full bg-sidebar">
                   <div className="p-6 border-b border-border">
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                        <Shield className="text-white h-5 w-5" />
-                      </div>
+                      <PrivateVaultLogo size="sm" animated={true} className="drop-shadow-lg" />
                       <div>
                         <h1 className="text-lg font-bold text-sidebar-foreground">Private Vault</h1>
                         <p className="text-xs text-sidebar-foreground/70">Your Secure AI Assistant</p>
@@ -228,9 +227,7 @@ function MobileHistory({
             </Sheet>
 
             <div className="flex items-center space-x-1 sm:space-x-2 min-w-0">
-              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
-                <HistoryIcon className="text-white h-3 w-3 sm:h-4 sm:w-4" />
-              </div>
+              <PrivateVaultLogo size="sm" animated={true} className="drop-shadow-lg flex-shrink-0" />
               <h1 className="text-sm sm:text-lg font-semibold text-foreground truncate">
                 Chat History
               </h1>

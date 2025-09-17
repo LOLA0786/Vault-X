@@ -189,7 +189,7 @@ function MobileAgents({
               <PrivateVaultLogo 
                 size="sm" 
                 animated={true}
-                className="w-8 h-8 drop-shadow-md"
+                className="drop-shadow-md"
               />
               <h1 className="text-lg font-semibold text-foreground">
                 AI Agents
@@ -565,7 +565,7 @@ export default function AgentsPage() {
           )}
 
           {/* Security Notice */}
-          <ModernCard variant="professional">
+          <ModernCard variant="premium">
             <ModernCardContent className="p-6">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-gradient-to-br from-security-500 to-security-600 rounded-xl flex items-center justify-center flex-shrink-0">
