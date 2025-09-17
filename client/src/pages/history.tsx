@@ -39,7 +39,11 @@ import {
   MoreVertical,
   Bot,
   Lock,
-  History as HistoryIcon
+  History as HistoryIcon,
+  Home,
+  Settings,
+  Key,
+  LayoutDashboard
 } from 'lucide-react';
 
 import {
@@ -123,6 +127,90 @@ function MobileHistory({
                       </div>
                     </div>
                   </div>
+                  
+                  {/* Navigation Menu */}
+                  <nav className="flex-1 p-4">
+                    <div className="space-y-2">
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
+                        onClick={() => {
+                          handleTabChange('dashboard');
+                          setIsMobileMenuOpen(false);
+                        }}
+                      >
+                        <LayoutDashboard className="mr-3 h-5 w-5" />
+                        Dashboard
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
+                        onClick={() => {
+                          handleTabChange('vault');
+                          setIsMobileMenuOpen(false);
+                        }}
+                      >
+                        <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M3 7H21L19 2H5L3 7Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M3 7V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        File Vault
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
+                        onClick={() => {
+                          handleTabChange('chat');
+                          setIsMobileMenuOpen(false);
+                        }}
+                      >
+                        <MessageSquare className="mr-3 h-5 w-5" />
+                        AI Assistant
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
+                        onClick={() => {
+                          handleTabChange('agents');
+                          setIsMobileMenuOpen(false);
+                        }}
+                      >
+                        <Bot className="mr-3 h-5 w-5" />
+                        AI Agents
+                      </Button>
+                      <Button
+                        variant="default"
+                        className="w-full justify-start bg-primary text-primary-foreground"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <HistoryIcon className="mr-3 h-5 w-5" />
+                        Chat History
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
+                        onClick={() => {
+                          handleTabChange('settings');
+                          setIsMobileMenuOpen(false);
+                        }}
+                      >
+                        <Settings className="mr-3 h-5 w-5" />
+                        Settings
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
+                        onClick={() => {
+                          handleTabChange('key-info');
+                          setIsMobileMenuOpen(false);
+                        }}
+                      >
+                        <Key className="mr-3 h-5 w-5" />
+                        How it works
+                      </Button>
+                    </div>
+                  </nav>
+                  
                   {user && (
                     <div className="mt-auto p-4 border-t border-border">
                       <div className="flex items-center justify-between">
@@ -265,20 +353,20 @@ export default function HistoryPage() {
 
   const renderContent = () => {
     return (
-      <ModernContainer className="py-8">
-        <ModernStack spacing="xl">
+      <ModernContainer className="py-4 sm:py-8 px-4 sm:px-6">
+        <ModernStack spacing="lg" className="sm:spacing-xl">
           {/* Header Section */}
-          <div className="text-center space-y-4">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-violet-600 bg-clip-text text-transparent">
+          <div className="text-center space-y-2 sm:space-y-4">
+            <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-violet-600 bg-clip-text text-transparent">
               Chat History
             </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4 sm:px-0">
               Your encrypted conversation history with AI assistants
             </p>
           </div>
 
           {/* Stats Section */}
-          <StatsGrid cols={4}>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <StatCard
               title="Total Conversations"
               value={chatSessions.length}
@@ -290,6 +378,7 @@ export default function HistoryPage() {
                 label: "vs last month",
                 direction: chatSessions.length > 0 ? 'up' : 'neutral'
               }}
+              className="col-span-1"
             />
 
             <StatCard
@@ -298,6 +387,7 @@ export default function HistoryPage() {
               description="Recent conversations"
               icon={<Clock />}
               variant="premium"
+              className="col-span-1"
             />
 
             <StatCard
@@ -306,12 +396,13 @@ export default function HistoryPage() {
               description="End-to-end encrypted"
               icon={<Shield />}
               variant="security"
+              className="col-span-1"
             />
 
             <StatCard
               title="AI Interactions"
-              value={chatSessions.reduce((acc, session) => acc + (session.messageCount || 0), 0)}
-              description="Total messages exchanged"
+              value={chatSessions.length}
+              description="Total sessions created"
               icon={<Bot />}
               variant="default"
               trend={{
@@ -319,29 +410,30 @@ export default function HistoryPage() {
                 label: "this week",
                 direction: 'up'
               }}
+              className="col-span-1"
             />
-          </StatsGrid>
+          </div>
 
           {/* Search and Filter Section */}
           <ModernCard variant="glass" hover="glow">
-            <ModernCardContent className="p-6">
-              <ModernGrid cols={3} gap="md" responsive>
-                <div className="col-span-2">
+            <ModernCardContent className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                <div className="flex-1">
                   <ModernInput
                     variant="filled"
                     placeholder="Search conversations..."
                     icon={<Search className="h-4 w-4" />}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full"
+                    className="w-full touch-manipulation"
                   />
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 sm:gap-3">
                   <Button
                     variant={filterBy === 'all' ? 'premium' : 'outline'}
                     size="sm"
                     onClick={() => setFilterBy('all')}
-                    className="flex-1"
+                    className="flex-1 sm:flex-none touch-manipulation"
                   >
                     All
                   </Button>
@@ -349,12 +441,12 @@ export default function HistoryPage() {
                     variant={filterBy === 'recent' ? 'premium' : 'outline'}
                     size="sm"
                     onClick={() => setFilterBy('recent')}
-                    className="flex-1"
+                    className="flex-1 sm:flex-none touch-manipulation"
                   >
                     Recent
                   </Button>
                 </div>
-              </ModernGrid>
+              </div>
             </ModernCardContent>
           </ModernCard>
 
@@ -363,14 +455,14 @@ export default function HistoryPage() {
             <GridLoading count={6} cols={1} />
           ) : filteredSessions.length === 0 ? (
             <ModernCard variant="glass" className="text-center">
-              <ModernCardContent className="p-16">
-                <div className="w-24 h-24 bg-gradient-to-br from-blue-100 via-purple-100 to-indigo-100 dark:from-blue-900/30 dark:via-purple-900/30 dark:to-indigo-900/30 rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl">
-                  <MessageSquare className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+              <ModernCardContent className="p-8 sm:p-16">
+                <div className="w-16 h-16 sm:w-24 sm:h-24 bg-gradient-to-br from-blue-100 via-purple-100 to-indigo-100 dark:from-blue-900/30 dark:via-purple-900/30 dark:to-indigo-900/30 rounded-full flex items-center justify-center mx-auto mb-6 sm:mb-8 shadow-2xl">
+                  <MessageSquare className="w-8 h-8 sm:w-12 sm:h-12 text-blue-600 dark:text-blue-400" />
                 </div>
-                <h3 className="text-2xl font-bold text-foreground mb-4">
+                <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-3 sm:mb-4">
                   {searchQuery ? 'No matching conversations' : 'No chat history yet'}
                 </h3>
-                <p className="text-lg text-muted-foreground mb-8 max-w-md mx-auto">
+                <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8 max-w-md mx-auto px-4 sm:px-0">
                   {searchQuery
                     ? 'Try adjusting your search terms or filters'
                     : 'Start a conversation with your AI assistant to see your history here'
@@ -380,66 +472,66 @@ export default function HistoryPage() {
                   onClick={() => setLocation('/chat')}
                   variant="premium"
                   size="lg"
-                  className="shadow-xl"
+                  className="shadow-xl touch-manipulation"
                 >
-                  <MessageSquare className="h-5 w-5 mr-2" />
+                  <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                   Start New Chat
                 </Button>
               </ModernCardContent>
             </ModernCard>
           ) : (
-            <ModernStack spacing="md">
+            <ModernStack spacing="sm" className="sm:spacing-md">
               {filteredSessions.map((session) => (
                 <ModernCard key={session.id} variant="elevated" hover="lift" interactive>
-                  <ModernCardContent className="p-6">
-                    <div className="flex items-center justify-between">
+                  <ModernCardContent className="p-4 sm:p-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
                       <div
-                        className="flex-1 cursor-pointer"
+                        className="flex-1 cursor-pointer touch-manipulation"
                         onClick={() => handleOpenChat(session.id)}
                       >
-                        <div className="flex items-start gap-4">
-                          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
-                            <MessageSquare className="h-6 w-6 text-white" />
+                        <div className="flex items-start gap-3 sm:gap-4">
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
+                            <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-lg font-semibold text-foreground mb-2 truncate">
+                            <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2 truncate">
                               {session.title}
                             </h3>
-                            <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground mb-3">
                               <div className="flex items-center gap-1">
-                                <Calendar className="h-4 w-4" />
-                                <span>{formatDate(session.updatedAt)}</span>
+                                <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
+                                <span>{formatDate(session.updatedAt.toString())}</span>
                               </div>
                               <div className="flex items-center gap-1">
-                                <Clock className="h-4 w-4" />
+                                <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
                                 <span>{new Date(session.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                               </div>
                               {session.agentId && (
                                 <div className="flex items-center gap-1">
-                                  <Bot className="h-4 w-4" />
-                                  <span>Custom Agent</span>
+                                  <Bot className="h-3 w-3 sm:h-4 sm:w-4" />
+                                  <span className="text-xs sm:text-sm">Custom Agent</span>
                                 </div>
                               )}
                             </div>
-                            <div className="flex items-center gap-3">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                               <EncryptionIndicator isEncrypted={true} showLabel={true} size="sm" />
-                              <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
-                                {session.messageCount || 0} messages
+                              <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-xs">
+                                Chat Session
                               </Badge>
                             </div>
                           </div>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 ml-4">
+                      <div className="flex items-center gap-2 sm:ml-4 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/20">
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleOpenChat(session.id)}
-                          className="hover:bg-blue-100 hover:text-blue-700 dark:hover:bg-blue-900/30"
+                          className="hover:bg-blue-100 hover:text-blue-700 dark:hover:bg-blue-900/30 flex-1 sm:flex-none touch-manipulation"
                         >
-                          <Eye className="h-4 w-4 mr-2" />
-                          Open
+                          <Eye className="h-4 w-4 sm:mr-2" />
+                          <span className="hidden sm:inline">Open</span>
                         </Button>
 
                         <DropdownMenu>
@@ -472,19 +564,19 @@ export default function HistoryPage() {
           )}
 
           {/* Security Notice */}
-          <ModernCard variant="professional">
-            <ModernCardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Shield className="h-6 w-6 text-white" />
+          <ModernCard variant="security">
+            <ModernCardContent className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                 </div>
                 <div className="flex-1">
-                  <h4 className="text-lg font-semibold text-foreground mb-2">Privacy & Security</h4>
-                  <p className="text-sm text-muted-foreground mb-4">
+                  <h4 className="text-base sm:text-lg font-semibold text-foreground mb-2">Privacy & Security</h4>
+                  <p className="text-sm text-muted-foreground mb-3 sm:mb-4">
                     All chat conversations are encrypted with your personal encryption key before being stored.
                     Your conversation history is never accessible to our servers in unencrypted form.
                   </p>
-                  <div className="flex items-center gap-6 text-xs text-muted-foreground">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 text-xs text-muted-foreground">
                     <div className="flex items-center gap-2">
                       <Lock className="h-3 w-3" />
                       <span>AES-256 Encrypted</span>

@@ -50,7 +50,12 @@ import {
   Fingerprint,
   Database,
   Globe,
-  Smartphone
+  Smartphone,
+  Home,
+  MessageSquare,
+  History,
+  Bot,
+  LayoutDashboard
 } from 'lucide-react';
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -136,6 +141,90 @@ function MobileSettings({
                       </div>
                     </div>
                   </div>
+                  
+                  {/* Navigation Menu */}
+                  <nav className="flex-1 p-4">
+                    <div className="space-y-2">
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
+                        onClick={() => {
+                          handleTabChange('dashboard');
+                          setIsMobileMenuOpen(false);
+                        }}
+                      >
+                        <LayoutDashboard className="mr-3 h-5 w-5" />
+                        Dashboard
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
+                        onClick={() => {
+                          handleTabChange('vault');
+                          setIsMobileMenuOpen(false);
+                        }}
+                      >
+                        <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M3 7H21L19 2H5L3 7Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M3 7V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        File Vault
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
+                        onClick={() => {
+                          handleTabChange('chat');
+                          setIsMobileMenuOpen(false);
+                        }}
+                      >
+                        <MessageSquare className="mr-3 h-5 w-5" />
+                        AI Assistant
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
+                        onClick={() => {
+                          handleTabChange('agents');
+                          setIsMobileMenuOpen(false);
+                        }}
+                      >
+                        <Bot className="mr-3 h-5 w-5" />
+                        AI Agents
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
+                        onClick={() => {
+                          handleTabChange('history');
+                          setIsMobileMenuOpen(false);
+                        }}
+                      >
+                        <History className="mr-3 h-5 w-5" />
+                        Chat History
+                      </Button>
+                      <Button
+                        variant="default"
+                        className="w-full justify-start bg-primary text-primary-foreground"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <SettingsIcon className="mr-3 h-5 w-5" />
+                        Settings
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
+                        onClick={() => {
+                          handleTabChange('key-info');
+                          setIsMobileMenuOpen(false);
+                        }}
+                      >
+                        <Key className="mr-3 h-5 w-5" />
+                        How it works
+                      </Button>
+                    </div>
+                  </nav>
+                  
                   {user && (
                     <div className="mt-auto p-4 border-t border-border">
                       <div className="flex items-center justify-between">
@@ -316,35 +405,35 @@ export default function SettingsPage() {
 
   const renderContent = () => {
     return (
-      <ModernContainer className="py-8">
-        <ModernStack spacing="xl">
+      <ModernContainer className="py-4 sm:py-8 px-4 sm:px-6">
+        <ModernStack spacing="lg" className="sm:spacing-xl">
           {/* Header Section */}
-          <div className="text-center space-y-4">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-violet-600 bg-clip-text text-transparent">
+          <div className="text-center space-y-2 sm:space-y-4">
+            <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-violet-600 bg-clip-text text-transparent">
               Settings
             </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4 sm:px-0">
               Manage your account, security, and privacy preferences
             </p>
           </div>
 
           {/* Settings Sections */}
-          <ModernGrid cols={1} gap="xl">
+          <div className="space-y-6 sm:space-y-8">
             {/* Account Settings */}
             <ModernCard variant="elevated" hover="lift">
               <ModernCardHeader>
-                <ModernCardTitle className="flex items-center gap-3 text-xl">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
-                    <User className="h-5 w-5 text-white" />
+                <ModernCardTitle className="flex items-center gap-3 text-lg sm:text-xl">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+                    <User className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                   </div>
                   Account Settings
                 </ModernCardTitle>
-                <ModernCardDescription>
+                <ModernCardDescription className="text-sm">
                   Manage your account information and preferences
                 </ModernCardDescription>
               </ModernCardHeader>
-              <ModernCardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <ModernCardContent className="space-y-4 sm:space-y-6">
+                <div className="grid grid-cols-1 gap-4 sm:gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="email">Email Address</Label>
                     <ModernInput
@@ -353,6 +442,7 @@ export default function SettingsPage() {
                       value={user?.email || ''}
                       disabled
                       variant="filled"
+                      className="touch-manipulation"
                     />
                     <p className="text-xs text-muted-foreground">
                       Email cannot be changed for security reasons
@@ -362,7 +452,7 @@ export default function SettingsPage() {
                   <div className="space-y-2">
                     <Label htmlFor="theme">Theme Preference</Label>
                     <Select value={theme} onValueChange={setTheme}>
-                      <SelectTrigger>
+                      <SelectTrigger className="touch-manipulation">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -390,7 +480,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 p-3 sm:p-0">
                     <div className="space-y-0.5">
                       <Label>Notifications</Label>
                       <p className="text-sm text-muted-foreground">
@@ -400,10 +490,11 @@ export default function SettingsPage() {
                     <Switch
                       checked={notifications}
                       onCheckedChange={setNotifications}
+                      className="touch-manipulation"
                     />
                   </div>
 
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 p-3 sm:p-0">
                     <div className="space-y-0.5">
                       <Label>Auto-save Conversations</Label>
                       <p className="text-sm text-muted-foreground">
@@ -413,6 +504,7 @@ export default function SettingsPage() {
                     <Switch
                       checked={autoSave}
                       onCheckedChange={setAutoSave}
+                      className="touch-manipulation"
                     />
                   </div>
                 </div>
@@ -422,27 +514,27 @@ export default function SettingsPage() {
             {/* Encryption Key Management */}
             <ModernCard variant="gradient" hover="glow">
               <ModernCardHeader>
-                <ModernCardTitle className="flex items-center gap-3 text-xl">
-                  <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
-                    <Key className="h-5 w-5 text-white" />
+                <ModernCardTitle className="flex items-center gap-3 text-lg sm:text-xl">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                    <Key className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                   </div>
                   Encryption Key Management
                 </ModernCardTitle>
-                <ModernCardDescription>
+                <ModernCardDescription className="text-sm">
                   Your encryption keys are stored locally and never leave your browser
                 </ModernCardDescription>
               </ModernCardHeader>
-              <ModernCardContent className="space-y-6">
+              <ModernCardContent className="space-y-4 sm:space-y-6">
                 {/* Key Status */}
-                <div className="flex items-center justify-between p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 p-3 sm:p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl">
                   <div className="flex items-center space-x-3">
-                    <Key className="text-emerald-600 dark:text-emerald-400 h-6 w-6" />
+                    <Key className="text-emerald-600 dark:text-emerald-400 h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
                     <div>
-                      <p className="font-semibold text-foreground">Master Encryption Key</p>
-                      <p className="text-sm text-muted-foreground">AES-256 encryption, generated locally</p>
+                      <p className="font-semibold text-foreground text-sm sm:text-base">Master Encryption Key</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">AES-256 encryption, generated locally</p>
                     </div>
                   </div>
-                  <Badge variant={hasValidKey ? "default" : "destructive"}>
+                  <Badge variant={hasValidKey ? "default" : "destructive"} className="text-xs">
                     {hasValidKey ? (
                       <>
                         <CheckCircle className="w-3 h-3 mr-1" />
@@ -596,7 +688,7 @@ export default function SettingsPage() {
             </ModernCard>
 
             {/* Privacy & Security */}
-            <ModernCard variant="professional" hover="lift">
+            <ModernCard variant="security" hover="lift">
               <ModernCardHeader>
                 <ModernCardTitle className="flex items-center gap-3 text-xl">
                   <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
@@ -709,7 +801,7 @@ export default function SettingsPage() {
                 </div>
               </ModernCardContent>
             </ModernCard>
-          </ModernGrid>
+          </div>
         </ModernStack>
       </ModernContainer>
     );

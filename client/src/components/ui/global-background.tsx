@@ -43,13 +43,20 @@ export function GlobalBackground({ intensity = "subtle", parallax = false, class
       {...props}
     >
       {/* Gradient wash */}
-      <div className="absolute -inset-20 bg-gradient-to-b from-primary/5 via-transparent to-primary/10 dark:from-primary/10 dark:via-transparent dark:to-primary/20" />
+      <div className="absolute -inset-20 bg-gradient-to-br from-primary/8 via-primary/3 to-primary/12 dark:from-primary/15 dark:via-primary/5 dark:to-primary/25" />
 
-      {/* Radial spotlight */}
+      {/* Additional full-width gradient */}
+      <div className="absolute inset-0 bg-gradient-to-r from-primary/4 via-transparent to-primary/4 dark:from-primary/8 dark:via-transparent dark:to-primary/8" />
+
+      {/* Radial spotlight - Main */}
       <div
-        className="absolute left-1/2 top-[-10%] h-[60vh] w-[80vw] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl dark:bg-primary/20 will-change-transform"
+        className="absolute left-1/2 top-[-20%] h-[100vh] w-[120vw] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl dark:bg-primary/20 will-change-transform"
         style={{ transform: parallax ? `translate(calc(-50% + var(--parallax-x, 0px)), var(--parallax-y, 0px))` : undefined }}
       />
+
+      {/* Secondary radial spotlight for full coverage */}
+      <div className="absolute left-1/4 top-[20%] h-[80vh] w-[100vw] rounded-full bg-primary/6 blur-3xl dark:bg-primary/12" />
+      <div className="absolute right-1/4 top-[40%] h-[80vh] w-[100vw] rounded-full bg-primary/6 blur-3xl dark:bg-primary/12" />
 
       {/* Noise overlay */}
       <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay dark:opacity-[0.05]" style={{

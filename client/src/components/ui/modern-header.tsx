@@ -1,10 +1,10 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { 
-  User, 
-  LogOut, 
-  Settings, 
+import {
+  User,
+  LogOut,
+  Settings,
   Shield,
   Bell,
   Search
@@ -32,15 +32,15 @@ interface ModernHeaderProps {
   className?: string;
 }
 
-export function ModernHeader({ 
-  title = "Dashboard", 
+export function ModernHeader({
+  title = "Dashboard",
   subtitle,
   user,
   onLogout,
   showSearch = false,
-  className 
+  className
 }: ModernHeaderProps) {
-  const userInitials = user?.name 
+  const userInitials = user?.name
     ? user.name.split(' ').map(n => n[0]).join('').toUpperCase()
     : user?.email?.charAt(0).toUpperCase() || 'U';
 
@@ -76,71 +76,36 @@ export function ModernHeader({
           </div>
         )}
 
-        {/* Right Section - User Menu */}
-        <div className="flex items-center space-x-4">
-          {/* Security Status */}
-          <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800">
-            <Shield className="w-3 h-3 mr-1" />
-            Secure
-          </Badge>
-
-          {/* Notifications */}
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
-            <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full"></span>
-          </Button>
-
-          {/* User Menu */}
-          {user && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                  <Avatar className="h-10 w-10 border-2 border-border">
-                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
-                      {userInitials}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <div className="flex flex-col space-y-1 p-2">
-                  <p className="text-sm font-medium leading-none">{user.name || 'User'}</p>
-                  <p className="text-xs leading-none text-muted-foreground">
-                    {user.email}
-                  </p>
-                </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <User className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={onLogout}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+        {/* Right Section - Logout Button */}
+        <div className="flex items-center">
+          {user && onLogout && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onLogout}
+              className="flex items-center gap-2 hover:bg-red-50 hover:border-red-200 hover:text-red-600 dark:hover:bg-red-950/20 dark:hover:border-red-800 dark:hover:text-red-400 transition-colors"
+            >
+              <LogOut className="h-4 w-4" />
+              Logout
+            </Button>
           )}
         </div>
+
+
       </div>
     </header>
   )
 }
 
 // Simplified header for pages that don't need full functionality
-export function SimpleHeader({ 
-  title, 
-  subtitle, 
-  className 
-}: { 
-  title: string; 
-  subtitle?: string; 
-  className?: string; 
+export function SimpleHeader({
+  title,
+  subtitle,
+  className
+}: {
+  title: string;
+  subtitle?: string;
+  className?: string;
 }) {
   return (
     <div className={cn("space-y-2", className)}>

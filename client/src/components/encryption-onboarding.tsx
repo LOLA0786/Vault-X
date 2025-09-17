@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { EncryptionService } from '@/lib/encryption';
+import { PrivateVaultLogo } from '@/components/ui/private-vault-logo';
 
 interface EncryptionOnboardingProps {
   onComplete: () => void;
@@ -95,16 +96,23 @@ export function EncryptionOnboarding({ onComplete, isFirstTime = true }: Encrypt
   };
 
   const renderWelcomeStep = () => (
-    <div className="text-center space-y-6">
-      <div className="mx-auto w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-        <Key className="w-10 h-10 text-white" />
+    <div className="text-center space-y-8">
+      <div className="relative mx-auto group">
+        <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-2xl group-hover:shadow-3xl transition-all duration-500 group-hover:scale-110">
+          <Key className="w-12 h-12 text-white" />
+        </div>
+        <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
+          <CheckCircle className="text-white h-4 w-4" />
+        </div>
+        <div className="absolute inset-0 w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full opacity-20 animate-ping"></div>
       </div>
+      
       <div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">
+        <h2 className="text-3xl font-bold text-foreground mb-3 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
           {isFirstTime ? 'Welcome to Private Vault!' : 'Encryption Key Setup'}
         </h2>
-        <p className="text-muted-foreground">
-          Your privacy and security are our top priority. Let's set up your personal encryption key.
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+          Your privacy and security are our top priority. Let's set up your personal encryption key to protect all your data with military-grade security.
         </p>
       </div>
 
@@ -323,27 +331,77 @@ export function EncryptionOnboarding({ onComplete, isFirstTime = true }: Encrypt
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex flex-col">
-      <div className="flex-1 flex items-center justify-center p-2 sm:p-4">
-        <Card className="w-full max-w-2xl mx-auto">
-        <CardHeader className="text-center pb-2">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <Shield className="w-4 h-4 text-primary-foreground" />
-            </div>
-            <span className="text-lg font-bold">Private Vault</span>
-          </div>
-          <div className="flex justify-center space-x-2 mb-4">
-            {(['welcome', 'generate', 'backup', 'verify', 'complete'] as Step[]).map((step, index) => (
-              <div
-                key={step}
-                className={`w-2 h-2 rounded-full ${
-                  (['welcome', 'generate', 'backup', 'verify', 'complete'] as Step[]).indexOf(currentStep) >= index
-                    ? 'bg-primary'
-                    : 'bg-muted'
-                }`}
+    <div className="min-h-screen flex flex-col relative overflow-hidden">
+      {/* Enhanced Background */}
+      <div className="absolute inset-0 bg-white dark:from-slate-900 dark:via-indigo-950/30 dark:to-slate-900" />
+      
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-20 left-20 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-indigo-500/20 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-gradient-to-br from-purple-400/20 to-pink-500/20 rounded-full blur-3xl animate-pulse animation-delay-1000" />
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-gradient-to-br from-blue-400/10 to-purple-500/10 rounded-full blur-3xl animate-pulse animation-delay-2000" />
+      </div>
+      
+      <div className="flex-1 flex items-center justify-center p-2 sm:p-4 relative z-10">
+        <Card className="w-full max-w-3xl mx-auto shadow-2xl border-indigo-200 dark:border-indigo-800 backdrop-blur-sm bg-white/80 dark:bg-slate-900/80">
+        <CardHeader className="text-center pb-6 bg-gradient-to-r from-indigo-50/50 to-purple-50/50 dark:from-indigo-950/30 dark:to-purple-950/30 rounded-t-lg">
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <div className="relative group">
+              <PrivateVaultLogo 
+                size="md" 
+                animated={true}
+                className="group-hover:scale-105 transition-all duration-300"
               />
-            ))}
+
+            </div>
+            <div>
+              <span className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Private Vault</span>
+              <div className="text-sm text-muted-foreground">Encryption Setup</div>
+            </div>
+          </div>
+          
+          {/* Enhanced Progress Indicator */}
+          <div className="flex justify-center items-center space-x-3 mb-6">
+            {(['welcome', 'generate', 'backup', 'verify', 'complete'] as Step[]).map((step, index) => {
+              const isActive = (['welcome', 'generate', 'backup', 'verify', 'complete'] as Step[]).indexOf(currentStep) >= index;
+              const isCurrent = (['welcome', 'generate', 'backup', 'verify', 'complete'] as Step[]).indexOf(currentStep) === index;
+              
+              return (
+                <div key={step} className="flex items-center">
+                  <div
+                    className={`relative w-3 h-3 rounded-full transition-all duration-300 ${
+                      isActive
+                        ? isCurrent 
+                          ? 'bg-indigo-500 ring-4 ring-indigo-200 dark:ring-indigo-800 scale-125' 
+                          : 'bg-indigo-400'
+                        : 'bg-muted'
+                    }`}
+                  >
+                    {isActive && (
+                      <div className="absolute inset-0 rounded-full bg-indigo-500 animate-ping opacity-75"></div>
+                    )}
+                  </div>
+                  {index < 4 && (
+                    <div className={`w-8 h-0.5 mx-1 transition-colors duration-300 ${
+                      (['welcome', 'generate', 'backup', 'verify', 'complete'] as Step[]).indexOf(currentStep) > index 
+                        ? 'bg-indigo-400' 
+                        : 'bg-muted'
+                    }`} />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          
+          {/* Step Labels */}
+          <div className="text-sm text-muted-foreground">
+            Step {(['welcome', 'generate', 'backup', 'verify', 'complete'] as Step[]).indexOf(currentStep) + 1} of 5: {
+              currentStep === 'welcome' ? 'Welcome & Overview' :
+              currentStep === 'generate' ? 'Generate Encryption Key' :
+              currentStep === 'backup' ? 'Backup Your Key' :
+              currentStep === 'verify' ? 'Verify Backup' :
+              'Setup Complete'
+            }
           </div>
         </CardHeader>
         <CardContent className="pt-4 px-3 sm:px-6">

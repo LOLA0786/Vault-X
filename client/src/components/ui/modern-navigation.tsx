@@ -56,8 +56,6 @@ const defaultNavItems: NavigationItem[] = [
     id: 'agents', 
     label: 'AI Agents', 
     icon: Bot,
-    badge: 'New',
-    isNew: true,
     description: 'Manage AI assistants'
   },
   { 

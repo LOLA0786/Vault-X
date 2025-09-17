@@ -1,6 +1,7 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 import { Shield, Bot, FileText, MessageSquare } from "lucide-react"
+import { PrivateVaultLogo } from "./private-vault-logo"
 
 interface ModernLoadingProps {
   className?: string;
@@ -127,11 +128,12 @@ export function FullPageLoading({ message = "Loading your private vault..." }: {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/20 to-background">
       <div className="text-center space-y-8 max-w-md mx-auto p-8">
         {/* Animated Logo */}
-        <div className="relative">
-          <div className="w-24 h-24 bg-gradient-to-br from-blue-500 via-purple-500 to-violet-600 rounded-3xl flex items-center justify-center mx-auto shadow-2xl animate-pulse">
-            <Shield className="w-12 h-12 text-white" />
-          </div>
-          <div className="absolute inset-0 w-24 h-24 bg-gradient-to-br from-blue-500 via-purple-500 to-violet-600 rounded-3xl mx-auto opacity-20 animate-ping"></div>
+        <div className="relative flex justify-center">
+          <PrivateVaultLogo 
+            size="lg" 
+            animated={true}
+            className="drop-shadow-2xl"
+          />
         </div>
 
         {/* Loading Text */}

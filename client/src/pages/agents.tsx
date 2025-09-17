@@ -14,6 +14,7 @@ import { Footer } from '@/components/ui/footer';
 import { Container } from '@/components/ui/container';
 import { PageTransition } from '@/components/ui/page-transition';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { PrivateVaultLogo } from '@/components/ui/private-vault-logo';
 import {
   Bot,
   Plus,
@@ -30,7 +31,11 @@ import {
   Activity,
   Menu,
   User,
-  LogOut
+  LogOut,
+  LayoutDashboard,
+  FolderOpen,
+  History,
+  Settings
 } from 'lucide-react';
 
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
@@ -103,39 +108,89 @@ function MobileAgents({
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-64 p-0">
+              <SheetContent side="left" className="w-72 p-0">
                 <div className="flex flex-col h-full bg-sidebar">
+                  {/* Mobile Sidebar Header */}
                   <div className="p-6 border-b border-border">
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                        <Shield className="text-white h-5 w-5" />
-                      </div>
+                      <PrivateVaultLogo 
+                        size="sm" 
+                        animated={true}
+                        className="drop-shadow-lg"
+                      />
                       <div>
                         <h1 className="text-lg font-bold text-sidebar-foreground">Private Vault</h1>
                         <p className="text-xs text-sidebar-foreground/70">Your Secure AI Assistant</p>
                       </div>
                     </div>
                   </div>
-                  {user && (
-                    <div className="mt-auto p-4 border-t border-border">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-sidebar-foreground truncate">
-                          {user.email}
-                        </span>
-                        <Button variant="ghost" size="sm" onClick={logout}>
-                          <LogOut className="h-4 w-4" />
-                        </Button>
-                      </div>
+
+                  {/* Mobile Navigation */}
+                  <nav className="flex-1 overflow-y-auto py-4">
+                    <div className="px-3 space-y-1">
+                      {[
+                        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+                        { id: 'vault', label: 'File Vault', icon: FolderOpen },
+                        { id: 'chat', label: 'AI Assistant', icon: MessageSquare },
+                        { id: 'agents', label: 'AI Agents', icon: Bot },
+                        { id: 'history', label: 'Chat History', icon: History },
+                        { id: 'settings', label: 'Settings', icon: Settings },
+                        { id: 'key-info', label: 'How it works', icon: Lock },
+                      ].map((item) => {
+                        const Icon = item.icon;
+                        return (
+                          <Button
+                            key={item.id}
+                            variant={'agents' === item.id ? "default" : "ghost"}
+                            className="w-full justify-start text-sm font-medium"
+                            onClick={() => {
+                              handleTabChange(item.id);
+                              setIsMobileMenuOpen(false);
+                            }}
+                          >
+                            <Icon className="mr-3 h-4 w-4" />
+                            {item.label}
+                          </Button>
+                        );
+                      })}
                     </div>
-                  )}
+                  </nav>
+
+                  {/* Mobile Sidebar Footer */}
+                  <div className="mt-auto p-4 border-t border-border">
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center space-x-2 text-sm">
+                        <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                        <span className="text-sidebar-foreground/80">Encryption Active</span>
+                      </div>
+                      <div className="text-xs text-sidebar-foreground/60 flex items-center">
+                        <Lock className="w-3 h-3 mr-1" />
+                        AES-256 Client-side
+                      </div>
+                      {user && (
+                        <div className="pt-2 border-t border-border">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-sidebar-foreground truncate max-w-[150px]">
+                              {user.email}
+                            </span>
+                            <Button variant="ghost" size="sm" onClick={logout}>
+                              <LogOut className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </SheetContent>
             </Sheet>
 
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <Shield className="text-white h-4 w-4" />
-              </div>
+            <div className="flex items-center space-x-3">
+              <PrivateVaultLogo 
+                size="sm" 
+                animated={true}
+                className="w-8 h-8 drop-shadow-md"
+              />
               <h1 className="text-lg font-semibold text-foreground">
                 AI Agents
               </h1>
@@ -143,16 +198,93 @@ function MobileAgents({
           </div>
 
           <Button variant="ghost" size="sm" onClick={logout}>
-            <User className="h-5 w-5" />
+            <LogOut className="h-5 w-5" />
           </Button>
         </div>
       </header>
 
-      <main className="flex-1 pb-4">
+      <main className="flex-1 pb-20 overflow-y-auto">
         {renderContent()}
       </main>
 
-      <Footer />
+      {/* Bottom Navigation for Mobile */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-t border-border">
+        <div className="flex items-center justify-around px-2 py-2">
+          {[
+            { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+            { id: 'vault', label: 'Vault', icon: FolderOpen },
+            { id: 'chat', label: 'Chat', icon: MessageSquare },
+            { id: 'agents', label: 'Agents', icon: Bot },
+          ].map((item) => {
+            const Icon = item.icon;
+            const isActive = 'agents' === item.id;
+            
+            return (
+              <Button
+                key={item.id}
+                variant="ghost"
+                size="sm"
+                onClick={() => handleTabChange(item.id)}
+                className={`flex flex-col items-center gap-1 h-auto py-2 px-3 min-w-0 ${
+                  isActive 
+                    ? 'text-primary bg-primary/10' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Icon className="h-5 w-5" />
+                <span className="text-xs font-medium truncate">{item.label}</span>
+                {isActive && (
+                  <div className="w-1 h-1 bg-primary rounded-full"></div>
+                )}
+              </Button>
+            );
+          })}
+          
+          {/* More menu for additional items */}
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex flex-col items-center gap-1 h-auto py-2 px-3 text-muted-foreground hover:text-foreground"
+              >
+                <Menu className="h-5 w-5" />
+                <span className="text-xs font-medium">More</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="h-auto">
+              <div className="py-4">
+                <h3 className="text-lg font-semibold mb-4">More Options</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { id: 'history', label: 'Chat History', icon: History },
+                    { id: 'settings', label: 'Settings', icon: Settings },
+                    { id: 'key-info', label: 'How it works', icon: Lock },
+                  ].map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <Button
+                        key={item.id}
+                        variant="ghost"
+                        className="justify-start h-12"
+                        onClick={() => handleTabChange(item.id)}
+                      >
+                        <Icon className="mr-3 h-4 w-4" />
+                        {item.label}
+                      </Button>
+                    );
+                  })}
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+      </nav>
+
+      {/* Footer - Hidden on mobile to save space */}
+      <div className="hidden">
+        <Footer />
+      </div>
     </div>
   );
 }

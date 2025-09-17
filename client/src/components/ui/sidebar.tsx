@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Shield } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 import { ModernNavigation } from "./modern-navigation";
+import { PrivateVaultLogo } from "./private-vault-logo";
 
 interface SidebarProps {
   className?: string;
@@ -20,9 +21,11 @@ export function Sidebar({ className, activeTab, onTabChange }: SidebarProps) {
       {/* Modern Header */}
       <div className="p-6 border-b border-border/30">
         <div className="flex items-center space-x-4">
-          <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-gradient-to-br from-blue-500 via-purple-500 to-violet-600 text-white shadow-xl">
-            <Shield className="h-6 w-6" />
-          </div>
+          <PrivateVaultLogo 
+            size="md" 
+            animated={true}
+            className="drop-shadow-xl"
+          />
           <div>
             <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-violet-600 bg-clip-text text-transparent">
               Private Vault

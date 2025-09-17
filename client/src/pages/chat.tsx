@@ -42,7 +42,12 @@ import {
   Sparkles,
   Lock,
   MessageSquare,
-  Zap
+  Zap,
+  Home,
+  History,
+  Settings,
+  Key,
+  LayoutDashboard
 } from 'lucide-react';
 
 // Extended type with decrypted fields
@@ -118,6 +123,90 @@ function MobileChat({
                       </div>
                     </div>
                   </div>
+                  
+                  {/* Navigation Menu */}
+                  <nav className="flex-1 p-4">
+                    <div className="space-y-2">
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
+                        onClick={() => {
+                          handleTabChange('dashboard');
+                          setIsMobileMenuOpen(false);
+                        }}
+                      >
+                        <LayoutDashboard className="mr-3 h-5 w-5" />
+                        Dashboard
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
+                        onClick={() => {
+                          handleTabChange('vault');
+                          setIsMobileMenuOpen(false);
+                        }}
+                      >
+                        <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M3 7H21L19 2H5L3 7Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M3 7V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        File Vault
+                      </Button>
+                      <Button
+                        variant="default"
+                        className="w-full justify-start bg-primary text-primary-foreground"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <MessageSquare className="mr-3 h-5 w-5" />
+                        AI Assistant
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
+                        onClick={() => {
+                          handleTabChange('agents');
+                          setIsMobileMenuOpen(false);
+                        }}
+                      >
+                        <Bot className="mr-3 h-5 w-5" />
+                        AI Agents
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
+                        onClick={() => {
+                          handleTabChange('history');
+                          setIsMobileMenuOpen(false);
+                        }}
+                      >
+                        <History className="mr-3 h-5 w-5" />
+                        Chat History
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
+                        onClick={() => {
+                          handleTabChange('settings');
+                          setIsMobileMenuOpen(false);
+                        }}
+                      >
+                        <Settings className="mr-3 h-5 w-5" />
+                        Settings
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
+                        onClick={() => {
+                          handleTabChange('key-info');
+                          setIsMobileMenuOpen(false);
+                        }}
+                      >
+                        <Key className="mr-3 h-5 w-5" />
+                        How it works
+                      </Button>
+                    </div>
+                  </nav>
+                  
                   {user && (
                     <div className="mt-auto p-4 border-t border-border">
                       <div className="flex items-center justify-between">
@@ -165,14 +254,21 @@ export default function ChatPage({ sessionId, onNewSession }: ChatPageProps) {
   const [location, setLocation] = useLocation();
   const queryClient = useQueryClient();
 
-  // Get session ID from URL parameters if not provided as prop
-  const urlParams = new URLSearchParams(location.split('?')[1] || '');
-  const urlSessionId = urlParams.get('session');
+  // Track URL session ID changes
+  const [urlSessionId, setUrlSessionId] = useState<string | null>(null);
+  
+  // Update URL session ID when location changes
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionFromUrl = urlParams.get('session');
+    setUrlSessionId(sessionFromUrl);
+  }, [location]);
+
   const effectiveSessionId = sessionId || urlSessionId;
 
   // Chat state
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [localSessionId, setLocalSessionId] = useState<string | undefined>(effectiveSessionId);
+  const [localSessionId, setLocalSessionId] = useState<string | undefined>(effectiveSessionId || undefined);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
@@ -257,15 +353,21 @@ export default function ChatPage({ sessionId, onNewSession }: ChatPageProps) {
 
   // Load chat history
   useEffect(() => {
-    if (effectiveSessionId && effectiveSessionId !== localSessionId) setLocalSessionId(effectiveSessionId);
+    // Clear messages when navigating to a new session
+    if (effectiveSessionId && effectiveSessionId !== localSessionId) {
+      setMessages([]);
+      setLocalSessionId(effectiveSessionId);
+    }
 
     const currentId = effectiveSessionId || localSessionId;
+    
     if (currentId) {
       loadChatHistory(currentId);
       return;
     }
 
-    // Try to restore from localStorage
+    // Clear messages if no session ID and try to restore from localStorage
+    setMessages([]);
     try {
       const keyUser = `pv-chat-${user?.id ?? 'anon'}`;
       const stored = localStorage.getItem(keyUser);
@@ -277,7 +379,7 @@ export default function ChatPage({ sessionId, onNewSession }: ChatPageProps) {
     } catch (e) {
       // ignore
     }
-  }, [effectiveSessionId, localSessionId, user?.id]);
+  }, [effectiveSessionId, localSessionId, user?.id, location, urlSessionId]);
 
   const loadChatHistory = async (sessionId: string) => {
     try {
@@ -341,6 +443,8 @@ export default function ChatPage({ sessionId, onNewSession }: ChatPageProps) {
 
         if (response.ok) {
           onNewSession?.(currentSessionId);
+          // Invalidate chat sessions query to refresh the history page
+          queryClient.invalidateQueries({ queryKey: ['/api/chat-sessions/user', user?.id] });
         }
       } else {
         const firstContent = toSave[0]?.content;
@@ -361,6 +465,10 @@ export default function ChatPage({ sessionId, onNewSession }: ChatPageProps) {
           const newSession = await response.json();
           setLocalSessionId(newSession.id);
           onNewSession?.(newSession.id);
+          
+          // Invalidate chat sessions query to refresh the history page
+          queryClient.invalidateQueries({ queryKey: ['/api/chat-sessions/user', user?.id] });
+          
           try {
             localStorage.setItem(`pv-chat-session-${user?.id ?? 'anon'}`, newSession.id);
             localStorage.removeItem(`pv-chat-${user?.id ?? 'anon'}`);
@@ -473,34 +581,37 @@ export default function ChatPage({ sessionId, onNewSession }: ChatPageProps) {
 
   const renderContent = () => {
     return (
-      <ModernContainer className="h-full py-6">
+      <ModernContainer className="h-full py-2 sm:py-6">
         <ModernGrid cols={1} className="h-full">
           {/* Main Chat Interface */}
-          <ModernCard variant="glass" className="flex flex-col h-full min-h-[600px]">
+          <ModernCard variant="glass" className="flex flex-col h-full min-h-[500px] sm:min-h-[600px]">
             {/* Chat Header */}
-            <ModernCardHeader className="border-b border-border/50">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-xl">
-                    <MessageSquare className="h-6 w-6 text-white" />
+            <ModernCardHeader className="border-b border-border/50 p-3 sm:p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
+                <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-xl flex-shrink-0">
+                    <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                   </div>
-                  <div>
-                    <ModernCardTitle className="text-xl">
+                  <div className="min-w-0 flex-1">
+                    <ModernCardTitle className="text-lg sm:text-xl truncate">
                       {selectedAgent ? selectedAgent.name : 'AI Assistant'}
                     </ModernCardTitle>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs sm:text-sm text-muted-foreground truncate">
                       {selectedAgent ? selectedAgent.decryptedDescription : 'Your private, encrypted AI assistant'}
                     </p>
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-3">
-                  <SecurityBadge variant="encrypted" size="sm" animated>
+                <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                  <SecurityBadge variant="encrypted" size="sm" animated className="hidden sm:flex">
                     End-to-End Encrypted
                   </SecurityBadge>
-                  <Button variant="ghost" size="sm" onClick={startNewChat}>
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    New Chat
+                  <SecurityBadge variant="encrypted" size="sm" animated className="flex sm:hidden">
+                    Encrypted
+                  </SecurityBadge>
+                  <Button variant="ghost" size="sm" onClick={startNewChat} className="px-2 sm:px-3">
+                    <RefreshCw className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">New Chat</span>
                   </Button>
                 </div>
               </div>
@@ -508,47 +619,47 @@ export default function ChatPage({ sessionId, onNewSession }: ChatPageProps) {
 
             {/* Control Panels */}
             <div className="border-b border-border/50 bg-muted/20">
-              <ModernStack spacing="sm" className="p-4">
+              <ModernStack spacing="sm" className="p-2 sm:p-4">
                 {/* Files Panel */}
                 <ModernCard variant="glass" className="transition-all duration-200">
                   <div 
-                    className="flex items-center justify-between p-3 cursor-pointer"
+                    className="flex items-center justify-between p-2 sm:p-3 cursor-pointer touch-manipulation"
                     onClick={() => setShowFilesPanel(!showFilesPanel)}
                   >
-                    <div className="flex items-center gap-3">
-                      <FileText className="h-4 w-4 text-blue-600" />
-                      <span className="font-medium">Files ({files.length})</span>
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <FileText className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                      <span className="font-medium text-sm sm:text-base">Files ({files.length})</span>
                       {selectedFileId && (
                         <Badge variant="secondary" className="bg-blue-100 text-blue-700">
                           1 selected
                         </Badge>
                       )}
                     </div>
-                    {showFilesPanel ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    {showFilesPanel ? <ChevronUp className="h-4 w-4 flex-shrink-0" /> : <ChevronDown className="h-4 w-4 flex-shrink-0" />}
                   </div>
                   
                   {showFilesPanel && (
-                    <ModernCardContent className="pt-0">
+                    <ModernCardContent className="pt-0 p-2 sm:p-3">
                       {files.length === 0 ? (
-                        <p className="text-sm text-muted-foreground text-center py-4">
+                        <p className="text-xs sm:text-sm text-muted-foreground text-center py-3 sm:py-4">
                           No files uploaded. Go to File Vault to upload files.
                         </p>
                       ) : (
-                        <ModernGrid cols={2} gap="sm" responsive>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                           {files.map((file) => (
                             <div
                               key={file.id}
-                              className={`p-3 rounded-lg cursor-pointer transition-all duration-200 border ${
+                              className={`p-2 sm:p-3 rounded-lg cursor-pointer transition-all duration-200 border touch-manipulation ${
                                 selectedFileId === file.id
                                   ? 'bg-primary text-primary-foreground border-primary'
                                   : 'bg-muted/50 hover:bg-muted border-border/50 hover:border-border'
                               }`}
                               onClick={() => setSelectedFileId(selectedFileId === file.id ? null : file.id)}
                             >
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 min-w-0">
                                 <FileText className="h-4 w-4 flex-shrink-0" />
                                 <div className="min-w-0 flex-1">
-                                  <p className="text-sm font-medium truncate">{file.fileName}</p>
+                                  <p className="text-xs sm:text-sm font-medium truncate">{file.fileName}</p>
                                   <p className="text-xs opacity-70">
                                     {new Date(file.uploadedAt).toLocaleDateString()}
                                   </p>
@@ -556,7 +667,7 @@ export default function ChatPage({ sessionId, onNewSession }: ChatPageProps) {
                               </div>
                             </div>
                           ))}
-                        </ModernGrid>
+                        </div>
                       )}
                     </ModernCardContent>
                   )}
@@ -565,41 +676,41 @@ export default function ChatPage({ sessionId, onNewSession }: ChatPageProps) {
                 {/* Agents Panel */}
                 <ModernCard variant="glass" className="transition-all duration-200">
                   <div 
-                    className="flex items-center justify-between p-3 cursor-pointer"
+                    className="flex items-center justify-between p-2 sm:p-3 cursor-pointer touch-manipulation"
                     onClick={() => setShowAgentsPanel(!showAgentsPanel)}
                   >
-                    <div className="flex items-center gap-3">
-                      <Bot className="h-4 w-4 text-purple-600" />
-                      <span className="font-medium">AI Agents ({processedAgents.length})</span>
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                      <Bot className="h-4 w-4 text-purple-600 flex-shrink-0" />
+                      <span className="font-medium text-sm sm:text-base truncate">AI Agents ({processedAgents.length})</span>
                       {selectedAgent && (
-                        <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+                        <Badge variant="secondary" className="bg-purple-100 text-purple-700 text-xs hidden sm:inline-flex">
                           {selectedAgent.name}
                         </Badge>
                       )}
                     </div>
-                    {showAgentsPanel ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    {showAgentsPanel ? <ChevronUp className="h-4 w-4 flex-shrink-0" /> : <ChevronDown className="h-4 w-4 flex-shrink-0" />}
                   </div>
                   
                   {showAgentsPanel && (
-                    <ModernCardContent className="pt-0">
+                    <ModernCardContent className="pt-0 p-2 sm:p-3">
                       {processedAgents.length === 0 ? (
-                        <p className="text-sm text-muted-foreground text-center py-4">
+                        <p className="text-xs sm:text-sm text-muted-foreground text-center py-3 sm:py-4">
                           No AI agents created. Go to AI Agents to create one.
                         </p>
                       ) : (
-                        <ModernGrid cols={2} gap="sm" responsive>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                           <div
-                            className={`p-3 rounded-lg cursor-pointer transition-all duration-200 border ${
+                            className={`p-2 sm:p-3 rounded-lg cursor-pointer transition-all duration-200 border touch-manipulation ${
                               !selectedAgent
                                 ? 'bg-primary text-primary-foreground border-primary'
                                 : 'bg-muted/50 hover:bg-muted border-border/50 hover:border-border'
                             }`}
                             onClick={() => setSelectedAgent(null)}
                           >
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 min-w-0">
                               <Sparkles className="h-4 w-4 flex-shrink-0" />
-                              <div>
-                                <p className="text-sm font-medium">Default Assistant</p>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-xs sm:text-sm font-medium">Default Assistant</p>
                                 <p className="text-xs opacity-70">General purpose AI</p>
                               </div>
                             </div>
@@ -607,17 +718,17 @@ export default function ChatPage({ sessionId, onNewSession }: ChatPageProps) {
                           {processedAgents.map((agent) => (
                             <div
                               key={agent.id}
-                              className={`p-3 rounded-lg cursor-pointer transition-all duration-200 border ${
+                              className={`p-2 sm:p-3 rounded-lg cursor-pointer transition-all duration-200 border touch-manipulation ${
                                 selectedAgent?.id === agent.id
                                   ? 'bg-primary text-primary-foreground border-primary'
                                   : 'bg-muted/50 hover:bg-muted border-border/50 hover:border-border'
                               }`}
                               onClick={() => setSelectedAgent(agent)}
                             >
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 min-w-0">
                                 <Bot className="h-4 w-4 flex-shrink-0" />
                                 <div className="min-w-0 flex-1">
-                                  <p className="text-sm font-medium truncate">{agent.name}</p>
+                                  <p className="text-xs sm:text-sm font-medium truncate">{agent.name}</p>
                                   <p className="text-xs opacity-70 line-clamp-1">
                                     {agent.decryptedDescription}
                                   </p>
@@ -625,7 +736,7 @@ export default function ChatPage({ sessionId, onNewSession }: ChatPageProps) {
                               </div>
                             </div>
                           ))}
-                        </ModernGrid>
+                        </div>
                       )}
                     </ModernCardContent>
                   )}
@@ -634,55 +745,55 @@ export default function ChatPage({ sessionId, onNewSession }: ChatPageProps) {
             </div>
 
             {/* Messages Area */}
-            <ModernCardContent className="flex-1 overflow-y-auto p-6 space-y-6">
+            <ModernCardContent className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 sm:space-y-6">
               {messages.length === 0 ? (
-                <div className="text-center py-16">
-                  <div className="w-20 h-20 bg-gradient-to-br from-violet-100 to-purple-200 dark:from-violet-900/30 dark:to-purple-800/30 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl">
-                    <MessageSquare className="w-10 h-10 text-violet-600 dark:text-violet-400" />
+                <div className="text-center py-8 sm:py-16 px-4">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-violet-100 to-purple-200 dark:from-violet-900/30 dark:to-purple-800/30 rounded-3xl flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-xl">
+                    <MessageSquare className="w-8 h-8 sm:w-10 sm:h-10 text-violet-600 dark:text-violet-400" />
                   </div>
-                  <h3 className="text-2xl font-bold text-foreground mb-3">
+                  <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-2 sm:mb-3">
                     Start a conversation
                   </h3>
-                  <p className="text-lg text-muted-foreground mb-6 max-w-md mx-auto">
+                  <p className="text-base sm:text-lg text-muted-foreground mb-4 sm:mb-6 max-w-md mx-auto leading-relaxed">
                     Ask questions, upload files, or choose an AI agent to get started
                   </p>
-                  <ModernGrid cols={3} gap="md" className="max-w-lg mx-auto">
-                    <div className="text-center p-4 rounded-xl bg-muted/30">
-                      <Shield className="h-6 w-6 text-emerald-600 mx-auto mb-2" />
-                      <p className="text-sm font-medium">Encrypted</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-lg mx-auto">
+                    <div className="text-center p-3 sm:p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors touch-manipulation">
+                      <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-600 mx-auto mb-2" />
+                      <p className="text-xs sm:text-sm font-medium">Encrypted</p>
                     </div>
-                    <div className="text-center p-4 rounded-xl bg-muted/30">
-                      <Lock className="h-6 w-6 text-blue-600 mx-auto mb-2" />
-                      <p className="text-sm font-medium">Private</p>
+                    <div className="text-center p-3 sm:p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors touch-manipulation">
+                      <Lock className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 mx-auto mb-2" />
+                      <p className="text-xs sm:text-sm font-medium">Private</p>
                     </div>
-                    <div className="text-center p-4 rounded-xl bg-muted/30">
-                      <Zap className="h-6 w-6 text-purple-600 mx-auto mb-2" />
-                      <p className="text-sm font-medium">Fast</p>
+                    <div className="text-center p-3 sm:p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors touch-manipulation">
+                      <Zap className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 mx-auto mb-2" />
+                      <p className="text-xs sm:text-sm font-medium">Fast</p>
                     </div>
-                  </ModernGrid>
+                  </div>
                 </div>
               ) : (
                 <>
                   {messages.map((message, index) => (
-                    <div key={index} className="flex gap-4 group">
+                    <div key={index} className="flex gap-2 sm:gap-4 group px-2 sm:px-0">
                       {message.role === 'assistant' && (
-                        <Avatar className="w-10 h-10 border-2 border-border flex-shrink-0">
+                        <Avatar className="w-8 h-8 sm:w-10 sm:h-10 border-2 border-border flex-shrink-0 mt-1">
                           <AvatarFallback className="bg-gradient-to-br from-violet-500 to-purple-600 text-white">
-                            <Bot className="h-5 w-5" />
+                            <Bot className="h-4 w-4 sm:h-5 sm:w-5" />
                           </AvatarFallback>
                         </Avatar>
                       )}
                       
-                      <div className={`flex-1 max-w-[80%] ${message.role === 'user' ? 'ml-auto' : ''}`}>
-                        <div className={`rounded-2xl px-4 py-3 shadow-sm transition-all duration-200 hover:shadow-md ${
+                      <div className={`flex-1 max-w-[85%] sm:max-w-[80%] ${message.role === 'user' ? 'ml-auto' : ''}`}>
+                        <div className={`rounded-2xl px-3 sm:px-4 py-2 sm:py-3 shadow-sm transition-all duration-200 hover:shadow-md touch-manipulation ${
                           message.role === 'user' 
                             ? 'bg-gradient-to-br from-primary to-primary/90 text-primary-foreground ml-auto' 
                             : 'bg-muted/50 text-foreground border border-border/50'
                         }`}>
-                          <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                          <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
                             {message.content}
                           </p>
-                          <div className="flex items-center justify-between mt-3">
+                          <div className="flex items-center justify-between mt-2 sm:mt-3">
                             <span className="text-xs opacity-70">
                               {message.timestamp ? new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                             </span>
@@ -691,7 +802,7 @@ export default function ChatPage({ sessionId, onNewSession }: ChatPageProps) {
                                 variant="ghost" 
                                 size="sm" 
                                 onClick={() => copyMessage(message.content)}
-                                className="h-6 w-6 p-0"
+                                className="h-6 w-6 p-0 touch-manipulation"
                               >
                                 <Copy className="h-3 w-3" />
                               </Button>
@@ -715,8 +826,8 @@ export default function ChatPage({ sessionId, onNewSession }: ChatPageProps) {
             </ModernCardContent>
 
             {/* Input Area */}
-            <div className="border-t border-border/50 bg-muted/20 p-6">
-              <div className="flex gap-3">
+            <div className="border-t border-border/50 bg-muted/20 p-3 sm:p-6">
+              <div className="flex gap-2 sm:gap-3">
                 <Textarea
                   ref={inputRef}
                   value={inputValue}
@@ -724,26 +835,26 @@ export default function ChatPage({ sessionId, onNewSession }: ChatPageProps) {
                   onKeyDown={handleKeyPress}
                   placeholder="Type your message... (Shift+Enter for new line)"
                   disabled={isLoading}
-                  className="flex-1 min-h-[60px] max-h-32 resize-none rounded-xl border-border/50 bg-background/50 backdrop-blur-sm focus:border-primary/50 focus:ring-primary/20"
+                  className="flex-1 min-h-[50px] sm:min-h-[60px] max-h-32 resize-none rounded-xl border-border/50 bg-background/50 backdrop-blur-sm focus:border-primary/50 focus:ring-primary/20 text-sm sm:text-base touch-manipulation"
                 />
                 <Button
                   onClick={sendMessage}
                   disabled={!inputValue.trim() || isLoading}
                   variant="premium"
                   size="lg"
-                  className="px-6 h-[60px]"
+                  className="px-4 sm:px-6 h-[50px] sm:h-[60px] min-w-[50px] sm:min-w-[60px] touch-manipulation"
                 >
                   {isLoading ? (
-                    <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
                   ) : (
-                    <Send className="h-5 w-5" />
+                    <Send className="h-4 w-4 sm:h-5 sm:w-5" />
                   )}
                 </Button>
               </div>
               
-              <div className="flex items-center justify-center mt-4 text-xs text-muted-foreground">
+              <div className="flex items-center justify-center mt-3 sm:mt-4 text-xs text-muted-foreground">
                 <EncryptionIndicator isEncrypted={true} showLabel={true} size="sm" />
-                <span className="ml-2">Messages are encrypted before sending</span>
+                <span className="ml-2 text-xs sm:text-sm">Messages are encrypted before sending</span>
               </div>
             </div>
           </ModernCard>

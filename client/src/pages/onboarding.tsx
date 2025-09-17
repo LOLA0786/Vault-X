@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Shield,
   Info,
@@ -16,16 +14,20 @@ import {
   Globe,
   ArrowRight,
   Fingerprint,
-  ShieldCheck
+  ShieldCheck,
+  Zap,
+  Star,
+  Users,
+  Award
 } from 'lucide-react';
+import { PrivateVaultLogo } from '@/components/ui/private-vault-logo';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
-import { SecurityBadge, SecurityStatus, TrustScore, SecurityIcon } from '@/components/ui/security-badge';
+import { SecurityBadge, TrustScore } from '@/components/ui/security-badge';
 import { Footer } from '@/components/ui/footer';
-import { Container } from '@/components/ui/container';
 import { PageTransition } from '@/components/ui/page-transition';
-import { ModernCard, ModernCardContent, ModernCardDescription, ModernCardHeader, ModernCardTitle } from '@/components/ui/modern-card';
-import { ModernContainer, ModernGrid, ModernStack } from '@/components/ui/modern-layout';
+import { ModernCard, ModernCardContent, ModernCardHeader, ModernCardTitle } from '@/components/ui/modern-card';
+import { ModernContainer, ModernGrid } from '@/components/ui/modern-layout';
 import { ModernInput } from '@/components/ui/modern-input';
 
 export default function Onboarding() {
@@ -97,13 +99,11 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800 flex flex-col relative overflow-hidden">
-      {/* Modern Background Pattern */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl animate-blob"></div>
-        <div className="absolute top-0 -right-4 w-72 h-72 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-4000"></div>
-      </div>
+    <div className="min-h-screen flex flex-col relative overflow-hidden">
+      {/* Enhanced Background with Animated Elements */}
+      <div className="absolute inset-0 bg-white dark:from-slate-950 dark:via-slate-900 dark:to-slate-800" />
+
+
 
       <div className="flex-1 py-16 relative z-10">
         <ModernContainer size="xl">
@@ -112,21 +112,34 @@ export default function Onboarding() {
               {/* Left Side - Modern Hero Section */}
               <div className="space-y-12">
                 <div className="text-center lg:text-left">
-                  <div className="flex items-center justify-center lg:justify-start gap-6 mb-10">
-                    <div className="relative">
-                      <div className="w-24 h-24 bg-gradient-to-br from-blue-500 via-purple-500 to-violet-600 rounded-3xl flex items-center justify-center shadow-2xl">
-                        <Shield className="text-white h-12 w-12" />
+                  <div className="flex items-center justify-center lg:justify-start gap-8 mb-12">
+                    <div className="relative group">
+                      {/* Custom Private Vault Logo */}
+                      <div className="relative">
+                        <PrivateVaultLogo
+                          size="xl"
+                          animated={true}
+                          className="group-hover:scale-105 transition-all duration-500 drop-shadow-2xl"
+                        />
+
+
                       </div>
-                      <div className="absolute -top-2 -right-2 w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center shadow-xl">
-                        <CheckCircle className="text-white h-5 w-5" />
-                      </div>
-                      <div className="absolute inset-0 w-24 h-24 bg-gradient-to-br from-blue-500 via-purple-500 to-violet-600 rounded-3xl opacity-20 animate-ping"></div>
                     </div>
                     <div>
-                      <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-violet-600 bg-clip-text text-transparent">
+                      <h1 className="text-6xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-violet-600 bg-clip-text text-transparent mb-3">
                         Private Vault
                       </h1>
-                      <p className="text-lg text-muted-foreground font-semibold mt-2">Your Secure AI Assistant</p>
+                      <p className="text-xl text-muted-foreground font-semibold">Your Secure AI Assistant</p>
+                      <div className="flex items-center gap-4 mt-4">
+                        <div className="flex items-center gap-2 px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
+                          <Users className="h-4 w-4 text-emerald-600" />
+                          <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">10K+ Users</span>
+                        </div>
+                        <div className="flex items-center gap-2 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+                          <Award className="h-4 w-4 text-blue-600" />
+                          <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Enterprise Grade</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -236,7 +249,7 @@ export default function Onboarding() {
 
                 {/* Trust Score */}
                 <ModernCard variant="security" className="overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-blue-500/10" />
+
                   <ModernCardContent className="relative p-8">
                     <div className="flex items-center justify-between mb-8">
                       <div>
@@ -263,28 +276,54 @@ export default function Onboarding() {
                 </ModernCard>
               </div>
 
-              {/* Right Side - Modern Auth Form */}
+              {/* Right Side - Enhanced Auth Form */}
               <div className="max-w-lg mx-auto w-full">
-                <ModernCard variant="glass" className="shadow-2xl backdrop-blur-xl border-white/20">
-                  <ModernCardHeader className="text-center pb-8">
-                    <div className="relative mx-auto mb-8">
-                      <div className="w-20 h-20 bg-gradient-to-br from-blue-500 via-purple-500 to-violet-600 rounded-3xl flex items-center justify-center shadow-2xl">
-                        <Shield className="text-white h-10 w-10" />
+                <ModernCard variant="glass" className="shadow-2xl backdrop-blur-xl border-white/20 overflow-hidden">
+                  {/* Animated header background */}
+                  <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-violet-500/10 animate-pulse" />
+
+                  <ModernCardHeader className="text-center pb-8 relative">
+                    <div className="relative mx-auto mb-12 group">
+                      {/* Custom Private Vault Logo - smaller version for auth form */}
+                      <div className="relative">
+                        <PrivateVaultLogo
+                          size="lg"
+                          animated={true}
+                          className="group-hover:scale-110 transition-all duration-500 drop-shadow-xl"
+                        />
+
+
+
+                        {/* Status indicator - positioned below with proper spacing */}
+                        <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 z-10">
+                          <div className="px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 rounded-full border border-emerald-200 dark:border-emerald-700 shadow-md">
+                            <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300">Private Vault</span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center shadow-xl">
-                        <CheckCircle className="text-white h-4 w-4" />
-                      </div>
-                      <div className="absolute inset-0 w-20 h-20 bg-gradient-to-br from-blue-500 via-purple-500 to-violet-600 rounded-3xl opacity-20 animate-ping"></div>
                     </div>
+
                     <ModernCardTitle className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 via-purple-600 to-violet-600 bg-clip-text text-transparent">
                       {isLogin ? 'Welcome Back' : 'Join Private Vault'}
                     </ModernCardTitle>
-                    <ModernCardDescription className="text-lg text-muted-foreground">
+
+                    <div className="text-lg text-muted-foreground mb-4">
                       {isLogin
                         ? 'Access your encrypted AI workspace'
                         : 'Set up your private, zero-knowledge AI assistant'
                       }
-                    </ModernCardDescription>
+                    </div>
+
+                    {/* Progress indicator for new users */}
+                    {!isLogin && (
+                      <div className="flex items-center justify-center gap-2 mt-4">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <div className="w-8 h-1 bg-blue-200 dark:bg-blue-800 rounded-full"></div>
+                        <div className="w-2 h-2 bg-blue-200 dark:bg-blue-800 rounded-full"></div>
+                        <div className="w-8 h-1 bg-blue-200 dark:bg-blue-800 rounded-full"></div>
+                        <div className="w-2 h-2 bg-blue-200 dark:bg-blue-800 rounded-full"></div>
+                      </div>
+                    )}
                   </ModernCardHeader>
                   <ModernCardContent className="space-y-8">
                     <form onSubmit={handleSubmit} className="space-y-6">
