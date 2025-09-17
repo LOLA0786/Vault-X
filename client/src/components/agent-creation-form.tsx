@@ -2,6 +2,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { ModernCard, ModernCardContent, ModernCardDescription, ModernCardHeader, ModernCardTitle } from '@/components/ui/modern-card';
+import { ModernInput } from '@/components/ui/modern-input';
 import {
   Select,
   SelectContent,
@@ -103,29 +105,36 @@ export function AgentCreationForm({ onCreated }: { onCreated?: () => void }) {
   ];
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="flex items-center">
-          <Bot className="mr-2 h-5 w-5" />
+    <ModernCard variant="gradient" className="w-full">
+      <ModernCardHeader className="text-center">
+        <div className="w-16 h-16 bg-gradient-to-br from-violet-500 to-purple-600 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-xl">
+          <Bot className="h-8 w-8 text-white" />
+        </div>
+        <ModernCardTitle className="text-3xl font-bold bg-gradient-to-r from-violet-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">
           Create Custom AI Agent
-        </CardTitle>
-        <CardDescription>
+        </ModernCardTitle>
+        <ModernCardDescription className="text-lg">
           Create a specialized AI agent with a specific personality or expertise
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+        </ModernCardDescription>
+      </ModernCardHeader>
+      <ModernCardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Agent Name</FormLabel>
+                  <FormLabel className="text-base font-semibold">Agent Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Dietitian Assistant" {...field} />
+                    <ModernInput 
+                      variant="outlined"
+                      inputSize="lg"
+                      placeholder="e.g., Dietitian Assistant" 
+                      {...field} 
+                    />
                   </FormControl>
-                  <FormDescription>
+                  <FormDescription className="text-sm">
                     A distinctive name for your AI agent
                   </FormDescription>
                   <FormMessage />
@@ -138,14 +147,15 @@ export function AgentCreationForm({ onCreated }: { onCreated?: () => void }) {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel className="text-base font-semibold">Description</FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder="e.g., An AI assistant specialized in providing nutritional advice and diet plans"
+                      className="min-h-[100px] rounded-xl border-2 border-border hover:border-primary/30 focus:border-primary text-base p-4"
                       {...field}
                     />
                   </FormControl>
-                  <FormDescription>
+                  <FormDescription className="text-sm">
                     Briefly describe what this agent does
                   </FormDescription>
                   <FormMessage />
@@ -158,15 +168,15 @@ export function AgentCreationForm({ onCreated }: { onCreated?: () => void }) {
               name="systemPrompt"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>System Prompt</FormLabel>
+                  <FormLabel className="text-base font-semibold">System Prompt</FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder="e.g., You are a professional dietitian with expertise in nutrition science..."
-                      className="min-h-[120px]"
+                      className="min-h-[150px] rounded-xl border-2 border-border hover:border-primary/30 focus:border-primary text-base p-4"
                       {...field}
                     />
                   </FormControl>
-                  <FormDescription>
+                  <FormDescription className="text-sm">
                     The instructions that define how the AI agent behaves
                   </FormDescription>
                   <FormMessage />
@@ -179,10 +189,10 @@ export function AgentCreationForm({ onCreated }: { onCreated?: () => void }) {
               name="icon"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Icon</FormLabel>
+                  <FormLabel className="text-base font-semibold">Icon</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="h-12 rounded-xl border-2 border-border hover:border-primary/30 focus:border-primary text-base">
                         <SelectValue placeholder="Select an icon" />
                       </SelectTrigger>
                     </FormControl>
@@ -194,7 +204,7 @@ export function AgentCreationForm({ onCreated }: { onCreated?: () => void }) {
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormDescription>
+                  <FormDescription className="text-sm">
                     Choose an icon to represent your agent
                   </FormDescription>
                   <FormMessage />
@@ -204,21 +214,26 @@ export function AgentCreationForm({ onCreated }: { onCreated?: () => void }) {
 
             <Button
               type="submit"
-              className="w-full"
+              variant="premium"
+              size="xl"
+              className="w-full shadow-2xl"
               disabled={createAgentMutation.isPending}
             >
               {createAgentMutation.isPending ? (
-                <>Creating Agent...</>
+                <>
+                  <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
+                  Creating Agent...
+                </>
               ) : (
                 <>
-                  <Save className="mr-2 h-4 w-4" />
+                  <Save className="mr-2 h-5 w-5" />
                   Create Agent
                 </>
               )}
             </Button>
           </form>
         </Form>
-      </CardContent>
-    </Card>
+      </ModernCardContent>
+    </ModernCard>
   );
 }

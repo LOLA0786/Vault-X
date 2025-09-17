@@ -570,7 +570,7 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
                     setMessages([]);
                     setLocalSessionId(undefined);
                     try { localStorage.removeItem(`pv-chat-session-${user?.id ?? 'anon'}`); localStorage.removeItem('pv-chat-session'); localStorage.removeItem(`pv-chat-${user?.id ?? 'anon'}`); localStorage.removeItem('pv-chat-draft'); } catch (e) {}
-                    onNewSession?.(undefined as unknown as string);
+                    onNewSession?.(null as any);
                     toast({ title: 'New chat started', description: 'Fresh conversation ready' });
                   }}
                   title="Start a new conversation (helps resolve decryption issues)"

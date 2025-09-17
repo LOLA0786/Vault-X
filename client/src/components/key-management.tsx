@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ModernCard, ModernCardContent, ModernCardDescription, ModernCardHeader, ModernCardTitle } from '@/components/ui/modern-card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -134,16 +134,16 @@ export function KeyManagement() {
   const hasValidKey = EncryptionService.hasValidKey();
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg font-semibold text-foreground">
+    <ModernCard variant="elevated" hover="lift">
+      <ModernCardHeader>
+        <ModernCardTitle className="text-lg font-semibold text-foreground">
           Encryption Key Management
-        </CardTitle>
-        <CardDescription>
+        </ModernCardTitle>
+        <ModernCardDescription>
           Your encryption keys are stored locally and never leave your browser
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        </ModernCardDescription>
+      </ModernCardHeader>
+      <ModernCardContent className="space-y-4">
         {/* Key Status */}
         <div className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
           <div className="flex items-center space-x-3">
@@ -169,9 +169,9 @@ export function KeyManagement() {
         </div>
 
         {/* Educational Information */}
-        <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800">
-          <Info className="h-4 w-4 text-blue-600" />
-          <AlertDescription className="text-blue-800 dark:text-blue-200">
+        <Alert className="border-primary/20 bg-primary/5 dark:bg-primary/10 dark:border-primary/30">
+          <Info className="h-4 w-4 text-primary" />
+          <AlertDescription className="text-foreground">
             <div className="space-y-2">
               <p className="font-semibold">How Encryption Keys Work:</p>
               <ul className="text-sm space-y-1 ml-4 list-disc">
@@ -339,7 +339,7 @@ export function KeyManagement() {
             Regenerating will make existing files inaccessible
           </p>
         </div>
-      </CardContent>
-    </Card>
+      </ModernCardContent>
+    </ModernCard>
   );
 }

@@ -8,6 +8,10 @@ import Dashboard from "@/pages/dashboard";
 import Onboarding from "@/pages/onboarding";
 import NotFound from "@/pages/not-found";
 import Agents from "@/pages/agents";
+import Chat from "@/pages/chat";
+import History from "@/pages/history";
+import Settings from "@/pages/settings";
+import KeyInfo from "@/pages/key-info";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import TermsConditions from "@/pages/terms-conditions";
 import RefundPolicy from "@/pages/refund-policy";
@@ -27,6 +31,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { AlertTriangle, Key, Shield } from 'lucide-react';
+import { GlobalBackground } from "@/components/ui/global-background";
+import { PageTransition } from "@/components/ui/page-transition";
+import { FullPageLoading } from "@/components/ui/modern-loading";
 
 function Router() {
   const { isAuthenticated, loading, user, showLogoutDialog, setShowLogoutDialog, confirmLogout } = useAuth();
@@ -39,7 +46,7 @@ function Router() {
       const hasValidKey = EncryptionService.hasValidKey();
       const onboardingComplete = localStorage.getItem('vault_x_encryption_onboarding_complete') === 'true';
       const isNewUser = localStorage.getItem('vault_x_is_new_user') === 'true';
-      
+
       if (isNewUser && !onboardingComplete) {
         // Show encryption onboarding for new users who haven't completed it
         setShowEncryptionOnboarding(true);
@@ -63,14 +70,7 @@ function Router() {
   }, [isAuthenticated, user]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading your private vault...</p>
-        </div>
-      </div>
-    );
+    return <FullPageLoading message="Loading your private vault..." />;
   }
 
   // Show encryption onboarding for new users
@@ -93,7 +93,8 @@ function Router() {
   }
 
   return (
-    <>
+    <PageTransition>
+      <GlobalBackground parallax />
       <Switch>
         <Route path="/">
           {isAuthenticated ? <Dashboard /> : <Onboarding />}
@@ -108,23 +109,23 @@ function Router() {
           {isAuthenticated ? <Dashboard initialTab="vault" /> : <Onboarding />}
         </Route>
         <Route path="/chat">
-          {isAuthenticated ? <Dashboard initialTab="chat" /> : <Onboarding />}
+          {isAuthenticated ? <Chat /> : <Onboarding />}
         </Route>
         <Route path="/history">
-          {isAuthenticated ? <Dashboard initialTab="history" /> : <Onboarding />}
+          {isAuthenticated ? <History /> : <Onboarding />}
         </Route>
         <Route path="/key-info">
-          {isAuthenticated ? <Dashboard initialTab="key-info" /> : <Onboarding />}
+          {isAuthenticated ? <KeyInfo /> : <Onboarding />}
         </Route>
         <Route path="/settings">
-          {isAuthenticated ? <Dashboard initialTab="settings" /> : <Onboarding />}
+          {isAuthenticated ? <Settings /> : <Onboarding />}
         </Route>
-        
+
         {/* Legal Pages - Publicly Accessible */}
         <Route path="/privacy-policy" component={PrivacyPolicy} />
         <Route path="/terms-conditions" component={TermsConditions} />
         <Route path="/refund-policy" component={RefundPolicy} />
-        
+
         <Route component={NotFound} />
       </Switch>
 
@@ -146,7 +147,7 @@ function Router() {
                   Logging out will remove your encryption key from this device.
                 </p>
               </div>
-              
+
               <div className="space-y-2 text-xs text-muted-foreground">
                 <p className="font-medium">Your data will become unreadable unless you:</p>
                 <div className="space-y-1 ml-3">
@@ -163,13 +164,13 @@ function Router() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-2">
-            <AlertDialogCancel 
+            <AlertDialogCancel
               className="flex-1 text-xs h-8"
               onClick={() => setShowLogoutDialog(false)}
             >
               Cancel
             </AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               className="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs h-8"
               onClick={confirmLogout}
             >
@@ -178,7 +179,7 @@ function Router() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </PageTransition>
   );
 }
 

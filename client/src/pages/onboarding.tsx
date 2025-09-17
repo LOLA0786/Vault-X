@@ -22,6 +22,11 @@ import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { SecurityBadge, SecurityStatus, TrustScore, SecurityIcon } from '@/components/ui/security-badge';
 import { Footer } from '@/components/ui/footer';
+import { Container } from '@/components/ui/container';
+import { PageTransition } from '@/components/ui/page-transition';
+import { ModernCard, ModernCardContent, ModernCardDescription, ModernCardHeader, ModernCardTitle } from '@/components/ui/modern-card';
+import { ModernContainer, ModernGrid, ModernStack } from '@/components/ui/modern-layout';
+import { ModernInput } from '@/components/ui/modern-input';
 
 export default function Onboarding() {
   const [isLogin, setIsLogin] = useState(false);
@@ -92,268 +97,308 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex flex-col relative">
-      {/* Background Security Pattern */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.1'%3E%3Cpath d='M30 30c0-11.046-8.954-20-20-20s-20 8.954-20 20 8.954 20 20 20 20-8.954 20-20zm0 0c0 11.046 8.954 20 20 20s20-8.954 20-20-8.954-20-20-20-20 8.954-20 20z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-        }} />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800 flex flex-col relative overflow-hidden">
+      {/* Modern Background Pattern */}
+      <div className="absolute inset-0 opacity-30">
+        <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl animate-blob"></div>
+        <div className="absolute top-0 -right-4 w-72 h-72 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-4000"></div>
       </div>
 
-      <div className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl w-full relative z-10 mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
-          {/* Left Side - Enhanced Security Features */}
-          <div className="space-y-10">
-            <div className="text-center lg:text-left">
-              <div className="flex items-center justify-center lg:justify-start gap-4 mb-8">
-                <div className="relative">
-                  <div className="w-20 h-20 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-blue-500/25">
-                    <Shield className="text-white h-10 w-10" />
-                  </div>
-                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-br from-security-500 to-security-600 rounded-full flex items-center justify-center shadow-lg">
-                    <CheckCircle className="text-white h-4 w-4" />
-                  </div>
-                </div>
-                <div>
-                  <h1 className="text-4xl font-bold text-foreground bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                    Private Vault
-                  </h1>
-                  <p className="text-sm text-muted-foreground font-medium">Your Secure AI Assistant</p>
-                </div>
-              </div>
-              <h2 className="text-5xl font-bold text-foreground mb-6 leading-tight">
-                {isLogin ? 'Welcome Back' : 'Maximum Security'}
-                <br />
-                <span className="text-3xl text-muted-foreground font-normal">
-                  {isLogin ? 'Access Your Vault' : 'Zero-Knowledge AI'}
-                </span>
-              </h2>
-              <p className="text-xl text-muted-foreground mb-10 leading-relaxed">
-                {isLogin
-                  ? 'Sign in to access your private, encrypted AI assistant with enterprise-grade security.'
-                  : 'Your private AI workspace with client-side encryption. We never see your data.'
-                }
-              </p>
-            </div>
-
-            {/* Security Features */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card variant="security" className="group hover:transform hover:scale-105 transition-all duration-300">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-4 mb-4">
-                    <SecurityIcon type="lock" size="md" />
-                    <h3 className="font-semibold text-foreground text-lg">AES-256 Encryption</h3>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                    Military-grade encryption protects your files before they leave your device.
-                  </p>
-                  <SecurityBadge variant="encrypted" size="sm" className="group-hover:scale-110 transition-transform duration-200">
-                    End-to-End
-                  </SecurityBadge>
-                </CardContent>
-              </Card>
-
-              <Card variant="security" className="group hover:transform hover:scale-105 transition-all duration-300">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-4 mb-4">
-                    <SecurityIcon type="eye" size="md" />
-                    <h3 className="font-semibold text-foreground text-lg">Zero-Knowledge</h3>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                    We can't access your data even if we wanted to. Complete privacy guaranteed.
-                  </p>
-                  <SecurityBadge variant="verified" size="sm" className="group-hover:scale-110 transition-transform duration-200">
-                    Privacy First
-                  </SecurityBadge>
-                </CardContent>
-              </Card>
-
-              <Card variant="security" className="group hover:transform hover:scale-105 transition-all duration-300">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-4 mb-4">
-                    <SecurityIcon type="key" size="md" />
-                    <h3 className="font-semibold text-foreground text-lg">Local Key Management</h3>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                    Encryption keys generated and stored locally. Never transmitted to our servers.
-                  </p>
-                  <SecurityBadge variant="secure" size="sm" className="group-hover:scale-110 transition-transform duration-200">
-                    Local Control
-                  </SecurityBadge>
-                </CardContent>
-              </Card>
-
-              <Card variant="security" className="group hover:transform hover:scale-105 transition-all duration-300">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-4 mb-4">
-                    <SecurityIcon type="database" size="md" />
-                    <h3 className="font-semibold text-foreground text-lg">Secure Storage</h3>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                    Enterprise-grade infrastructure with encrypted data at rest and in transit.
-                  </p>
-                  <SecurityBadge variant="secure" size="sm" className="group-hover:scale-110 transition-transform duration-200">
-                    Enterprise Grade
-                  </SecurityBadge>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Trust Score */}
-            <Card variant="security">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h3 className="text-xl font-semibold text-foreground mb-2">Security Rating</h3>
-                    <p className="text-sm text-muted-foreground">Independently verified security standards</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="h-5 w-5 text-security-500" />
-                    <span className="text-sm font-medium text-security-600 dark:text-security-400">Certified</span>
-                  </div>
-                </div>
-                <TrustScore score={98} label="Security Score" size="lg" />
-                <div className="mt-4 flex items-center gap-4 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <Fingerprint className="h-4 w-4" />
-                    <span>FIPS 140-2 Compliant</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck className="h-4 w-4" />
-                    <span>SOC 2 Type II</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Right Side - Auth Form */}
-          <div className="max-w-md mx-auto w-full">
-            <Card className="card-professional shadow-2xl border-0">
-              <CardHeader className="text-center pb-8">
-                <div className="relative mx-auto mb-6">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-xl">
-                    <Shield className="text-white h-8 w-8" />
-                  </div>
-                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center">
-                    <CheckCircle className="text-white h-3 w-3" />
-                  </div>
-                </div>
-                <CardTitle className="text-3xl font-bold mb-2">
-                  {isLogin ? 'Welcome Back' : 'Join Private Vault'}
-                </CardTitle>
-                <CardDescription className="text-base text-muted-foreground">
-                  {isLogin
-                    ? 'Access your encrypted AI workspace'
-                    : 'Set up your private, zero-knowledge AI assistant'
-                  }
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="text-sm font-medium flex items-center gap-2">
-                      <Globe className="h-4 w-4 text-blue-500" />
-                      Email Address
-                    </Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="input-security h-12 text-base"
-                      placeholder="Enter your email address"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="password" className="text-sm font-medium flex items-center gap-2">
-                      <Lock className="h-4 w-4 text-blue-500" />
-                      Password
-                    </Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="input-security h-12 text-base"
-                      placeholder="Enter your password"
-                      required
-                    />
-                  </div>
-
-                  {!isLogin && (
-                    <div className="space-y-2">
-                      <Label htmlFor="confirmPassword" className="text-sm font-medium flex items-center gap-2">
-                        <Shield className="h-4 w-4 text-blue-500" />
-                        Confirm Password
-                      </Label>
-                      <Input
-                        id="confirmPassword"
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        className="input-security h-12 text-base"
-                        placeholder="Confirm your password"
-                        required
-                      />
+      <div className="flex-1 py-16 relative z-10">
+        <ModernContainer size="xl">
+          <PageTransition>
+            <ModernGrid cols={2} gap="xl" responsive>
+              {/* Left Side - Modern Hero Section */}
+              <div className="space-y-12">
+                <div className="text-center lg:text-left">
+                  <div className="flex items-center justify-center lg:justify-start gap-6 mb-10">
+                    <div className="relative">
+                      <div className="w-24 h-24 bg-gradient-to-br from-blue-500 via-purple-500 to-violet-600 rounded-3xl flex items-center justify-center shadow-2xl">
+                        <Shield className="text-white h-12 w-12" />
+                      </div>
+                      <div className="absolute -top-2 -right-2 w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center shadow-xl">
+                        <CheckCircle className="text-white h-5 w-5" />
+                      </div>
+                      <div className="absolute inset-0 w-24 h-24 bg-gradient-to-br from-blue-500 via-purple-500 to-violet-600 rounded-3xl opacity-20 animate-ping"></div>
                     </div>
-                  )}
-
-                  <Button
-                    type="submit"
-                    disabled={isLoading}
-                    className="btn-security w-full h-12 text-base font-semibold group"
-                  >
-                    {isLoading ? (
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        {isLogin ? 'Signing In...' : 'Creating Account...'}
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        {isLogin ? 'Sign In' : 'Create Account'}
-                        <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
-                      </div>
-                    )}
-                  </Button>
-                </form>
-
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-gray-200 dark:border-gray-700" />
+                    <div>
+                      <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-violet-600 bg-clip-text text-transparent">
+                        Private Vault
+                      </h1>
+                      <p className="text-lg text-muted-foreground font-semibold mt-2">Your Secure AI Assistant</p>
+                    </div>
                   </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card px-2 text-muted-foreground">Or</span>
+
+                  <div className="space-y-6">
+                    <h2 className="text-6xl font-bold text-foreground leading-tight">
+                      {isLogin ? (
+                        <>
+                          <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                            Welcome Back
+                          </span>
+                          <br />
+                          <span className="text-4xl text-muted-foreground font-normal">
+                            Access Your Vault
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
+                            Maximum Security
+                          </span>
+                          <br />
+                          <span className="text-4xl text-muted-foreground font-normal">
+                            Zero-Knowledge AI
+                          </span>
+                        </>
+                      )}
+                    </h2>
+                    <p className="text-xl text-muted-foreground leading-relaxed max-w-2xl">
+                      {isLogin
+                        ? 'Sign in to access your private, encrypted AI assistant with enterprise-grade security and complete privacy protection.'
+                        : 'Your private AI workspace with client-side encryption. We never see your data, ensuring complete privacy and security.'
+                      }
+                    </p>
                   </div>
                 </div>
 
-                <Button
-                  variant="outline"
-                  onClick={() => setIsLogin(!isLogin)}
-                  className="w-full h-12 text-base font-medium border-2 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950 transition-all duration-200"
-                >
-                  {isLogin ? 'Create New Account' : 'Sign In to Existing Account'}
-                </Button>
-
-                <div className="mt-6 p-4 bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-slate-800 dark:to-slate-700 rounded-lg border border-emerald-200 dark:border-slate-600">
-                  <div className="flex items-start gap-3">
-                    <Info className="h-5 w-5 text-emerald-600 dark:text-emerald-400 mt-0.5 flex-shrink-0" />
-                    <div className="text-sm">
-                      <p className="font-medium text-foreground mb-1">Your data is secure</p>
-                      <p className="text-muted-foreground">
-                        All data is encrypted client-side before transmission. Your encryption keys never leave your device.
+                {/* Modern Security Features */}
+                <ModernGrid cols={2} gap="lg">
+                  <ModernCard variant="glass" hover="lift" className="group">
+                    <ModernCardContent className="p-8">
+                      <div className="flex items-center gap-4 mb-6">
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
+                          <Lock className="h-6 w-6 text-white" />
+                        </div>
+                        <h3 className="text-xl font-bold text-foreground">AES-256 Encryption</h3>
+                      </div>
+                      <p className="text-base text-muted-foreground mb-6 leading-relaxed">
+                        Military-grade encryption protects your files before they leave your device.
                       </p>
+                      <SecurityBadge variant="encrypted" size="md" className="group-hover:scale-110 transition-transform duration-300">
+                        End-to-End
+                      </SecurityBadge>
+                    </ModernCardContent>
+                  </ModernCard>
+
+                  <ModernCard variant="glass" hover="lift" className="group">
+                    <ModernCardContent className="p-8">
+                      <div className="flex items-center gap-4 mb-6">
+                        <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
+                          <Eye className="h-6 w-6 text-white" />
+                        </div>
+                        <h3 className="text-xl font-bold text-foreground">Zero-Knowledge</h3>
+                      </div>
+                      <p className="text-base text-muted-foreground mb-6 leading-relaxed">
+                        We can't access your data even if we wanted to. Complete privacy guaranteed.
+                      </p>
+                      <SecurityBadge variant="verified" size="md" className="group-hover:scale-110 transition-transform duration-300">
+                        Privacy First
+                      </SecurityBadge>
+                    </ModernCardContent>
+                  </ModernCard>
+
+                  <ModernCard variant="glass" hover="lift" className="group">
+                    <ModernCardContent className="p-8">
+                      <div className="flex items-center gap-4 mb-6">
+                        <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-violet-600 rounded-2xl flex items-center justify-center shadow-lg">
+                          <Key className="h-6 w-6 text-white" />
+                        </div>
+                        <h3 className="text-xl font-bold text-foreground">Local Key Management</h3>
+                      </div>
+                      <p className="text-base text-muted-foreground mb-6 leading-relaxed">
+                        Encryption keys generated and stored locally. Never transmitted to our servers.
+                      </p>
+                      <SecurityBadge variant="secure" size="md" className="group-hover:scale-110 transition-transform duration-300">
+                        Local Control
+                      </SecurityBadge>
+                    </ModernCardContent>
+                  </ModernCard>
+
+                  <ModernCard variant="glass" hover="lift" className="group">
+                    <ModernCardContent className="p-8">
+                      <div className="flex items-center gap-4 mb-6">
+                        <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg">
+                          <Database className="h-6 w-6 text-white" />
+                        </div>
+                        <h3 className="text-xl font-bold text-foreground">Secure Storage</h3>
+                      </div>
+                      <p className="text-base text-muted-foreground mb-6 leading-relaxed">
+                        Enterprise-grade infrastructure with encrypted data at rest and in transit.
+                      </p>
+                      <SecurityBadge variant="secure" size="md" className="group-hover:scale-110 transition-transform duration-300">
+                        Enterprise Grade
+                      </SecurityBadge>
+                    </ModernCardContent>
+                  </ModernCard>
+                </ModernGrid>
+
+                {/* Trust Score */}
+                <ModernCard variant="security" className="overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-blue-500/10" />
+                  <ModernCardContent className="relative p-8">
+                    <div className="flex items-center justify-between mb-8">
+                      <div>
+                        <h3 className="text-2xl font-bold text-foreground mb-3">Security Rating</h3>
+                        <p className="text-base text-muted-foreground">Independently verified security standards</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Sparkles className="h-6 w-6 text-emerald-500" />
+                        <span className="text-base font-semibold text-emerald-600 dark:text-emerald-400">Certified</span>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-          </div>
-        </div>
+                    <TrustScore score={98} label="Security Score" size="lg" />
+                    <div className="mt-6 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-2">
+                        <Fingerprint className="h-4 w-4" />
+                        <span className="font-medium">FIPS 140-2 Compliant</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck className="h-4 w-4" />
+                        <span className="font-medium">SOC 2 Type II</span>
+                      </div>
+                    </div>
+                  </ModernCardContent>
+                </ModernCard>
+              </div>
+
+              {/* Right Side - Modern Auth Form */}
+              <div className="max-w-lg mx-auto w-full">
+                <ModernCard variant="glass" className="shadow-2xl backdrop-blur-xl border-white/20">
+                  <ModernCardHeader className="text-center pb-8">
+                    <div className="relative mx-auto mb-8">
+                      <div className="w-20 h-20 bg-gradient-to-br from-blue-500 via-purple-500 to-violet-600 rounded-3xl flex items-center justify-center shadow-2xl">
+                        <Shield className="text-white h-10 w-10" />
+                      </div>
+                      <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center shadow-xl">
+                        <CheckCircle className="text-white h-4 w-4" />
+                      </div>
+                      <div className="absolute inset-0 w-20 h-20 bg-gradient-to-br from-blue-500 via-purple-500 to-violet-600 rounded-3xl opacity-20 animate-ping"></div>
+                    </div>
+                    <ModernCardTitle className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 via-purple-600 to-violet-600 bg-clip-text text-transparent">
+                      {isLogin ? 'Welcome Back' : 'Join Private Vault'}
+                    </ModernCardTitle>
+                    <ModernCardDescription className="text-lg text-muted-foreground">
+                      {isLogin
+                        ? 'Access your encrypted AI workspace'
+                        : 'Set up your private, zero-knowledge AI assistant'
+                      }
+                    </ModernCardDescription>
+                  </ModernCardHeader>
+                  <ModernCardContent className="space-y-8">
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                      <div className="space-y-3">
+                        <Label htmlFor="email" className="text-base font-semibold flex items-center gap-3">
+                          <Globe className="h-5 w-5 text-blue-500" />
+                          Email Address
+                        </Label>
+                        <ModernInput
+                          id="email"
+                          type="email"
+                          variant="outlined"
+                          inputSize="lg"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="Enter your email address"
+                          required
+                        />
+                      </div>
+
+                      <div className="space-y-3">
+                        <Label htmlFor="password" className="text-base font-semibold flex items-center gap-3">
+                          <Lock className="h-5 w-5 text-blue-500" />
+                          Password
+                        </Label>
+                        <ModernInput
+                          id="password"
+                          type="password"
+                          variant="outlined"
+                          inputSize="lg"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder="Enter your password"
+                          required
+                        />
+                      </div>
+
+                      {!isLogin && (
+                        <div className="space-y-3">
+                          <Label htmlFor="confirmPassword" className="text-base font-semibold flex items-center gap-3">
+                            <Shield className="h-5 w-5 text-blue-500" />
+                            Confirm Password
+                          </Label>
+                          <ModernInput
+                            id="confirmPassword"
+                            type="password"
+                            variant="outlined"
+                            inputSize="lg"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            placeholder="Confirm your password"
+                            required
+                          />
+                        </div>
+                      )}
+
+                      <Button
+                        type="submit"
+                        disabled={isLoading}
+                        variant="premium"
+                        size="xl"
+                        className="w-full shadow-2xl group"
+                      >
+                        {isLoading ? (
+                          <div className="flex items-center gap-3">
+                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            {isLogin ? 'Signing In...' : 'Creating Account...'}
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-3">
+                            {isLogin ? 'Sign In' : 'Create Account'}
+                            <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
+                          </div>
+                        )}
+                      </Button>
+                    </form>
+
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t border-border/50" />
+                      </div>
+                      <div className="relative flex justify-center text-sm uppercase">
+                        <span className="bg-card px-4 text-muted-foreground font-medium">Or</span>
+                      </div>
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="xl"
+                      onClick={() => setIsLogin(!isLogin)}
+                      className="w-full border-2 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300"
+                    >
+                      {isLogin ? 'Create New Account' : 'Sign In to Existing Account'}
+                    </Button>
+
+                    <ModernCard variant="security" className="mt-8">
+                      <ModernCardContent className="p-6">
+                        <div className="flex items-start gap-4">
+                          <Info className="h-6 w-6 text-emerald-600 dark:text-emerald-400 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="font-semibold text-foreground mb-2">Your data is secure</p>
+                            <p className="text-sm text-muted-foreground leading-relaxed">
+                              All data is encrypted client-side before transmission. Your encryption keys never leave your device.
+                            </p>
+                          </div>
+                        </div>
+                      </ModernCardContent>
+                    </ModernCard>
+                  </ModernCardContent>
+                </ModernCard>
+              </div>
+            </ModernGrid>
+          </PageTransition>
+        </ModernContainer>
       </div>
       <Footer />
     </div>
