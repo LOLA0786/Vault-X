@@ -784,13 +784,13 @@ export default function ChatPage({ sessionId, onNewSession }: ChatPageProps) {
                         </Avatar>
                       )}
                       
-                      <div className={`flex-1 max-w-[85%] sm:max-w-[80%] ${message.role === 'user' ? 'ml-auto' : ''}`}>
-                        <div className={`rounded-2xl px-3 sm:px-4 py-2 sm:py-3 shadow-sm transition-all duration-200 hover:shadow-md touch-manipulation ${
+                      <div className={`flex-1 max-w-[65%] sm:max-w-[60%] ${message.role === 'user' ? 'ml-auto' : ''}`}>
+                        <div className={`rounded-xl px-3 sm:px-4 py-2 sm:py-3 shadow-sm transition-all duration-200 hover:shadow-md touch-manipulation ${
                           message.role === 'user' 
-                            ? 'bg-gradient-to-br from-primary to-primary/90 text-primary-foreground ml-auto' 
+                            ? 'bg-gradient-to-br from-blue-100 to-blue-200 text-blue-900 border border-blue-300 dark:from-blue-900/40 dark:to-blue-800/40 dark:text-blue-100 dark:border-blue-700/50 ml-auto' 
                             : 'bg-muted/50 text-foreground border border-border/50'
                         }`}>
-                          <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
+                          <p className="text-sm leading-relaxed whitespace-pre-wrap break-words text-center">
                             {message.content}
                           </p>
                           <div className="flex items-center justify-between mt-2 sm:mt-3">

@@ -105,13 +105,13 @@ function MobileHistory({
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Mobile Header */}
-      <header className="sticky top-0 z-50 bg-background border-b border-border px-4 py-3">
+      <header className="sticky top-0 z-50 bg-background border-b border-border px-3 sm:px-4 py-2 sm:py-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="sm" className="lg:hidden">
-                  <Menu className="h-5 w-5" />
+                <Button variant="ghost" size="sm" className="lg:hidden p-1 sm:p-2">
+                  <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="w-64 p-0">
@@ -227,23 +227,23 @@ function MobileHistory({
               </SheetContent>
             </Sheet>
 
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <HistoryIcon className="text-white h-4 w-4" />
+            <div className="flex items-center space-x-1 sm:space-x-2 min-w-0">
+              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
+                <HistoryIcon className="text-white h-3 w-3 sm:h-4 sm:w-4" />
               </div>
-              <h1 className="text-lg font-semibold text-foreground">
+              <h1 className="text-sm sm:text-lg font-semibold text-foreground truncate">
                 Chat History
               </h1>
             </div>
           </div>
 
-          <Button variant="ghost" size="sm" onClick={logout}>
-            <User className="h-5 w-5" />
+          <Button variant="ghost" size="sm" onClick={logout} className="p-1 sm:p-2 flex-shrink-0">
+            <User className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
         </div>
       </header>
 
-      <main className="flex-1 pb-4">
+      <main className="flex-1 pb-4 overflow-x-hidden">
         {renderContent()}
       </main>
 
@@ -353,20 +353,20 @@ export default function HistoryPage() {
 
   const renderContent = () => {
     return (
-      <ModernContainer className="py-4 sm:py-8 px-4 sm:px-6">
-        <ModernStack spacing="lg" className="sm:spacing-xl">
+      <ModernContainer className="py-4 sm:py-6 px-3 sm:px-4 lg:px-6">
+        <ModernStack spacing="md" className="sm:spacing-lg lg:spacing-xl">
           {/* Header Section */}
-          <div className="text-center space-y-2 sm:space-y-4">
-            <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-violet-600 bg-clip-text text-transparent">
+          <div className="text-center space-y-3 sm:space-y-4">
+            <h1 className="text-xl sm:text-2xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-violet-600 bg-clip-text text-transparent px-2">
               Chat History
             </h1>
-            <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4 sm:px-0">
+            <p className="text-sm sm:text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto px-4 sm:px-6">
               Your encrypted conversation history with AI assistants
             </p>
           </div>
 
           {/* Stats Section */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <StatCard
               title="Total Conversations"
               value={chatSessions.length}
@@ -416,24 +416,24 @@ export default function HistoryPage() {
 
           {/* Search and Filter Section */}
           <ModernCard variant="glass" hover="glow">
-            <ModernCardContent className="p-4 sm:p-6">
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                <div className="flex-1">
+            <ModernCardContent className="p-3 sm:p-4 lg:p-6">
+              <div className="flex flex-col gap-3 sm:gap-4">
+                <div className="w-full">
                   <ModernInput
                     variant="filled"
                     placeholder="Search conversations..."
                     icon={<Search className="h-4 w-4" />}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full touch-manipulation"
+                    className="w-full touch-manipulation text-sm sm:text-base"
                   />
                 </div>
-                <div className="flex gap-2 sm:gap-3">
+                <div className="flex gap-2 sm:gap-3 w-full">
                   <Button
                     variant={filterBy === 'all' ? 'premium' : 'outline'}
                     size="sm"
                     onClick={() => setFilterBy('all')}
-                    className="flex-1 sm:flex-none touch-manipulation"
+                    className="flex-1 touch-manipulation text-xs sm:text-sm"
                   >
                     All
                   </Button>
@@ -441,7 +441,7 @@ export default function HistoryPage() {
                     variant={filterBy === 'recent' ? 'premium' : 'outline'}
                     size="sm"
                     onClick={() => setFilterBy('recent')}
-                    className="flex-1 sm:flex-none touch-manipulation"
+                    className="flex-1 touch-manipulation text-xs sm:text-sm"
                   >
                     Recent
                   </Button>
@@ -455,14 +455,14 @@ export default function HistoryPage() {
             <GridLoading count={6} cols={1} />
           ) : filteredSessions.length === 0 ? (
             <ModernCard variant="glass" className="text-center">
-              <ModernCardContent className="p-8 sm:p-16">
-                <div className="w-16 h-16 sm:w-24 sm:h-24 bg-gradient-to-br from-blue-100 via-purple-100 to-indigo-100 dark:from-blue-900/30 dark:via-purple-900/30 dark:to-indigo-900/30 rounded-full flex items-center justify-center mx-auto mb-6 sm:mb-8 shadow-2xl">
-                  <MessageSquare className="w-8 h-8 sm:w-12 sm:h-12 text-blue-600 dark:text-blue-400" />
+              <ModernCardContent className="p-6 sm:p-8 lg:p-16">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 lg:w-24 lg:h-24 bg-gradient-to-br from-blue-100 via-purple-100 to-indigo-100 dark:from-blue-900/30 dark:via-purple-900/30 dark:to-indigo-900/30 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 lg:mb-8 shadow-2xl">
+                  <MessageSquare className="w-6 h-6 sm:w-8 sm:h-8 lg:w-12 lg:h-12 text-blue-600 dark:text-blue-400" />
                 </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-3 sm:mb-4">
+                <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground mb-2 sm:mb-3 lg:mb-4 px-2">
                   {searchQuery ? 'No matching conversations' : 'No chat history yet'}
                 </h3>
-                <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8 max-w-md mx-auto px-4 sm:px-0">
+                <p className="text-sm sm:text-base lg:text-lg text-muted-foreground mb-4 sm:mb-6 lg:mb-8 max-w-md mx-auto px-4">
                   {searchQuery
                     ? 'Try adjusting your search terms or filters'
                     : 'Start a conversation with your AI assistant to see your history here'
@@ -472,7 +472,7 @@ export default function HistoryPage() {
                   onClick={() => setLocation('/chat')}
                   variant="premium"
                   size="lg"
-                  className="shadow-xl touch-manipulation"
+                  className="shadow-xl touch-manipulation w-full sm:w-auto"
                 >
                   <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                   Start New Chat
@@ -483,28 +483,28 @@ export default function HistoryPage() {
             <ModernStack spacing="sm" className="sm:spacing-md">
               {filteredSessions.map((session) => (
                 <ModernCard key={session.id} variant="elevated" hover="lift" interactive>
-                  <ModernCardContent className="p-4 sm:p-6">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
+                  <ModernCardContent className="p-3 sm:p-4 lg:p-6">
+                    <div className="flex flex-col gap-3">
                       <div
                         className="flex-1 cursor-pointer touch-manipulation"
                         onClick={() => handleOpenChat(session.id)}
                       >
-                        <div className="flex items-start gap-3 sm:gap-4">
-                          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
-                            <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                        <div className="flex items-start gap-3">
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
+                            <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2 truncate">
+                            <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-foreground mb-2 truncate">
                               {session.title}
                             </h3>
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground mb-3">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 lg:gap-4 text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">
                               <div className="flex items-center gap-1">
                                 <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
-                                <span>{formatDate(session.updatedAt.toString())}</span>
+                                <span className="text-xs sm:text-sm">{formatDate(session.updatedAt.toString())}</span>
                               </div>
                               <div className="flex items-center gap-1">
                                 <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
-                                <span>{new Date(session.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                <span className="text-xs sm:text-sm">{new Date(session.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                               </div>
                               {session.agentId && (
                                 <div className="flex items-center gap-1">
@@ -515,7 +515,7 @@ export default function HistoryPage() {
                             </div>
                             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                               <EncryptionIndicator isEncrypted={true} showLabel={true} size="sm" />
-                              <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-xs">
+                              <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-xs w-fit">
                                 Chat Session
                               </Badge>
                             </div>
@@ -523,15 +523,15 @@ export default function HistoryPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 sm:ml-4 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/20">
+                      <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/20">
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleOpenChat(session.id)}
-                          className="hover:bg-blue-100 hover:text-blue-700 dark:hover:bg-blue-900/30 flex-1 sm:flex-none touch-manipulation"
+                          className="hover:bg-blue-100 hover:text-blue-700 dark:hover:bg-blue-900/30 flex-1 touch-manipulation text-xs sm:text-sm"
                         >
-                          <Eye className="h-4 w-4 sm:mr-2" />
-                          <span className="hidden sm:inline">Open</span>
+                          <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                          Open
                         </Button>
 
                         <DropdownMenu>
@@ -565,27 +565,27 @@ export default function HistoryPage() {
 
           {/* Security Notice */}
           <ModernCard variant="security">
-            <ModernCardContent className="p-4 sm:p-6">
+            <ModernCardContent className="p-3 sm:p-4 lg:p-6">
               <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Shield className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
                 </div>
-                <div className="flex-1">
-                  <h4 className="text-base sm:text-lg font-semibold text-foreground mb-2">Privacy & Security</h4>
-                  <p className="text-sm text-muted-foreground mb-3 sm:mb-4">
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-sm sm:text-base lg:text-lg font-semibold text-foreground mb-2">Privacy & Security</h4>
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
                     All chat conversations are encrypted with your personal encryption key before being stored.
                     Your conversation history is never accessible to our servers in unencrypted form.
                   </p>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 text-xs text-muted-foreground">
-                    <div className="flex items-center gap-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 lg:gap-6 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1 sm:gap-2">
                       <Lock className="h-3 w-3" />
                       <span>AES-256 Encrypted</span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 sm:gap-2">
                       <Shield className="h-3 w-3" />
                       <span>Zero-Knowledge</span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 sm:gap-2">
                       <Eye className="h-3 w-3" />
                       <span>Private by Design</span>
                     </div>
