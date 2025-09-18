@@ -5,17 +5,42 @@ export class DrizzleStorage implements IStorage {
   private db: any;
   private schema: any;
   private ready: Promise<void>;
+  
   constructor() {
-    if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL not set');
+    if (!process.env.DATABASE_URL) {
+      throw new Error('DATABASE_URL environment variable is required for DrizzleStorage');
+    }
+    console.log('[DrizzleStorage] Initializing with DATABASE_URL');
     this.ready = this.init();
   }
+  
   private async init() {
-    const { drizzle } = await import('drizzle-orm/node-postgres');
-    const pgModule = await import('pg');
-    const schema = await import('../shared/schema');
-    const pool = new pgModule.default.Pool({ connectionString: process.env.DATABASE_URL });
-    this.db = drizzle(pool, { schema });
-    this.schema = schema;
+    try {
+      console.log('[DrizzleStorage] Importing drizzle dependencies...');
+      const { drizzle } = await import('drizzle-orm/node-postgres');
+      const pgModule = await import('pg');
+      const schema = await import('../shared/schema');
+      
+      console.log('[DrizzleStorage] Creating database connection pool...');
+      const pool = new pgModule.default.Pool({ 
+        connectionString: process.env.DATABASE_URL,
+        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+      });
+      
+      // Test the connection
+      console.log('[DrizzleStorage] Testing database connection...');
+      const client = await pool.connect();
+      await client.query('SELECT 1');
+      client.release();
+      console.log('[DrizzleStorage] Database connection successful!');
+      
+      this.db = drizzle(pool, { schema });
+      this.schema = schema;
+      console.log('[DrizzleStorage] DrizzleStorage initialized successfully');
+    } catch (error) {
+      console.error('[DrizzleStorage] Failed to initialize:', error);
+      throw new Error(`DrizzleStorage initialization failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
   private async ensureReady() { await this.ready; }
   async getUser(id: string): Promise<User | undefined> {
@@ -32,6 +57,12 @@ export class DrizzleStorage implements IStorage {
     await this.ensureReady();
     const [created] = await this.db.insert(this.schema.users).values(user).returning();
     return created;
+  }
+  
+  async getAllUsers(): Promise<User[]> {
+    await this.ensureReady();
+    const users = await this.db.query.users.findMany();
+    return users;
   }
   async getFilesByUserId(userId: string): Promise<EncryptedFile[]> {
     await this.ensureReady();
@@ -218,6 +249,7 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  getAllUsers?(): Promise<User[]>;
 
   // File methods
   getFilesByUserId(userId: string): Promise<EncryptedFile[]>;
@@ -272,6 +304,10 @@ export class MemStorage implements IStorage {
     };
     this.users.set(id, user);
     return user;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
   }
 
   async getFilesByUserId(userId: string): Promise<EncryptedFile[]> {
@@ -384,4 +420,24 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = process.env.DATABASE_URL ? new DrizzleStorage() : new MemStorage();
+// Initialize storage with proper error handling and logging
+function createStorage(): IStorage {
+  const databaseUrl = process.env.DATABASE_URL;
+  
+  if (databaseUrl) {
+    console.log('[Storage] DATABASE_URL found, initializing DrizzleStorage for cloud database');
+    console.log('[Storage] Database URL:', databaseUrl.substring(0, 20) + '...' + databaseUrl.substring(databaseUrl.length - 10));
+    try {
+      return new DrizzleStorage();
+    } catch (error) {
+      console.error('[Storage] Failed to initialize DrizzleStorage:', error);
+      console.error('[Storage] Falling back to MemStorage (this means your data will be lost on restart!)');
+      return new MemStorage();
+    }
+  } else {
+    console.log('[Storage] No DATABASE_URL found, using MemStorage (local memory)');
+    return new MemStorage();
+  }
+}
+
+export const storage = createStorage();

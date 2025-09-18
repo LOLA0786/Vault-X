@@ -38,6 +38,7 @@ import KeyInfo from './key-info';
 import { Footer } from '@/components/ui/footer';
 import { Container } from '@/components/ui/container';
 import { PageTransition } from '@/components/ui/page-transition';
+import AdminDashboard from './admin-dashboard';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -525,6 +526,10 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
 
       case 'key-info':
         return <KeyInfo />;
+
+      case 'admin':
+        return <AdminDashboard />;
+
       default:
         return (
           <ModernContainer className="py-8">

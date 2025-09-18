@@ -58,6 +58,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin route to get all users
+  app.get("/api/admin/users", async (req, res) => {
+    try {
+      const { adminEmail } = req.query;
+      
+      // Check if the requesting user is admin
+      if (adminEmail !== "Lolasolution27@gmail.com" && adminEmail !== "lolasolution27@gmail.com") {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+      
+      // Get all users (add this method to storage if it doesn't exist)
+      const users = await storage.getAllUsers?.() || [];
+      res.json(users);
+    } catch (error) {
+      console.error("Get users error:", error);
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
   // File routes
   app.post("/api/files", async (req, res) => {
     try {
@@ -299,6 +318,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Internal server error" });
     }
   });
+
+  // Database health check endpoint (development only)
+  if (process.env.NODE_ENV === 'development') {
+    app.get('/api/debug/storage-info', async (req, res) => {
+      try {
+        const storageType = storage.constructor.name;
+        const hasDbUrl = !!process.env.DATABASE_URL;
+        const dbUrlPreview = process.env.DATABASE_URL ? 
+          process.env.DATABASE_URL.substring(0, 20) + '...' + process.env.DATABASE_URL.substring(process.env.DATABASE_URL.length - 10) : 
+          'Not configured';
+        
+        res.json({ 
+          storageType,
+          hasDbUrl,
+          dbUrlPreview,
+          timestamp: new Date().toISOString()
+        });
+      } catch (error) {
+        res.status(500).json({ error: 'Storage info error', details: error });
+      }
+    });
+  }
 
   const httpServer = createServer(app);
   return httpServer;
