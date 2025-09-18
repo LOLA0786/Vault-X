@@ -1,5 +1,6 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/hooks/use-auth"
 import { Button } from "./button"
 import { Badge } from "./badge"
 import { 
@@ -12,7 +13,9 @@ import {
   Lock,
   Shield,
   ChevronRight,
-  Zap
+  Zap,
+  DollarSign,
+  ShieldCheck
 } from "lucide-react"
 
 interface NavigationItem {
@@ -65,6 +68,12 @@ const defaultNavItems: NavigationItem[] = [
     description: 'Previous conversations'
   },
   { 
+    id: 'pricing', 
+    label: 'Pricing', 
+    icon: DollarSign,
+    description: 'View pricing plans'
+  },
+  { 
     id: 'settings', 
     label: 'Settings', 
     icon: Settings,
@@ -78,6 +87,25 @@ const defaultNavItems: NavigationItem[] = [
   },
 ]
 
+// Helper function to get navigation items based on user
+export function getNavigationItems(user: any): NavigationItem[] {
+  const isAdmin = user?.email === 'Lolasolution27@gmail.com' || user?.email === "lolasolution27@gmail.com" || user?.email === "test11@gmail.com";
+  console.log('ModernNavigation - User email:', user?.email);
+  console.log('ModernNavigation - Is admin:', isAdmin);
+  
+  const adminItem: NavigationItem = {
+    id: 'admin', 
+    label: 'Admin Dashboard', 
+    icon: ShieldCheck,
+    description: 'System administration'
+  };
+
+  return isAdmin ? [...defaultNavItems, adminItem] : defaultNavItems;
+}
+
+// Export NavigationItem type for use in other components
+export type { NavigationItem };
+
 export function ModernNavigation({ 
   activeTab, 
   onTabChange, 
@@ -86,10 +114,13 @@ export function ModernNavigation({
   showLabels = true,
   showBadges = true
 }: ModernNavigationProps) {
+  const { user } = useAuth();
+  const navigationItems = getNavigationItems(user);
+
   if (variant === 'horizontal') {
     return (
       <nav className={cn("flex items-center space-x-1 p-1 bg-muted/30 rounded-2xl", className)}>
-        {defaultNavItems.map((item) => {
+        {navigationItems.map((item) => {
           const Icon = item.icon
           const isActive = activeTab === item.id
           
@@ -126,7 +157,7 @@ export function ModernNavigation({
   if (variant === 'compact') {
     return (
       <nav className={cn("flex flex-col space-y-1", className)}>
-        {defaultNavItems.map((item) => {
+        {navigationItems.map((item) => {
           const Icon = item.icon
           const isActive = activeTab === item.id
           
@@ -166,7 +197,7 @@ export function ModernNavigation({
   // Default sidebar variant
   return (
     <nav className={cn("space-y-2", className)}>
-      {defaultNavItems.map((item) => {
+      {navigationItems.map((item) => {
         const Icon = item.icon
         const isActive = activeTab === item.id
         
@@ -176,11 +207,17 @@ export function ModernNavigation({
               <div className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 rounded-r bg-gradient-to-b from-primary to-primary/70 shadow-lg shadow-primary/50" />
             )}
             <Button
-              variant={isActive ? "default" : "ghost"}
+              variant="ghost"
               size="lg"
-              onClick={() => onTabChange(item.id)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('ModernNavigation button clicked for:', item.id, 'isActive:', isActive, 'user:', user?.email);
+                onTabChange(item.id);
+              }}
+              disabled={false}
               className={cn(
-                "w-full justify-start text-base font-semibold rounded-2xl transition-all duration-300 group-hover:translate-x-1",
+                "w-full justify-start text-base font-semibold rounded-2xl transition-all duration-300 group-hover:translate-x-1 cursor-pointer",
                 isActive
                   ? "bg-gradient-to-r from-primary/10 to-primary/5 text-primary hover:from-primary/15 hover:to-primary/10 shadow-lg border border-primary/20"
                   : "hover:bg-muted/50 hover:text-foreground text-muted-foreground hover:shadow-md"

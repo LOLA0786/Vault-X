@@ -15,7 +15,6 @@ import { Footer } from '@/components/ui/footer';
 import { Container } from '@/components/ui/container';
 import { PageTransition } from '@/components/ui/page-transition';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-
 // Modern UI Components
 import { ModernCard, ModernCardContent, ModernCardHeader, ModernCardTitle } from '@/components/ui/modern-card';
 import { ModernGrid, ModernContainer, ModernStack } from '@/components/ui/modern-layout';
@@ -27,6 +26,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { PrivateVaultLogo } from '@/components/ui/private-vault-logo';
 import { MobileThemeToggle } from '@/components/ui/mobile-theme-toggle';
+import { getNavigationItems, type NavigationItem } from '@/components/ui/modern-navigation';
 
 // Icons
 import { 
@@ -49,7 +49,8 @@ import {
   History,
   Settings,
   Key,
-  LayoutDashboard
+  LayoutDashboard,
+  DollarSign
 } from 'lucide-react';
 
 // Extended type with decrypted fields
@@ -72,6 +73,7 @@ function MobileChat({
   const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [, setLocation] = useLocation();
+  const navigationItems = getNavigationItems(user);
 
   const handleTabChange = (tab: string) => {
     if (tab === 'dashboard') {
@@ -96,6 +98,10 @@ function MobileChat({
     }
     if (tab === 'key-info') {
       setLocation('/key-info');
+      return;
+    }
+    if (tab === 'admin') {
+      setLocation('/admin');
       return;
     }
   };
@@ -127,83 +133,26 @@ function MobileChat({
                   {/* Navigation Menu */}
                   <nav className="flex-1 p-4">
                     <div className="space-y-2">
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
-                        onClick={() => {
-                          handleTabChange('dashboard');
-                          setIsMobileMenuOpen(false);
-                        }}
-                      >
-                        <LayoutDashboard className="mr-3 h-5 w-5" />
-                        Dashboard
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
-                        onClick={() => {
-                          handleTabChange('vault');
-                          setIsMobileMenuOpen(false);
-                        }}
-                      >
-                        <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M3 7H21L19 2H5L3 7Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M3 7V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                        File Vault
-                      </Button>
-                      <Button
-                        variant="default"
-                        className="w-full justify-start bg-primary text-primary-foreground"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        <MessageSquare className="mr-3 h-5 w-5" />
-                        AI Assistant
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
-                        onClick={() => {
-                          handleTabChange('agents');
-                          setIsMobileMenuOpen(false);
-                        }}
-                      >
-                        <Bot className="mr-3 h-5 w-5" />
-                        AI Agents
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
-                        onClick={() => {
-                          handleTabChange('history');
-                          setIsMobileMenuOpen(false);
-                        }}
-                      >
-                        <History className="mr-3 h-5 w-5" />
-                        Chat History
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
-                        onClick={() => {
-                          handleTabChange('settings');
-                          setIsMobileMenuOpen(false);
-                        }}
-                      >
-                        <Settings className="mr-3 h-5 w-5" />
-                        Settings
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
-                        onClick={() => {
-                          handleTabChange('key-info');
-                          setIsMobileMenuOpen(false);
-                        }}
-                      >
-                        <Key className="mr-3 h-5 w-5" />
-                        How it works
-                      </Button>
+                      {navigationItems.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = item.id === 'chat';
+                        return (
+                          <Button
+                            key={item.id}
+                            variant={isActive ? "default" : "ghost"}
+                            className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
+                            onClick={() => {
+                              if (item.id !== 'chat') {
+                                handleTabChange(item.id);
+                              }
+                              setIsMobileMenuOpen(false);
+                            }}
+                          >
+                            <Icon className="mr-3 h-5 w-5" />
+                            {item.label}
+                          </Button>
+                        );
+                      })}
                     </div>
                     
                     {/* Theme Toggle */}
@@ -298,6 +247,10 @@ export default function ChatPage({ sessionId, onNewSession }: ChatPageProps) {
     }
     if (tab === 'history') {
       setLocation('/history');
+      return;
+    }
+    if (tab === 'pricing') {
+      setLocation('/pricing');
       return;
     }
     if (tab === 'settings') {
