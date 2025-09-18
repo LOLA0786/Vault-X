@@ -1,7 +1,5 @@
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Shield } from "lucide-react";
-import { ThemeToggle } from "./theme-toggle";
 import { ModernNavigation } from "./modern-navigation";
 import { PrivateVaultLogo } from "./private-vault-logo";
 import { 
