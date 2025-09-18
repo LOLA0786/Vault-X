@@ -15,6 +15,7 @@ import { Container } from '@/components/ui/container';
 import { PageTransition } from '@/components/ui/page-transition';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { PrivateVaultLogo } from '@/components/ui/private-vault-logo';
+import { MobileThemeToggle } from '@/components/ui/mobile-theme-toggle';
 import {
   Bot,
   Plus,
@@ -153,6 +154,11 @@ function MobileAgents({
                           </Button>
                         );
                       })}
+                    </div>
+                    
+                    {/* Theme Toggle */}
+                    <div className="px-3 pt-2 border-t border-border/30">
+                      <MobileThemeToggle />
                     </div>
                   </nav>
 

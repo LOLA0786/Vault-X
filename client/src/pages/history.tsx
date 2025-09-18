@@ -23,6 +23,7 @@ import { Badge } from '@/components/ui/badge';
 import { SecurityBadge, EncryptionIndicator } from '@/components/ui/security-badge';
 import { ModernInput } from '@/components/ui/modern-input';
 import { GridLoading } from '@/components/ui/modern-loading';
+import { MobileThemeToggle } from '@/components/ui/mobile-theme-toggle';
 import { PrivateVaultLogo } from '@/components/ui/private-vault-logo';
 
 // Icons
@@ -207,6 +208,11 @@ function MobileHistory({
                         <Key className="mr-3 h-5 w-5" />
                         How it works
                       </Button>
+                    </div>
+                    
+                    {/* Theme Toggle */}
+                    <div className="px-4 pt-2 border-t border-border/30">
+                      <MobileThemeToggle />
                     </div>
                   </nav>
                   

@@ -9,6 +9,7 @@ import { ModernFileUpload } from '@/components/ui/modern-file-upload';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Sidebar } from '@/components/ui/sidebar';
+import { MobileThemeToggle } from '@/components/ui/mobile-theme-toggle';
 
 
 import { KeyManagement } from '@/components/key-management';
@@ -122,6 +123,11 @@ function MobileDashboard({
                         );
                       })}
                     </div>
+                    
+                    {/* Theme Toggle */}
+                    <div className="px-3 pt-2 border-t border-border/30">
+                      <MobileThemeToggle />
+                    </div>
                   </nav>
 
                   {/* Mobile Sidebar Footer */}
@@ -174,6 +180,9 @@ function MobileDashboard({
             <DropdownMenuContent align="end" className="w-48">
               <div className="px-2 py-1.5">
                 <p className="text-sm font-medium">{user?.email}</p>
+              </div>
+              <div className="px-2 py-1">
+                <MobileThemeToggle />
               </div>
               <DropdownMenuItem onClick={logout}>
                 <LogOut className="mr-2 h-4 w-4" />

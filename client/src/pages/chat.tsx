@@ -26,6 +26,7 @@ import { SecurityBadge, EncryptionIndicator } from '@/components/ui/security-bad
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { PrivateVaultLogo } from '@/components/ui/private-vault-logo';
+import { MobileThemeToggle } from '@/components/ui/mobile-theme-toggle';
 
 // Icons
 import { 
@@ -203,6 +204,11 @@ function MobileChat({
                         <Key className="mr-3 h-5 w-5" />
                         How it works
                       </Button>
+                    </div>
+                    
+                    {/* Theme Toggle */}
+                    <div className="px-4 pt-2 border-t border-border/30">
+                      <MobileThemeToggle />
                     </div>
                   </nav>
                   
