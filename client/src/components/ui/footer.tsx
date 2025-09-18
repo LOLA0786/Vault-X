@@ -63,7 +63,7 @@ export function Footer({ currentPage }: FooterProps) {
              
             </div>
             <p className="text-xs text-muted-foreground">
-              🔐 Secure AI-powered file storage with client-side encryption
+              Secure AI-powered file storage with client-side encryption
             </p>
           </div>
         </div>

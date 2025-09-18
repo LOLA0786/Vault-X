@@ -76,15 +76,15 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
 
   useEffect(() => {
     scrollToBottom();
-  // keep ref in sync so event handlers can read latest messages
-  messagesRef.current = messages;
+    // keep ref in sync so event handlers can read latest messages
+    messagesRef.current = messages;
   }, [messages]);
 
   // Auto-focus the input so first-time users can start typing immediately
   useEffect(() => {
     try {
       inputRef.current?.focus();
-    } catch (e) {}
+    } catch (e) { }
   }, []);
 
   useEffect(() => {
@@ -134,14 +134,14 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
     try {
       console.log('[Chat Debug] Saving chat history for user:', user.id);
       console.log('[Chat Debug] Message count:', newMessages.length);
-      
+
       const encryptedHistory = EncryptionService.encrypt(JSON.stringify(newMessages));
       if (!encryptedHistory || encryptedHistory.length === 0) {
         console.warn('[Chat Debug] Encrypted history is empty, aborting save');
         return;
       }
       console.log('[Chat Debug] Encrypted history length:', encryptedHistory.length);
-      
+
       const currentSessionId = sessionId || localSessionId;
 
       if (currentSessionId) {
@@ -154,7 +154,7 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ encryptedHistory, title: titleToUpdate }),
         });
-        
+
         if (!response.ok) {
           const errorData = await response.json();
           console.error('[Chat Debug] Failed to update session:', errorData);
@@ -164,25 +164,25 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
           // Notify parent so session list / titles can refresh
           onNewSession?.(currentSessionId);
         }
-  } else {
+      } else {
         // Create new session
-  const firstContent = newMessages[0]?.content;
-  const title = firstContent ? (firstContent.slice(0, 50) + (firstContent.length > 50 ? '...' : '')) : 'New Chat';
+        const firstContent = newMessages[0]?.content;
+        const title = firstContent ? (firstContent.slice(0, 50) + (firstContent.length > 50 ? '...' : '')) : 'New Chat';
         console.log('[Chat Debug] Creating new session with title:', title);
-        
+
         const requestData = {
           userId: String(user.id || ''),
           title: String(title || 'New Chat'),
           encryptedHistory: String(encryptedHistory),
         };
         console.log('[Chat Debug] Request data:', JSON.stringify(requestData, null, 2));
-        
-  const response = await fetch('/api/chat-sessions', {
+
+        const response = await fetch('/api/chat-sessions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(requestData),
         });
-        
+
         if (response.ok) {
           const newSession = await response.json();
           console.log('[Chat Debug] New session created:', newSession);
@@ -192,7 +192,7 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
           try {
             localStorage.setItem(`pv-chat-session-${user?.id ?? 'anon'}`, newSession.id);
             localStorage.setItem('pv-chat-session', newSession.id);
-          } catch (e) {}
+          } catch (e) { }
         } else {
           const errorData = await response.json();
           console.error('[Chat Debug] Failed to create session:', errorData);
@@ -207,11 +207,11 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
   const sendMessage = async () => {
     if (!inputValue.trim() || !user) return;
     console.log('[Chat Debug] User object:', user);
-    
-  const userMessage: ChatMessage = { role: 'user', content: inputValue, timestamp: new Date() };
-  // Build newMessages from the ref to avoid stale closures
-  const newMessages = [...messagesRef.current, userMessage];
-  setMessages(newMessages);
+
+    const userMessage: ChatMessage = { role: 'user', content: inputValue, timestamp: new Date() };
+    // Build newMessages from the ref to avoid stale closures
+    const newMessages = [...messagesRef.current, userMessage];
+    setMessages(newMessages);
     setInputValue('');
     setIsLoading(true);
     try {
@@ -279,8 +279,8 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
               // Start a fresh local draft — do not create an empty server session yet.
               setMessages([]);
               setLocalSessionId(undefined);
-              try { localStorage.removeItem(`pv-chat-session-${user?.id ?? 'anon'}`); localStorage.removeItem('pv-chat-session'); localStorage.removeItem(`pv-chat-${user?.id ?? 'anon'}`); localStorage.removeItem('pv-chat-draft'); } catch (e) {}
-              onNewSession?.(undefined as unknown as string);
+              try { localStorage.removeItem(`pv-chat-session-${user?.id ?? 'anon'}`); localStorage.removeItem('pv-chat-session'); localStorage.removeItem(`pv-chat-${user?.id ?? 'anon'}`); localStorage.removeItem('pv-chat-draft'); } catch (e) { }
+              onNewSession?.(null as any);
               toast({ title: 'New chat started' });
             }}>New Chat</Button>
           </div>

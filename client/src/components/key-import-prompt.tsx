@@ -26,6 +26,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { EncryptionService } from '@/lib/encryption';
 import { useAuth } from '@/hooks/use-auth';
+import { PrivateVaultLogo } from '@/components/ui/private-vault-logo';
 
 interface KeyImportPromptProps {
   onComplete: () => void;
@@ -88,7 +89,7 @@ export function KeyImportPrompt({ onComplete }: KeyImportPromptProps) {
       EncryptionService.importKey(importKey.trim());
       
       toast({
-        title: '🎉 Key imported successfully!',
+        title: 'Key imported successfully!',
         description: 'Your encryption key has been restored. Welcome back!',
       });
       
@@ -124,19 +125,58 @@ export function KeyImportPrompt({ onComplete }: KeyImportPromptProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-indigo-950/30 dark:to-slate-900 flex flex-col">
-      <div className="flex-1 flex items-center justify-center p-4">
-        <Card className="w-full max-w-3xl mx-auto border-indigo-200 dark:border-indigo-800 shadow-2xl shadow-indigo-100/50 dark:shadow-indigo-950/50">
-        <CardHeader className="text-center pb-8 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-950/50 dark:to-blue-950/50 rounded-t-lg">
-          <div className="mx-auto w-24 h-24 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mb-6 shadow-lg">
-            <Lock className="w-12 h-12 text-white" />
+    <div className="min-h-screen flex flex-col relative overflow-hidden">
+      {/* Enhanced Background */}
+      <div className="absolute inset-0 bg-white dark:from-slate-900 dark:via-indigo-950/30 dark:to-slate-900" />
+      
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-10 left-10 w-96 h-96 bg-gradient-to-br from-indigo-400/20 to-purple-500/20 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-10 right-10 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-indigo-500/20 rounded-full blur-3xl animate-pulse animation-delay-1000" />
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-gradient-to-br from-purple-400/20 to-pink-500/20 rounded-full blur-3xl animate-pulse animation-delay-2000" />
+        
+        {/* Floating elements */}
+        <div className="absolute top-20 right-20 w-4 h-4 bg-indigo-400 rounded-full animate-bounce animation-delay-500" />
+        <div className="absolute bottom-32 left-32 w-2 h-2 bg-purple-400 rounded-full animate-bounce animation-delay-1500" />
+        <div className="absolute top-1/3 left-20 w-3 h-3 bg-blue-400 rounded-full animate-bounce animation-delay-2500" />
+      </div>
+      
+      <div className="flex-1 flex items-center justify-center p-4 relative z-10">
+        <Card className="w-full max-w-4xl mx-auto border-indigo-200 dark:border-indigo-800 shadow-2xl shadow-indigo-100/50 dark:shadow-indigo-950/50 backdrop-blur-sm bg-white/90 dark:bg-slate-900/90">
+        <CardHeader className="text-center pb-8 bg-gradient-to-r from-indigo-50/80 to-purple-50/80 dark:from-indigo-950/50 dark:to-purple-950/50 rounded-t-lg relative overflow-hidden">
+          {/* Animated header background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-purple-500/5 to-blue-500/5 animate-pulse" />
+          
+          <div className="relative">
+            <div className="mx-auto mb-8 group">
+              <PrivateVaultLogo 
+                size="xl" 
+                animated={true}
+                className="group hover:scale-110 transition-all duration-500 drop-shadow-2xl"
+              />
+
+            </div>
+            
+            <CardTitle className="text-5xl font-bold mb-6 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              Welcome Back to Private Vault
+            </CardTitle>
+            
+            <CardDescription className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              To protect your privacy, all your data is encrypted with military-grade security. Please import your encryption key to access your files, chat history, and AI assistant.
+            </CardDescription>
+            
+            {/* Security badges */}
+            <div className="flex items-center justify-center gap-4 mt-6">
+              <div className="flex items-center gap-2 px-4 py-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
+                <Shield className="h-4 w-4 text-emerald-600" />
+                <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">AES-256 Encrypted</span>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+                <Lock className="h-4 w-4 text-blue-600" />
+                <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Zero-Knowledge</span>
+              </div>
+            </div>
           </div>
-          <CardTitle className="text-4xl font-bold mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-            🔐 Welcome Back to Private Vault
-          </CardTitle>
-          <CardDescription className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            To protect your privacy, all your data is encrypted. Please import your encryption key to access your files, chat history, and AI assistant.
-          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-8 px-8 pb-8">
           {/* Status Banner */}
@@ -144,7 +184,7 @@ export function KeyImportPrompt({ onComplete }: KeyImportPromptProps) {
             <div className="inline-flex items-center gap-3 px-6 py-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-full">
               <div className="w-3 h-3 bg-amber-500 rounded-full animate-pulse"></div>
               <span className="text-amber-800 dark:text-amber-200 font-medium">
-                🔒 Your data is securely encrypted and waiting for you
+                Your data is securely encrypted and waiting for you
               </span>
             </div>
           </div>
@@ -262,7 +302,7 @@ Example: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789..."
               </div>
               <div className="space-y-4">
                 <h4 className="font-semibold text-base text-blue-900 dark:text-blue-100">
-                  🔍 Where to find your encryption key:
+                  Where to find your encryption key:
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div className="space-y-3">
