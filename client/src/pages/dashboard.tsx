@@ -9,6 +9,7 @@ import { ModernFileUpload } from '@/components/ui/modern-file-upload';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Sidebar } from '@/components/ui/sidebar';
+import { MobileThemeToggle } from '@/components/ui/mobile-theme-toggle';
 
 
 import { KeyManagement } from '@/components/key-management';
@@ -47,16 +48,19 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { ModernHeader } from '@/components/ui/modern-header';
+import { getNavigationItems, type NavigationItem } from '@/components/ui/modern-navigation';
 
 // Mobile Dashboard Component
 function MobileDashboard({
   activeTab,
   onTabChange,
-  renderContent
+  renderContent,
+  navigationItems
 }: {
   activeTab: string;
   onTabChange: (tab: string) => void;
   renderContent: () => React.ReactNode;
+  navigationItems: NavigationItem[];
 }) {
   const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -96,15 +100,7 @@ function MobileDashboard({
                   {/* Mobile Navigation */}
                   <nav className="flex-1 overflow-y-auto py-4">
                     <div className="px-3 space-y-1">
-                      {[
-                        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-                        { id: 'vault', label: 'File Vault', icon: FolderOpen },
-                        { id: 'chat', label: 'AI Assistant', icon: MessageSquare },
-                        { id: 'agents', label: 'AI Agents', icon: Bot },
-                        { id: 'history', label: 'Chat History', icon: History },
-                        { id: 'settings', label: 'Settings', icon: Settings },
-                        { id: 'key-info', label: 'How it works', icon: Lock },
-                      ].map((item) => {
+                      {navigationItems.map((item) => {
                         const Icon = item.icon;
                         return (
                           <Button
@@ -121,6 +117,11 @@ function MobileDashboard({
                           </Button>
                         );
                       })}
+                    </div>
+
+                    {/* Theme Toggle */}
+                    <div className="px-3 pt-2 border-t border-border/30">
+                      <MobileThemeToggle />
                     </div>
                   </nav>
 
@@ -175,6 +176,9 @@ function MobileDashboard({
               <div className="px-2 py-1.5">
                 <p className="text-sm font-medium">{user?.email}</p>
               </div>
+              <div className="px-2 py-1">
+                <MobileThemeToggle />
+              </div>
               <DropdownMenuItem onClick={logout}>
                 <LogOut className="mr-2 h-4 w-4" />
                 Sign Out
@@ -207,8 +211,8 @@ function MobileDashboard({
                 size="sm"
                 onClick={() => onTabChange(item.id)}
                 className={`flex flex-col items-center gap-1 h-auto py-2 px-3 min-w-0 ${isActive
-                    ? 'text-primary bg-primary/10'
-                    : 'text-muted-foreground hover:text-foreground'
+                  ? 'text-primary bg-primary/10'
+                  : 'text-muted-foreground hover:text-foreground'
                   }`}
               >
                 <Icon className="h-5 w-5" />
@@ -236,11 +240,9 @@ function MobileDashboard({
               <div className="py-4">
                 <h3 className="text-lg font-semibold mb-4">More Options</h3>
                 <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { id: 'history', label: 'Chat History', icon: History },
-                    { id: 'settings', label: 'Settings', icon: Settings },
-                    { id: 'key-info', label: 'How it works', icon: Lock },
-                  ].map((item) => {
+                  {navigationItems.filter(item =>
+                    !['dashboard', 'vault', 'chat', 'agents'].includes(item.id)
+                  ).map((item) => {
                     const Icon = item.icon;
                     return (
                       <Button
@@ -276,6 +278,7 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
   const { user, logout } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const navigationItems = getNavigationItems(user);
   const [showImportKeyBanner, setShowImportKeyBanner] = useState(false);
   const [bannerImportKey, setBannerImportKey] = useState('');
 
@@ -676,6 +679,7 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
     }
   };
   const handleTabChange = (tab: string) => {
+    console.log('Dashboard handleTabChange called with:', tab);
     if (tab === 'dashboard') {
       setLocation('/');
       setActiveTab('dashboard');
@@ -692,99 +696,73 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
     }
     if (tab === 'chat') {
       setLocation('/chat');
-      setActiveTab('chat');
       return;
     }
     if (tab === 'history') {
       setLocation('/history');
-      setActiveTab('history');
       return;
     }
     if (tab === 'settings') {
       setLocation('/settings');
-      setActiveTab('settings');
       return;
     }
     if (tab === 'key-info') {
       setLocation('/key-info');
-      setActiveTab('key-info');
+      return;
+    }
+    if (tab === 'admin') {
+      setLocation('/admin');
       return;
     }
     setActiveTab(tab);
   };
 
+  // Check if we're on mobile
+  const [isMobile, setIsMobile] = useState(false);
+
   useEffect(() => {
-    const path = location.replace(/^\//, '');
-    switch (path) {
-      case '':
-      case 'dashboard':
-        setActiveTab('dashboard');
-        break;
-      case 'vault':
-      case 'files':
-        setActiveTab('vault');
-        break;
-      case 'chat':
-        setActiveTab('chat');
-        break;
-      case 'history':
-        setActiveTab('history');
-        break;
-      case 'agents':
-        setActiveTab('agents');
-        break;
-      case 'settings':
-        setActiveTab('settings');
-        break;
-      case 'key-info':
-        setActiveTab('key-info');
-        break;
-      default:
-        break;
-    }
-  }, [location]);
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Mobile layout
+  if (isMobile) {
+    return (
+      <MobileDashboard
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        renderContent={renderContent}
+        navigationItems={navigationItems}
+      />
+    );
+  }
+
+  // Desktop layout with fixed sidebar
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* Mobile Layout */}
-      <div className="lg:hidden">
-        <MobileDashboard
-          activeTab={activeTab}
-          onTabChange={handleTabChange}
-          renderContent={renderContent}
-        />
-      </div>
+    <div className="min-h-screen bg-background">
+      {/* Fixed Sidebar - Outside any transform containers */}
+      <Sidebar
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+      />
 
-      {/* Desktop Layout */}
-      <div className="hidden lg:flex min-h-screen">
-        <Sidebar
-          activeTab={activeTab}
-          onTabChange={handleTabChange}
-          className="fixed h-full w-64 bg-sidebar text-sidebar-foreground dark:bg-sidebar dark:text-sidebar-foreground"
-        />
-
-        <div className="flex-1 ml-64 flex flex-col min-h-screen bg-background text-foreground">
-          {/* Modern Header */}
-          <ModernHeader
-            title={activeTab === 'dashboard' ? 'Dashboard' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
-            subtitle="Manage your private AI assistant and encrypted files"
-            user={user ? { email: user.email } : undefined}
-            onLogout={logout}
-            showSearch={false}
-          />
-
-          {/* Main Content */}
-          <div className="flex-1 overflow-y-auto bg-background text-foreground">
-            <Container size="xl" padding="lg" className="py-6">
-              <PageTransition>
-                {renderContent()}
-              </PageTransition>
-            </Container>
+      {/* Main Content Area */}
+      <div className="ml-64">
+        <main className="min-h-screen overflow-y-auto">
+          <div className="p-6">
+            {renderContent()}
           </div>
+        </main>
 
-          {/* Footer */}
-          <Footer />
-        </div>
+        {/* Footer */}
+        <Footer />
       </div>
     </div>
   );
 }
+

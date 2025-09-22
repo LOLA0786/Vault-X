@@ -6,7 +6,6 @@ import { EncryptionService } from '@/lib/encryption';
 import { Button } from '@/components/ui/button';
 
 import { ModernCard, ModernCardContent, ModernCardDescription, ModernCardHeader, ModernCardTitle } from '@/components/ui/modern-card';
-import { ModernGrid } from '@/components/ui/modern-layout';
 import { SecurityBadge, SecurityStatus, EncryptionIndicator } from '@/components/ui/security-badge';
 import { Sidebar } from '@/components/ui/sidebar';
 import { ModernHeader } from '@/components/ui/modern-header';
@@ -15,6 +14,8 @@ import { Container } from '@/components/ui/container';
 import { PageTransition } from '@/components/ui/page-transition';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { PrivateVaultLogo } from '@/components/ui/private-vault-logo';
+import { MobileThemeToggle } from '@/components/ui/mobile-theme-toggle';
+import { getNavigationItems } from '@/components/ui/modern-navigation';
 import {
   Bot,
   Plus,
@@ -30,12 +31,9 @@ import {
   MessageSquare,
   Activity,
   Menu,
-  User,
   LogOut,
   LayoutDashboard,
-  FolderOpen,
-  History,
-  Settings
+  FolderOpen
 } from 'lucide-react';
 
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
@@ -68,6 +66,7 @@ function MobileAgents({
   const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [, setLocation] = useLocation();
+  const navigationItems = getNavigationItems(user);
 
   const handleTabChange = (tab: string) => {
     if (tab === 'dashboard') {
@@ -90,8 +89,16 @@ function MobileAgents({
       setLocation('/settings');
       return;
     }
+    if (tab === 'pricing') {
+      setLocation('/pricing');
+      return;
+    }
     if (tab === 'key-info') {
       setLocation('/key-info');
+      return;
+    }
+    if (tab === 'admin') {
+      setLocation('/admin');
       return;
     }
   };
@@ -113,8 +120,8 @@ function MobileAgents({
                   {/* Mobile Sidebar Header */}
                   <div className="p-6 border-b border-border">
                     <div className="flex items-center space-x-3">
-                      <PrivateVaultLogo 
-                        size="sm" 
+                      <PrivateVaultLogo
+                        size="sm"
                         animated={true}
                         className="drop-shadow-lg"
                       />
@@ -128,15 +135,7 @@ function MobileAgents({
                   {/* Mobile Navigation */}
                   <nav className="flex-1 overflow-y-auto py-4">
                     <div className="px-3 space-y-1">
-                      {[
-                        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-                        { id: 'vault', label: 'File Vault', icon: FolderOpen },
-                        { id: 'chat', label: 'AI Assistant', icon: MessageSquare },
-                        { id: 'agents', label: 'AI Agents', icon: Bot },
-                        { id: 'history', label: 'Chat History', icon: History },
-                        { id: 'settings', label: 'Settings', icon: Settings },
-                        { id: 'key-info', label: 'How it works', icon: Lock },
-                      ].map((item) => {
+                      {navigationItems.map((item) => {
                         const Icon = item.icon;
                         return (
                           <Button
@@ -153,6 +152,11 @@ function MobileAgents({
                           </Button>
                         );
                       })}
+                    </div>
+
+                    {/* Theme Toggle */}
+                    <div className="px-3 pt-2 border-t border-border/30">
+                      <MobileThemeToggle />
                     </div>
                   </nav>
 
@@ -185,13 +189,13 @@ function MobileAgents({
               </SheetContent>
             </Sheet>
 
-            <div className="flex items-center space-x-3">
-              <PrivateVaultLogo 
-                size="sm" 
+            <div className="flex items-center space-x-3 min-w-0 flex-1">
+              <PrivateVaultLogo
+                size="sm"
                 animated={true}
-                className="drop-shadow-md"
+                className="drop-shadow-md flex-shrink-0"
               />
-              <h1 className="text-lg font-semibold text-foreground">
+              <h1 className="text-lg font-semibold text-foreground truncate">
                 AI Agents
               </h1>
             </div>
@@ -208,8 +212,8 @@ function MobileAgents({
       </main>
 
       {/* Bottom Navigation for Mobile */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-t border-border">
-        <div className="flex items-center justify-around px-2 py-2">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border">
+        <div className="flex items-center justify-around px-1 py-2">
           {[
             { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
             { id: 'vault', label: 'Vault', icon: FolderOpen },
@@ -218,59 +222,56 @@ function MobileAgents({
           ].map((item) => {
             const Icon = item.icon;
             const isActive = 'agents' === item.id;
-            
+
             return (
               <Button
                 key={item.id}
                 variant="ghost"
                 size="sm"
                 onClick={() => handleTabChange(item.id)}
-                className={`flex flex-col items-center gap-1 h-auto py-2 px-3 min-w-0 ${
-                  isActive 
-                    ? 'text-primary bg-primary/10' 
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
+                className={`flex flex-col items-center gap-1 h-auto py-2 px-2 min-w-0 flex-1 max-w-[80px] ${isActive
+                  ? 'text-primary bg-primary/10'
+                  : 'text-muted-foreground hover:text-foreground'
+                  }`}
               >
-                <Icon className="h-5 w-5" />
-                <span className="text-xs font-medium truncate">{item.label}</span>
+                <Icon className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                <span className="text-xs font-medium truncate leading-tight">{item.label}</span>
                 {isActive && (
                   <div className="w-1 h-1 bg-primary rounded-full"></div>
                 )}
               </Button>
             );
           })}
-          
+
           {/* More menu for additional items */}
           <Sheet>
             <SheetTrigger asChild>
               <Button
                 variant="ghost"
                 size="sm"
-                className="flex flex-col items-center gap-1 h-auto py-2 px-3 text-muted-foreground hover:text-foreground"
+                className="flex flex-col items-center gap-1 h-auto py-2 px-2 text-muted-foreground hover:text-foreground min-w-0 flex-1 max-w-[80px]"
               >
-                <Menu className="h-5 w-5" />
-                <span className="text-xs font-medium">More</span>
+                <Menu className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                <span className="text-xs font-medium truncate leading-tight">More</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="bottom" className="h-auto">
               <div className="py-4">
                 <h3 className="text-lg font-semibold mb-4">More Options</h3>
                 <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { id: 'history', label: 'Chat History', icon: History },
-                    { id: 'settings', label: 'Settings', icon: Settings },
-                    { id: 'key-info', label: 'How it works', icon: Lock },
-                  ].map((item) => {
+                  {navigationItems.filter(item =>
+                    !['dashboard', 'vault', 'chat', 'agents'].includes(item.id)
+                  ).map((item) => {
                     const Icon = item.icon;
                     return (
                       <Button
                         key={item.id}
                         variant="ghost"
-                        className="justify-start h-12"
+                        className="justify-start h-12 text-sm"
                         onClick={() => handleTabChange(item.id)}
                       >
-                        <Icon className="mr-3 h-4 w-4" />
-                        {item.label}
+                        <Icon className="mr-3 h-4 w-4 flex-shrink-0" />
+                        <span className="truncate">{item.label}</span>
                       </Button>
                     );
                   })}
@@ -318,8 +319,16 @@ export default function AgentsPage() {
       setLocation('/settings');
       return;
     }
+    if (tab === 'pricing') {
+      setLocation('/pricing');
+      return;
+    }
     if (tab === 'key-info') {
       setLocation('/key-info');
+      return;
+    }
+    if (tab === 'admin') {
+      setLocation('/admin');
       return;
     }
   };
@@ -385,21 +394,21 @@ export default function AgentsPage() {
           <ModernCard variant="gradient" className="overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-violet-500/10 via-blue-500/10 to-emerald-500/10" />
             <ModernCardContent className="relative p-8">
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-8 gap-6">
-                <div className="flex items-center gap-6">
-                  <div className="w-16 h-16 bg-gradient-to-br from-violet-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-xl">
-                    <Bot className="h-8 w-8 text-white" />
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-6 sm:mb-8 gap-4 sm:gap-6">
+                <div className="flex items-center gap-3 sm:gap-6 min-w-0">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl sm:rounded-3xl flex items-center justify-center shadow-xl flex-shrink-0">
+                    <Bot className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
                   </div>
-                  <div>
-                    <h1 className="text-4xl font-bold bg-gradient-to-r from-violet-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">
+                  <div className="min-w-0 flex-1">
+                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-violet-600 via-purple-600 to-blue-600 bg-clip-text text-transparent leading-tight">
                       AI Agents
                     </h1>
-                    <p className="text-lg text-muted-foreground mt-2">
+                    <p className="text-sm sm:text-base lg:text-lg text-muted-foreground mt-1 sm:mt-2 leading-relaxed">
                       Create and manage your private, encrypted AI assistants
                     </p>
                   </div>
                 </div>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
                   <SecurityStatus status="encrypted" message={`${agents.length} agents encrypted`} />
                   <SecurityBadge variant="secure" size="lg" animated>
                     Privacy Protected
@@ -408,62 +417,63 @@ export default function AgentsPage() {
               </div>
 
               {/* Agent Stats */}
-              <ModernGrid cols={4} gap="md" responsive>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <ModernCard variant="glass" hover="scale">
-                  <ModernCardContent className="p-6 text-center">
-                    <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg">
-                      <Bot className="h-6 w-6 text-white" />
+                  <ModernCardContent className="p-3 sm:p-4 lg:p-6 text-center">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl lg:rounded-2xl flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg">
+                      <Bot className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
                     </div>
-                    <p className="text-3xl font-bold text-foreground">{agents.length}</p>
-                    <p className="text-sm font-medium text-muted-foreground">Active Agents</p>
+                    <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">{agents.length}</p>
+                    <p className="text-xs sm:text-sm font-medium text-muted-foreground">Active Agents</p>
                   </ModernCardContent>
                 </ModernCard>
 
                 <ModernCard variant="glass" hover="scale">
-                  <ModernCardContent className="p-6 text-center">
-                    <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg">
-                      <Shield className="h-6 w-6 text-white" />
+                  <ModernCardContent className="p-3 sm:p-4 lg:p-6 text-center">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl lg:rounded-2xl flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg">
+                      <Shield className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
                     </div>
-                    <p className="text-3xl font-bold text-foreground">100%</p>
-                    <p className="text-sm font-medium text-muted-foreground">Encrypted</p>
+                    <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">100%</p>
+                    <p className="text-xs sm:text-sm font-medium text-muted-foreground">Encrypted</p>
                   </ModernCardContent>
                 </ModernCard>
 
                 <ModernCard variant="glass" hover="scale">
-                  <ModernCardContent className="p-6 text-center">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg">
-                      <Brain className="h-6 w-6 text-white" />
+                  <ModernCardContent className="p-3 sm:p-4 lg:p-6 text-center">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl lg:rounded-2xl flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg">
+                      <Brain className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
                     </div>
-                    <p className="text-3xl font-bold text-foreground">AI</p>
-                    <p className="text-sm font-medium text-muted-foreground">Powered</p>
+                    <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">AI</p>
+                    <p className="text-xs sm:text-sm font-medium text-muted-foreground">Powered</p>
                   </ModernCardContent>
                 </ModernCard>
 
                 <ModernCard variant="glass" hover="scale">
-                  <ModernCardContent className="p-6 text-center">
-                    <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg">
-                      <Activity className="h-6 w-6 text-white" />
+                  <ModernCardContent className="p-3 sm:p-4 lg:p-6 text-center">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl lg:rounded-2xl flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg">
+                      <Activity className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
                     </div>
-                    <p className="text-3xl font-bold text-foreground">24/7</p>
-                    <p className="text-sm font-medium text-muted-foreground">Available</p>
+                    <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">24/7</p>
+                    <p className="text-xs sm:text-sm font-medium text-muted-foreground">Available</p>
                   </ModernCardContent>
                 </ModernCard>
-              </ModernGrid>
+              </div>
             </ModernCardContent>
           </ModernCard>
 
           {/* Create Agent Section */}
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-            <div className="space-y-2">
-              <h2 className="text-3xl font-bold text-foreground">Your AI Agents</h2>
-              <p className="text-lg text-muted-foreground">Manage your private, encrypted AI assistants</p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
+            <div className="space-y-1 sm:space-y-2 min-w-0 flex-1">
+              <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">Your AI Agents</h2>
+              <p className="text-sm sm:text-base lg:text-lg text-muted-foreground">Manage your private, encrypted AI assistants</p>
             </div>
             <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
               <DialogTrigger asChild>
-                <Button variant="premium" size="lg" className="group shadow-xl">
-                  <Plus className="h-5 w-5 mr-2" />
-                  Create New Agent
-                  <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                <Button variant="premium" size="lg" className="group shadow-xl w-full sm:w-auto">
+                  <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                  <span className="hidden sm:inline">Create New Agent</span>
+                  <span className="sm:hidden">Create Agent</span>
+                  <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -477,76 +487,77 @@ export default function AgentsPage() {
             <GridLoading count={6} cols={3} />
           ) : processedAgents.length === 0 ? (
             <ModernCard variant="glass" className="text-center">
-              <ModernCardContent className="p-16">
-                <div className="w-32 h-32 bg-gradient-to-br from-violet-100 via-purple-100 to-indigo-100 dark:from-violet-900/30 dark:via-purple-900/30 dark:to-indigo-900/30 rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl">
-                  <Bot className="w-16 h-16 text-violet-600 dark:text-violet-400" />
+              <ModernCardContent className="p-8 sm:p-12 lg:p-16">
+                <div className="w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-violet-100 via-purple-100 to-indigo-100 dark:from-violet-900/30 dark:via-purple-900/30 dark:to-indigo-900/30 rounded-full flex items-center justify-center mx-auto mb-6 sm:mb-8 shadow-2xl">
+                  <Bot className="w-12 h-12 sm:w-16 sm:h-16 text-violet-600 dark:text-violet-400" />
                 </div>
-                <h3 className="text-3xl font-bold text-foreground mb-4">No AI agents yet</h3>
-                <p className="text-lg text-muted-foreground mb-8 max-w-lg mx-auto leading-relaxed">
+                <h3 className="text-2xl sm:text-3xl font-bold text-foreground mb-3 sm:mb-4">No AI agents yet</h3>
+                <p className="text-sm sm:text-base lg:text-lg text-muted-foreground mb-6 sm:mb-8 max-w-lg mx-auto leading-relaxed px-4 sm:px-0">
                   Create your first AI agent to start having secure, encrypted conversations. All agent data is protected with client-side encryption.
                 </p>
                 <Button
                   onClick={() => setIsCreateDialogOpen(true)}
                   variant="premium"
                   size="xl"
-                  className="group shadow-2xl"
+                  className="group shadow-2xl w-full sm:w-auto"
                 >
-                  <Plus className="h-5 w-5 mr-2" />
-                  Create Your First Agent
-                  <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                  <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                  <span className="hidden sm:inline">Create Your First Agent</span>
+                  <span className="sm:hidden">Create First Agent</span>
+                  <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
                 </Button>
               </ModernCardContent>
             </ModernCard>
           ) : (
-            <ModernGrid cols={3} gap="lg" responsive>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {processedAgents.map((agent) => (
                 <ModernCard key={agent.id} variant="elevated" hover="lift" interactive className="group">
                   <ModernCardHeader>
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-xl">
-                          <Bot className="h-7 w-7 text-white" />
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-xl flex-shrink-0">
+                          <Bot className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
                         </div>
-                        <div>
-                          <ModernCardTitle className="text-xl font-bold text-foreground">{agent.name}</ModernCardTitle>
-                          <div className="flex items-center gap-2 mt-2">
+                        <div className="min-w-0 flex-1">
+                          <ModernCardTitle className="text-lg sm:text-xl font-bold text-foreground truncate">{agent.name}</ModernCardTitle>
+                          <div className="flex items-center gap-2 mt-1 sm:mt-2">
                             <EncryptionIndicator isEncrypted={true} showLabel={false} size="sm" />
-                            <span className="text-sm text-muted-foreground font-medium">Encrypted</span>
+                            <span className="text-xs sm:text-sm text-muted-foreground font-medium">Encrypted</span>
                           </div>
                         </div>
                       </div>
-                      <SecurityBadge variant="encrypted" size="sm" animated>
+                      <SecurityBadge variant="encrypted" size="sm" animated className="self-start sm:self-center">
                         Private
                       </SecurityBadge>
                     </div>
                   </ModernCardHeader>
 
-                  <ModernCardContent className="space-y-6">
-                    <ModernCardDescription className="line-clamp-3 text-base leading-relaxed">
+                  <ModernCardContent className="space-y-4 sm:space-y-6">
+                    <ModernCardDescription className="line-clamp-3 text-sm sm:text-base leading-relaxed break-words">
                       {agent.decryptedDescription}
                     </ModernCardDescription>
 
-                    <div className="flex items-center justify-between text-sm text-muted-foreground bg-muted/30 rounded-xl p-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs sm:text-sm text-muted-foreground bg-muted/30 rounded-xl p-2 sm:p-3 gap-2 sm:gap-0">
                       <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4" />
-                        <span>Created {new Date(agent.createdAt).toLocaleDateString()}</span>
+                        <Clock className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                        <span className="truncate">Created {new Date(agent.createdAt).toLocaleDateString()}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Lock className="h-4 w-4 text-emerald-600" />
+                        <Lock className="h-3 w-3 sm:h-4 sm:w-4 text-emerald-600 flex-shrink-0" />
                         <span className="text-emerald-600 font-semibold">AES-256</span>
                       </div>
                     </div>
 
-                    <div className="flex flex-col gap-3 pt-2">
+                    <div className="flex flex-col gap-2 sm:gap-3 pt-2">
                       <Button
                         variant="premium"
                         size="lg"
                         className="w-full group"
                         onClick={() => setLocation('/chat')}
                       >
-                        <MessageSquare className="h-5 w-5 mr-2" />
+                        <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                         Start Chat
-                        <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                        <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -554,39 +565,39 @@ export default function AgentsPage() {
                         onClick={() => setAgentToDelete(agent.id)}
                         className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors duration-200"
                       >
-                        <Trash2 className="h-4 w-4 mr-2" />
+                        <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                         Delete Agent
                       </Button>
                     </div>
                   </ModernCardContent>
                 </ModernCard>
               ))}
-            </ModernGrid>
+            </div>
           )}
 
           {/* Security Notice */}
           <ModernCard variant="premium">
-            <ModernCardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-security-500 to-security-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Shield className="h-6 w-6 text-white" />
+            <ModernCardContent className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-security-500 to-security-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                 </div>
-                <div className="flex-1">
-                  <h4 className="text-lg font-semibold text-foreground mb-2">Privacy & Security</h4>
-                  <p className="text-sm text-muted-foreground mb-4">
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-base sm:text-lg font-semibold text-foreground mb-2">Privacy & Security</h4>
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 leading-relaxed">
                     All AI agents are encrypted with your personal encryption key. Agent descriptions, system prompts, and conversation history are never accessible to our servers.
                   </p>
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs text-muted-foreground">
                     <div className="flex items-center gap-2">
-                      <Fingerprint className="h-3 w-3" />
+                      <Fingerprint className="h-3 w-3 flex-shrink-0" />
                       <span>Client-side Encryption</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <ShieldCheck className="h-3 w-3" />
+                      <ShieldCheck className="h-3 w-3 flex-shrink-0" />
                       <span>Zero-Knowledge</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Sparkles className="h-3 w-3" />
+                      <Sparkles className="h-3 w-3 flex-shrink-0" />
                       <span>AES-256 Protected</span>
                     </div>
                   </div>
@@ -628,14 +639,15 @@ export default function AgentsPage() {
       </div>
 
       {/* Desktop Layout */}
-      <div className="hidden lg:flex min-h-screen">
+      <div className="hidden lg:block min-h-screen bg-background text-foreground">
+        {/* Sidebar - Outside any transform containers */}
         <Sidebar
           activeTab="agents"
           onTabChange={handleTabChange}
-          className="fixed h-full w-64 bg-sidebar text-sidebar-foreground dark:bg-sidebar dark:text-sidebar-foreground"
         />
 
-        <div className="flex-1 ml-64 flex flex-col min-h-screen bg-background text-foreground">
+        {/* Main Content */}
+        <div className="ml-64 flex flex-col min-h-screen bg-background text-foreground">
           {/* Modern Header */}
           <ModernHeader
             title="AI Agents"

@@ -1,73 +1,56 @@
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { ModernNavigation } from "./modern-navigation";
+import { ModernNavigation, getNavigationItems } from "./modern-navigation";
 import { PrivateVaultLogo } from "./private-vault-logo";
-import { 
-  Shield, 
-  LayoutDashboard, 
-  FolderOpen, 
-  MessageSquare, 
-  History, 
-  Settings,
-  Lock,
-  Bot,
-  ShieldCheck,
-  CreditCard,
-  Crown
-} from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 import { useAuth } from "@/hooks/use-auth";
-import { PaymentButton } from "./payment-button";
+import { createPortal } from "react-dom";
 
 interface SidebarProps {
-  className?: string;
   activeTab: string;
   onTabChange: (tab: string) => void;
 }
 
-export function Sidebar({ className, activeTab, onTabChange }: SidebarProps) {
+export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   const { user } = useAuth();
-  const isAdmin = user?.email === 'Lolasolution27@gmail.com' || user?.email === "lolasolution27@gmail.com";;
 
-  const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'vault', label: 'File Vault', icon: FolderOpen },
-    { id: 'chat', label: 'AI Assistant', icon: MessageSquare },
-    { id: 'agents', label: 'AI Agents', icon: Bot },
-    { id: 'history', label: 'Chat History', icon: History },
-    { id: 'pricing', label: 'Pricing Plans', icon: Crown, badge: 'NEW' },
-    { id: 'settings', label: 'Settings', icon: Settings },
-    { id: 'key-info', label: 'How it works', icon: Lock },
-    ...(isAdmin ? [{ id: 'admin', label: 'Admin Dashboard', icon: ShieldCheck }] : []),
-  ];
+  // Only render on desktop
+  if (typeof window === 'undefined' || window.innerWidth < 1024) {
+    return null;
+  }
 
-  return (
-    <div className={cn(
-      "w-64 bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 border-r border-border/50 flex flex-col h-screen",
-      "shadow-2xl shadow-black/5 dark:shadow-black/40 backdrop-blur-xl",
-      className
-    )}>
-      {/* Modern Header */}
-      <div className="p-6 border-b border-border/30">
-        <div className="flex items-center space-x-4">
-          <PrivateVaultLogo 
-            size="md" 
+  const sidebarContent = (
+    <div
+      className="bg-gradient-to-b from-slate-50/95 via-white/95 to-slate-50/95 dark:from-slate-950/95 dark:via-slate-900/95 dark:to-slate-950/95 backdrop-blur-xl border-r border-border/40 flex flex-col shadow-2xl shadow-black/10 dark:shadow-black/50"
+      style={{
+        position: 'fixed',
+        left: '0px',
+        top: '0px',
+        height: '100vh',
+        width: '280px',
+        zIndex: 9999,
+        overflow: 'hidden'
+      }}
+    >
+      {/* Perfect Header */}
+      <div className="px-6 py-5 border-b border-border/20">
+        <div className="flex items-center space-x-3">
+          <PrivateVaultLogo
+            size="md"
             animated={true}
-            className="drop-shadow-xl"
+            className="drop-shadow-lg flex-shrink-0"
           />
-          <div>
-            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-violet-600 bg-clip-text text-transparent">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-lg font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-violet-600 bg-clip-text text-transparent leading-tight">
               Private Vault
             </h1>
-            <p className="text-sm text-muted-foreground font-medium">Your Secure AI Assistant</p>
+            <p className="text-xs text-muted-foreground font-medium mt-0.5">Your Secure AI Assistant</p>
           </div>
         </div>
       </div>
 
-      {/* Modern Navigation */}
-      <div className="flex-1 overflow-y-auto p-4">
-        <ModernNavigation 
-          activeTab={activeTab} 
+      {/* Perfect Navigation */}
+      <div className="flex-1 overflow-y-auto py-4 px-3">
+        <ModernNavigation
+          activeTab={activeTab}
           onTabChange={onTabChange}
           variant="sidebar"
           showLabels={true}
@@ -75,10 +58,13 @@ export function Sidebar({ className, activeTab, onTabChange }: SidebarProps) {
         />
       </div>
 
-      {/* Theme Toggle */}
-      <div className="p-4 border-t border-border/30">
+      {/* Perfect Footer */}
+      <div className="px-4 py-3 border-t border-border/20 bg-gradient-to-r from-muted/30 to-muted/20">
         <ThemeToggle />
       </div>
     </div>
   );
+
+  // Render sidebar as portal to document body to avoid any containing block issues
+  return createPortal(sidebarContent, document.body);
 }

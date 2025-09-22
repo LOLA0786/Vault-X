@@ -24,6 +24,8 @@ import { SecurityBadge, EncryptionIndicator } from '@/components/ui/security-bad
 import { ModernInput } from '@/components/ui/modern-input';
 import { GridLoading } from '@/components/ui/modern-loading';
 import { PrivateVaultLogo } from '@/components/ui/private-vault-logo';
+import { MobileThemeToggle } from '@/components/ui/mobile-theme-toggle';
+import { getNavigationItems, type NavigationItem } from '@/components/ui/modern-navigation';
 
 // Icons
 import {
@@ -75,6 +77,7 @@ function MobileHistory({
   const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [, setLocation] = useLocation();
+  const navigationItems = getNavigationItems(user);
 
   const handleTabChange = (tab: string) => {
     if (tab === 'dashboard') {
@@ -130,83 +133,31 @@ function MobileHistory({
                   {/* Navigation Menu */}
                   <nav className="flex-1 p-4">
                     <div className="space-y-2">
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
-                        onClick={() => {
-                          handleTabChange('dashboard');
-                          setIsMobileMenuOpen(false);
-                        }}
-                      >
-                        <LayoutDashboard className="mr-3 h-5 w-5" />
-                        Dashboard
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
-                        onClick={() => {
-                          handleTabChange('vault');
-                          setIsMobileMenuOpen(false);
-                        }}
-                      >
-                        <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M3 7H21L19 2H5L3 7Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M3 7V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                        File Vault
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
-                        onClick={() => {
-                          handleTabChange('chat');
-                          setIsMobileMenuOpen(false);
-                        }}
-                      >
-                        <MessageSquare className="mr-3 h-5 w-5" />
-                        AI Assistant
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
-                        onClick={() => {
-                          handleTabChange('agents');
-                          setIsMobileMenuOpen(false);
-                        }}
-                      >
-                        <Bot className="mr-3 h-5 w-5" />
-                        AI Agents
-                      </Button>
-                      <Button
-                        variant="default"
-                        className="w-full justify-start bg-primary text-primary-foreground"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        <HistoryIcon className="mr-3 h-5 w-5" />
-                        Chat History
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
-                        onClick={() => {
-                          handleTabChange('settings');
-                          setIsMobileMenuOpen(false);
-                        }}
-                      >
-                        <Settings className="mr-3 h-5 w-5" />
-                        Settings
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
-                        onClick={() => {
-                          handleTabChange('key-info');
-                          setIsMobileMenuOpen(false);
-                        }}
-                      >
-                        <Key className="mr-3 h-5 w-5" />
-                        How it works
-                      </Button>
+                      {navigationItems.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = item.id === 'history';
+                        return (
+                          <Button
+                            key={item.id}
+                            variant={isActive ? "default" : "ghost"}
+                            className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
+                            onClick={() => {
+                              if (item.id !== 'history') {
+                                handleTabChange(item.id);
+                              }
+                              setIsMobileMenuOpen(false);
+                            }}
+                          >
+                            <Icon className="mr-3 h-5 w-5" />
+                            {item.label}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                    
+                    {/* Theme Toggle */}
+                    <div className="px-4 pt-2 border-t border-border/30">
+                      <MobileThemeToggle />
                     </div>
                   </nav>
                   
@@ -277,12 +228,20 @@ export default function HistoryPage() {
       setLocation('/agents');
       return;
     }
+    if (tab === 'pricing') {
+      setLocation('/pricing');
+      return;
+    }
     if (tab === 'settings') {
       setLocation('/settings');
       return;
     }
     if (tab === 'key-info') {
       setLocation('/key-info');
+      return;
+    }
+    if (tab === 'admin') {
+      setLocation('/admin');
       return;
     }
   };
@@ -625,14 +584,15 @@ export default function HistoryPage() {
       </div>
 
       {/* Desktop Layout */}
-      <div className="hidden lg:flex min-h-screen">
+      <div className="hidden lg:block min-h-screen bg-background text-foreground">
+        {/* Sidebar - Outside any transform containers */}
         <Sidebar
           activeTab="history"
           onTabChange={handleTabChange}
-          className="fixed h-full w-64 bg-sidebar text-sidebar-foreground dark:bg-sidebar dark:text-sidebar-foreground"
         />
 
-        <div className="flex-1 ml-64 flex flex-col min-h-screen bg-background text-foreground">
+        {/* Main Content */}
+        <div className="ml-64 flex flex-col min-h-screen bg-background text-foreground">
           {/* Modern Header */}
           <ModernHeader
             title="Chat History"

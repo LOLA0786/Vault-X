@@ -15,6 +15,8 @@ import KeyInfo from "@/pages/key-info";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import TermsConditions from "@/pages/terms-conditions";
 import RefundPolicy from "@/pages/refund-policy";
+import Pricing from "@/pages/pricing";
+import AdminDashboard from "@/pages/admin-dashboard";
 import { EncryptionOnboarding } from "@/components/encryption-onboarding";
 import { KeyImportPrompt } from "@/components/key-import-prompt";
 import { EncryptionService } from "@/lib/encryption";
@@ -119,6 +121,10 @@ function Router() {
         </Route>
         <Route path="/settings">
           {isAuthenticated ? <Settings /> : <Onboarding />}
+        </Route>
+        <Route path="/pricing" component={Pricing} />
+        <Route path="/admin">
+          {isAuthenticated ? <AdminDashboard /> : <Onboarding />}
         </Route>
 
         {/* Legal Pages - Publicly Accessible */}
