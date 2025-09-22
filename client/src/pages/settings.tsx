@@ -25,6 +25,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { PrivateVaultLogo } from '@/components/ui/private-vault-logo';
 import { MobileThemeToggle } from '@/components/ui/mobile-theme-toggle';
 import { getNavigationItems, type NavigationItem } from '@/components/ui/modern-navigation';
+import { SubscriptionDisplay } from '@/components/subscription-display';
 
 
 // Icons
@@ -484,6 +485,9 @@ export default function SettingsPage() {
                 </div>
               </ModernCardContent>
             </ModernCard>
+
+            {/* Subscription Section */}
+            <SubscriptionDisplay />
 
             {/* Encryption Key Management */}
             <ModernCard variant="gradient" hover="glow">

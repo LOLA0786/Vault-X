@@ -1,8 +1,10 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, insertFileSchema, insertChatSessionSchema, insertAiAgentSchema } from "@shared/schema";
+import { insertUserSchema, insertFileSchema, insertChatSessionSchema, insertAiAgentSchema, insertPaymentSchema } from "../shared/schema";
 import { z } from "zod";
+import Razorpay from "razorpay";
+import crypto from "crypto";
 
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -320,6 +322,312 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Database health check endpoint (development only)
+  // Payment routes
+  // Initialize Razorpay instance
+  const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID || "",
+    key_secret: process.env.RAZORPAY_KEY_SECRET || "",
+  });
+
+  // Create a new payment order
+  app.post("/api/payments/create-order", async (req, res) => {
+    try {
+      const { userId, amount, currency, planId, planName, billingPeriod } = req.body;
+      
+      if (!userId || !amount) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+      
+      // Resolve userId - if it contains @ it's an email, look up the actual user ID
+      let resolvedUserId = userId;
+      if (userId.includes('@')) {
+        try {
+          const user = await storage.getUserByEmail(userId);
+          if (!user) {
+            return res.status(404).json({ error: "User not found" });
+          }
+          resolvedUserId = user.id;
+          console.log(`Resolved email ${userId} to user ID ${resolvedUserId}`);
+        } catch (error) {
+          console.error("Error resolving user email:", error);
+          return res.status(500).json({ error: "Failed to resolve user" });
+        }
+      }
+      
+      // Convert amount to INR if needed (Razorpay primarily uses INR)
+      let processedAmount = parseFloat(amount);
+      let targetCurrency = currency || "INR";
+      
+      if (currency && currency !== "INR") {
+        console.log(`Converting ${processedAmount} ${currency} to INR`);
+        processedAmount = convertCurrency(processedAmount, currency, "INR");
+        targetCurrency = "INR"; // Always use INR for Razorpay
+        console.log(`Converted amount: ${processedAmount} INR`);
+      }
+
+      // Create Razorpay order
+      const options = {
+        amount: Math.round(processedAmount * 100), // Razorpay expects amount as integer in smallest currency unit (paise)
+        currency: targetCurrency,
+        receipt: `receipt_${Date.now()}`,
+        notes: {
+          planId: planId || 'one-time-payment',
+          planName: planName || 'Standard Payment',
+          billingPeriod: billingPeriod || 'one-time',
+          originalCurrency: currency || "INR",
+          originalAmount: amount
+        }
+      };
+
+      const order = await razorpay.orders.create(options);
+      
+      // Store payment information in database using resolved user ID
+      const paymentData = {
+        userId: resolvedUserId, // Use the resolved user ID
+        amount: processedAmount.toString(), // Convert to string for the database
+        currency: targetCurrency,
+        originalAmount: amount.toString(), // Convert original amount to string
+        originalCurrency: currency,
+        razorpayOrderId: order.id,
+        planId,
+        planName,
+        billingPeriod
+      };
+
+      const payment = await storage.createPayment(paymentData);
+      
+      res.json({
+        success: true,
+        order,
+        payment,
+        key: process.env.RAZORPAY_KEY_ID
+      });
+    } catch (error) {
+      console.error("Payment order creation failed:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Payment order creation failed", 
+        details: error instanceof Error ? error.message : error 
+      });
+    }
+  });
+
+  // Verify and update payment status
+  app.post("/api/payments/verify", async (req, res) => {
+    try {
+      const { razorpay_payment_id, razorpay_order_id, razorpay_signature, plan_id } = req.body;
+      
+      // Validate input parameters
+      if (!razorpay_payment_id || !razorpay_order_id || !razorpay_signature) {
+        console.error("Payment verification failed: Missing required parameters");
+        return res.status(400).json({ 
+          success: false, 
+          error: "Missing required payment verification parameters" 
+        });
+      }
+      
+      // Fetch the payment from database using orderId
+      const payment = await storage.getPaymentByOrderId(razorpay_order_id);
+      if (!payment) {
+        console.error(`Payment verification failed: Order ID ${razorpay_order_id} not found`);
+        return res.status(404).json({ success: false, error: "Payment not found" });
+      }
+
+      console.log("Verifying payment signature for order:", razorpay_order_id);
+      console.log("Razorpay secret key available:", !!process.env.RAZORPAY_KEY_SECRET);
+      
+      // Verify signature
+      try {
+        const generatedSignature = generateSignature(razorpay_order_id, razorpay_payment_id);
+        const isValid = generatedSignature === razorpay_signature;
+
+        if (!isValid) {
+          console.error("Payment verification failed: Invalid signature");
+          return res.status(400).json({ success: false, error: "Invalid signature" });
+        }
+      } catch (signatureError) {
+        console.error("Error generating signature:", signatureError);
+        return res.status(500).json({ 
+          success: false, 
+          error: "Signature verification error", 
+          details: signatureError instanceof Error ? signatureError.message : String(signatureError)
+        });
+      }
+
+      // Update payment status in database with plan information if passed
+      const updateData: any = {
+        paymentId: razorpay_payment_id,
+        signature: razorpay_signature,
+        status: "completed"
+      };
+      
+      // If plan_id is passed and payment doesn't already have one, update it
+      if (plan_id && !payment.planId) {
+        updateData.planId = plan_id;
+      }
+
+      const updatedPayment = await storage.updatePaymentStatus(
+        payment.id,
+        razorpay_payment_id,
+        razorpay_signature,
+        "completed",
+        plan_id
+      );
+      
+      console.log("Updated payment details:", {
+        id: updatedPayment?.id,
+        userId: updatedPayment?.userId,
+        planId: updatedPayment?.planId,
+        planName: updatedPayment?.planName,
+        billingPeriod: updatedPayment?.billingPeriod
+      });
+      
+      // Create subscription record after successful payment
+      if (updatedPayment && updatedPayment.planId) {
+        const billingPeriod = updatedPayment.billingPeriod || 'month';
+        const planName = updatedPayment.planName || 'Standard Plan';
+        
+        try {
+          console.log("Creating subscription for user:", updatedPayment.userId, "with plan:", updatedPayment.planId);
+          
+          // Create subscription record in user_subscriptions table
+          const subscriptionData = {
+            userId: updatedPayment.userId,
+            planId: updatedPayment.planId,
+            planName: planName,
+            billingPeriod: billingPeriod,
+            startDate: new Date(),
+            endDate: billingPeriod === 'year' ? 
+              new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) : // Add 1 year
+              new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),   // Add 30 days
+            status: 'active',
+            autoRenew: 1, // 1 = true, 0 = false for integer column
+            paymentId: updatedPayment.id
+          };
+          
+          await storage.createUserSubscription(subscriptionData);
+          console.log("Subscription created successfully for user:", updatedPayment.userId);
+          
+          // Update user plan information
+          console.log("Updating user plan for user:", updatedPayment.userId);
+          const updatedUser = await storage.updateUserPlan(
+            updatedPayment.userId,
+            updatedPayment.planId,
+            planName,
+            billingPeriod,
+            updatedPayment.id
+          );
+          console.log("User plan update result:", updatedUser ? "SUCCESS" : "FAILED");
+          if (updatedUser) {
+            console.log("Updated user plan details:", {
+              currentPlan: updatedUser.currentPlan,
+              planStatus: updatedUser.planStatus,
+              subscriptionStartDate: updatedUser.subscriptionStartDate,
+              subscriptionEndDate: updatedUser.subscriptionEndDate
+            });
+          }
+        } catch (subscriptionError) {
+          console.error("Error creating subscription:", subscriptionError);
+          // Don't fail the payment verification, just log the error
+          // The payment is still successful even if subscription creation fails
+        }
+      } else {
+        console.log("Skipping subscription creation - missing required fields:", {
+          hasPayment: !!updatedPayment,
+          planId: updatedPayment?.planId,
+          planName: updatedPayment?.planName
+        });
+      }
+      
+      console.log("Payment verification successful for order:", razorpay_order_id);
+      res.json({ success: true, payment: updatedPayment });
+    } catch (error) {
+      console.error("Payment verification failed:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Payment verification failed", 
+        details: error instanceof Error ? error.message : String(error) 
+      });
+    }
+  });
+
+  // Get user payments
+  app.get("/api/payments/user/:userId", async (req, res) => {
+    try {
+      const payments = await storage.getPaymentsByUserId(req.params.userId);
+      res.json(payments);
+    } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Subscription routes
+  // Get user subscription
+  app.get("/api/subscriptions/user/:userId", async (req, res) => {
+    try {
+      const subscription = await storage.getUserSubscription(req.params.userId);
+      if (!subscription) {
+        return res.status(404).json({ error: "No active subscription found" });
+      }
+      res.json(subscription);
+    } catch (error) {
+      console.error("Error fetching user subscription:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Update user subscription
+  app.put("/api/subscriptions/user/:userId", async (req, res) => {
+    try {
+      const { status, autoRenew } = req.body;
+      const updateData: any = {};
+      
+      if (status !== undefined) updateData.status = status;
+      if (autoRenew !== undefined) updateData.autoRenew = autoRenew ? 1 : 0;
+      
+      const subscription = await storage.updateUserSubscription(req.params.userId, updateData);
+      if (!subscription) {
+        return res.status(404).json({ error: "Subscription not found" });
+      }
+      
+      res.json(subscription);
+    } catch (error) {
+      console.error("Error updating user subscription:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+  
+  // Helper function to generate signature
+  function generateSignature(orderId: string, paymentId: string) {
+    const secret = process.env.RAZORPAY_KEY_SECRET || "";
+    const payload = orderId + "|" + paymentId;
+    return crypto
+      .createHmac("sha256", secret)
+      .update(payload)
+      .digest("hex");
+  }
+  
+  // Helper function to convert USD to INR
+  function convertCurrency(amount: number, fromCurrency: string, toCurrency: string): number {
+    // Current conversion rates (as of September 2025)
+    const conversionRates = {
+      USD_TO_INR: 83.5, // 1 USD = 83.5 INR (example rate)
+      EUR_TO_INR: 90.2, // 1 EUR = 90.2 INR (example rate)
+    };
+    
+    // Convert from USD to INR
+    if (fromCurrency === "USD" && toCurrency === "INR") {
+      return amount * conversionRates.USD_TO_INR;
+    }
+    // Convert from EUR to INR
+    else if (fromCurrency === "EUR" && toCurrency === "INR") {
+      return amount * conversionRates.EUR_TO_INR;
+    }
+    // If the currencies are the same or unsupported conversion, return original amount
+    return amount;
+  }
+
+  // Development debugging endpoints
   if (process.env.NODE_ENV === 'development') {
     app.get('/api/debug/storage-info', async (req, res) => {
       try {

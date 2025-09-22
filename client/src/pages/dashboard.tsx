@@ -706,6 +706,10 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
       setLocation('/settings');
       return;
     }
+    if (tab === 'pricing') {
+      setLocation('/pricing');
+      return;
+    }
     if (tab === 'key-info') {
       setLocation('/key-info');
       return;

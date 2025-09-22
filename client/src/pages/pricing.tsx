@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
+import { useToast } from '@/hooks/use-toast';
+import { PaymentService } from '@/lib/payment-service';
 
 // Layout Components
 import { Sidebar } from '@/components/ui/sidebar';
@@ -191,6 +193,8 @@ export default function PricingPage() {
   const { user, logout } = useAuth();
   const [, setLocation] = useLocation();
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
+  const [loading, setLoading] = useState<Record<string, boolean>>({});
+  const { toast } = useToast();
 
   // Debug log to check if page is loading
   useEffect(() => {
@@ -237,6 +241,114 @@ export default function PricingPage() {
       console.log('Navigating to admin page');
       setLocation('/admin');
       return;
+    }
+  };
+
+  const handlePayment = async (plan: any) => {
+    if (!user?.id) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to purchase a plan.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    let timeoutId: NodeJS.Timeout | null = null;
+    
+    try {
+      setLoading(prev => ({ ...prev, [plan.name]: true }));
+      
+      // Set a timeout to automatically reset loading state after 5 minutes
+      timeoutId = setTimeout(() => {
+        setLoading(prev => ({ ...prev, [plan.name]: false }));
+        toast({
+          title: "Payment Timeout",
+          description: "Payment process timed out. Please try again.",
+          variant: "destructive"
+        });
+      }, 300000); // 5 minutes
+      
+      // Extract price from string (remove $ and convert to number)
+      const priceString = plan.price.replace('$', '');
+      const price = parseFloat(priceString);
+      
+      // Create order with plan details
+      const orderData = await PaymentService.createOrder({
+        amount: price,
+        currency: 'USD',
+        description: `${plan.name} - ${plan.period}`,
+        planId: plan.name.toLowerCase().replace(/\s+/g, '-'),
+        planName: plan.name,
+        billingPeriod: billingCycle === 'monthly' ? 'month' : 'year'
+      }, user.id); // Pass the user ID
+
+      if (!orderData.success || !orderData.order || !orderData.key) {
+        throw new Error(orderData.error || 'Failed to create payment order');
+      }
+      
+      // Show currency conversion info if payment will be in INR
+      if (orderData.order.currency === 'INR') {
+        toast({
+          title: "Currency Conversion",
+          description: `${price} USD has been converted to ₹${(orderData.order.amount/100).toFixed(2)} INR for payment processing.`,
+          variant: "default"
+        });
+      }
+
+      // Open Razorpay checkout with plan amount
+      try {
+        const response = await PaymentService.openRazorpayCheckout(orderData);
+        
+        // Verify payment
+        const verificationData = {
+          razorpay_payment_id: response.razorpay_payment_id,
+          razorpay_order_id: response.razorpay_order_id,
+          razorpay_signature: response.razorpay_signature,
+          plan_id: plan.name.toLowerCase().replace(/\s+/g, '-')
+        };
+        
+        const verification = await PaymentService.verifyPayment(verificationData);
+
+        if (verification.success) {
+          toast({
+            title: "Payment Successful!",
+            description: `Your ${plan.name} subscription is now active. Welcome to VaultX!`,
+            variant: "default"
+          });
+          // Optionally redirect to dashboard or show success state
+          setTimeout(() => {
+            setLocation('/dashboard');
+          }, 2000);
+        } else {
+          throw new Error(verification.error || 'Payment verification failed');
+        }
+      } catch (checkoutError: any) {
+        // Handle specific payment cancellation
+        if (checkoutError.message === 'Payment cancelled by user') {
+          toast({
+            title: "Payment Cancelled",
+            description: "You cancelled the payment. You can try again anytime.",
+            variant: "default"
+          });
+          return; // Exit early without showing error
+        }
+        // Re-throw other errors to be handled by the outer catch block
+        throw checkoutError;
+      }
+    } catch (error) {
+      console.error('Payment failed:', error);
+      toast({
+        title: "Payment Failed",
+        description: error instanceof Error ? error.message : "Something went wrong with your payment. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      // Clear the timeout if it exists
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      setLoading(prev => ({ ...prev, [plan.name]: false }));
     }
   };
 
@@ -471,14 +583,45 @@ export default function PricingPage() {
                       ))}
                     </ul>
 
-                    <Button
-                      variant={plan.ctaVariant}
-                      className="w-full group text-xs py-2 font-semibold"
-                      size="sm"
-                    >
-                      {plan.cta}
-                      <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                    </Button>
+                    <div className="space-y-2">
+                      <Button
+                        variant={plan.ctaVariant}
+                        className="w-full group text-xs py-2 font-semibold"
+                        size="sm"
+                        onClick={() => handlePayment(plan)}
+                        disabled={loading[plan.name]}
+                      >
+                        {loading[plan.name] ? (
+                          <>
+                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current mr-2"></div>
+                            Processing...
+                          </>
+                        ) : (
+                          <>
+                            {plan.cta}
+                            <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                          </>
+                        )}
+                      </Button>
+                      
+                      {loading[plan.name] && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full text-xs text-muted-foreground hover:text-foreground"
+                          onClick={() => {
+                            setLoading(prev => ({ ...prev, [plan.name]: false }));
+                            toast({
+                              title: "Payment Cancelled",
+                              description: "Payment process has been cancelled.",
+                              variant: "default"
+                            });
+                          }}
+                        >
+                          Cancel Payment
+                        </Button>
+                      )}
+                    </div>
                   </ModernCardContent>
                 </ModernCard>
               ))}

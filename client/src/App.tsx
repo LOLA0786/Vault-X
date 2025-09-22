@@ -131,6 +131,7 @@ function Router() {
         <Route path="/privacy-policy" component={PrivacyPolicy} />
         <Route path="/terms-conditions" component={TermsConditions} />
         <Route path="/refund-policy" component={RefundPolicy} />
+        
 
         <Route component={NotFound} />
       </Switch>

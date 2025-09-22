@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type EncryptedFile, type InsertFile, type ChatSession, type InsertChatSession, type AiAgent, type InsertAiAgent } from "@shared/schema";
+import { type User, type InsertUser, type EncryptedFile, type InsertFile, type ChatSession, type InsertChatSession, type AiAgent, type InsertAiAgent, type Payment, type InsertPayment, type UserSubscription, type InsertUserSubscription } from "../shared/schema";
 import { randomUUID } from "crypto";
 
 export class DrizzleStorage implements IStorage {
@@ -237,6 +237,129 @@ export class DrizzleStorage implements IStorage {
     const { eq } = await import('drizzle-orm');
     await this.db.delete(this.schema.aiAgents).where(eq(this.schema.aiAgents.id, id));
   }
+  
+  // Payment methods
+  async createPayment(payment: InsertPayment): Promise<Payment> {
+    await this.ensureReady();
+    const [created] = await this.db.insert(this.schema.payments).values(payment).returning();
+    return created;
+  }
+  
+  async getPaymentsByUserId(userId: string): Promise<Payment[]> {
+    await this.ensureReady();
+    const { eq } = await import('drizzle-orm');
+    const payments = await this.db.query.payments.findMany({ 
+      where: eq(this.schema.payments.userId, userId) 
+    });
+    return payments;
+  }
+  
+  async getPaymentByOrderId(orderId: string): Promise<Payment | undefined> {
+    await this.ensureReady();
+    const { eq } = await import('drizzle-orm');
+    const payment = await this.db.query.payments.findFirst({ 
+      where: eq(this.schema.payments.razorpayOrderId, orderId) 
+    });
+    return payment || undefined;
+  }
+  
+  async updatePaymentStatus(id: string, paymentId: string, signature: string, status: string, planId?: string): Promise<Payment | undefined> {
+    await this.ensureReady();
+    const { eq } = await import('drizzle-orm');
+    const updateData: any = {
+      razorpayPaymentId: paymentId,
+      razorpaySignature: signature,
+      status: status,
+      updatedAt: new Date()
+    };
+    
+    // Only add planId if provided
+    if (planId) {
+      updateData.planId = planId;
+    }
+    
+    const [updated] = await this.db
+      .update(this.schema.payments)
+      .set(updateData)
+      .where(eq(this.schema.payments.id, id))
+      .returning();
+    return updated;
+  }
+
+  // Subscription methods
+  async getUserSubscription(userId: string): Promise<UserSubscription | undefined> {
+    await this.ensureReady();
+    const { eq, and } = await import('drizzle-orm');
+    const subscription = await this.db.query.userSubscriptions.findFirst({
+      where: and(
+        eq(this.schema.userSubscriptions.userId, userId),
+        eq(this.schema.userSubscriptions.status, 'active')
+      )
+    });
+    return subscription;
+  }
+
+  async createUserSubscription(subscription: InsertUserSubscription): Promise<UserSubscription> {
+    await this.ensureReady();
+    const [created] = await this.db.insert(this.schema.userSubscriptions).values(subscription).returning();
+    return created;
+  }
+
+  async updateUserSubscription(userId: string, data: Partial<InsertUserSubscription>): Promise<UserSubscription | undefined> {
+    await this.ensureReady();
+    const { eq } = await import('drizzle-orm');
+    const [updated] = await this.db
+      .update(this.schema.userSubscriptions)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(this.schema.userSubscriptions.userId, userId))
+      .returning();
+    return updated;
+  }
+
+  async updateUserPlan(userId: string, planId: string, planName: string, billingPeriod: string, paymentId?: string): Promise<User | undefined> {
+    await this.ensureReady();
+    const { eq } = await import('drizzle-orm');
+    
+    try {
+      console.log("DrizzleStorage: Updating user plan for user:", userId, "with plan:", planId);
+      
+      const now = new Date();
+      const endDate = new Date(now);
+      if (billingPeriod === 'year') {
+        endDate.setFullYear(endDate.getFullYear() + 1);
+      } else {
+        endDate.setMonth(endDate.getMonth() + 1);
+      }
+
+      console.log("DrizzleStorage: Update data:", {
+        currentPlan: planId,
+        planStatus: 'active',
+        subscriptionStartDate: now,
+        subscriptionEndDate: endDate,
+        billingPeriod: billingPeriod,
+        lastPaymentId: paymentId || null
+      });
+
+      const [updated] = await this.db
+        .update(this.schema.users)
+        .set({
+          currentPlan: planId,
+          planStatus: 'active',
+          subscriptionStartDate: now,
+          subscriptionEndDate: endDate,
+          billingPeriod: billingPeriod,
+          lastPaymentId: paymentId || null
+        })
+        .where(eq(this.schema.users.id, userId))
+        .returning();
+        
+      console.log("DrizzleStorage: User plan update successful:", !!updated);
+      return updated;
+    } catch (error) {
+      console.error("DrizzleStorage: Error updating user plan:", error);
+      throw error;
+    }
+  }
 }
 
 
@@ -270,6 +393,18 @@ export interface IStorage {
   createAiAgent(agent: InsertAiAgent): Promise<AiAgent>;
   updateAiAgent(id: string, data: Partial<Omit<InsertAiAgent, 'userId'>>): Promise<AiAgent | undefined>;
   deleteAiAgent(id: string): Promise<void>;
+  
+  // Payment methods
+  createPayment(payment: InsertPayment): Promise<Payment>;
+  getPaymentsByUserId(userId: string): Promise<Payment[]>;
+  getPaymentByOrderId(orderId: string): Promise<Payment | undefined>;
+  updatePaymentStatus(id: string, paymentId: string, signature: string, status: string, planId?: string): Promise<Payment | undefined>;
+  
+  // Subscription methods
+  getUserSubscription(userId: string): Promise<UserSubscription | undefined>;
+  createUserSubscription(subscription: InsertUserSubscription): Promise<UserSubscription>;
+  updateUserSubscription(userId: string, data: Partial<InsertUserSubscription>): Promise<UserSubscription | undefined>;
+  updateUserPlan(userId: string, planId: string, planName: string, billingPeriod: string, paymentId?: string): Promise<User | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -277,12 +412,16 @@ export class MemStorage implements IStorage {
   private files: Map<string, EncryptedFile>;
   private chatSessions: Map<string, ChatSession>;
   private aiAgents: Map<string, AiAgent>;
+  private payments: Map<string, Payment>;
+  private userSubscriptions: Map<string, UserSubscription>;
 
   constructor() {
     this.users = new Map();
     this.files = new Map();
     this.chatSessions = new Map();
     this.aiAgents = new Map();
+    this.payments = new Map();
+    this.userSubscriptions = new Map();
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -300,7 +439,13 @@ export class MemStorage implements IStorage {
     const user: User = {
       ...insertUser,
       id,
-      createdAt: new Date()
+      createdAt: new Date(),
+      currentPlan: insertUser.currentPlan || 'free',
+      planStatus: insertUser.planStatus || 'active',
+      subscriptionStartDate: insertUser.subscriptionStartDate || null,
+      subscriptionEndDate: insertUser.subscriptionEndDate || null,
+      billingPeriod: insertUser.billingPeriod || 'month',
+      lastPaymentId: insertUser.lastPaymentId || null
     };
     this.users.set(id, user);
     return user;
@@ -417,6 +562,126 @@ export class MemStorage implements IStorage {
 
   async deleteAiAgent(id: string): Promise<void> {
     this.aiAgents.delete(id);
+  }
+  
+  // Payment methods implementation for MemStorage
+  
+  async createPayment(payment: InsertPayment): Promise<Payment> {
+    const id = randomUUID();
+    const now = new Date();
+    const newPayment: Payment = {
+      ...payment,
+      id,
+      createdAt: now,
+      updatedAt: now,
+      razorpayPaymentId: null,
+      razorpaySignature: null,
+      status: 'created',
+      currency: payment.currency || "INR",
+      originalAmount: payment.originalAmount || null,
+      originalCurrency: payment.originalCurrency || null,
+      planId: payment.planId || null,
+      planName: payment.planName || null,
+      billingPeriod: payment.billingPeriod || null
+    };
+    this.payments.set(id, newPayment);
+    return newPayment;
+  }
+  
+  async getPaymentsByUserId(userId: string): Promise<Payment[]> {
+    return Array.from(this.payments.values()).filter(
+      (payment) => payment.userId === userId,
+    );
+  }
+  
+  async getPaymentByOrderId(orderId: string): Promise<Payment | undefined> {
+    return Array.from(this.payments.values()).find(
+      (payment) => payment.razorpayOrderId === orderId,
+    );
+  }
+  
+  async updatePaymentStatus(id: string, paymentId: string, signature: string, status: string, planId?: string): Promise<Payment | undefined> {
+    const payment = this.payments.get(id);
+    if (!payment) return undefined;
+
+    const updatedPayment: Payment = {
+      ...payment,
+      razorpayPaymentId: paymentId,
+      razorpaySignature: signature,
+      status,
+      // Only update planId if provided and payment doesn't already have one
+      planId: planId || payment.planId,
+      updatedAt: new Date()
+    };
+    this.payments.set(id, updatedPayment);
+    return updatedPayment;
+  }
+
+  // Subscription methods
+  async getUserSubscription(userId: string): Promise<UserSubscription | undefined> {
+    return Array.from(this.userSubscriptions.values()).find(
+      (sub) => sub.userId === userId && sub.status === 'active'
+    );
+  }
+
+  async createUserSubscription(subscription: InsertUserSubscription): Promise<UserSubscription> {
+    const id = randomUUID();
+    const now = new Date();
+    const newSubscription: UserSubscription = {
+      id,
+      userId: subscription.userId,
+      planId: subscription.planId,
+      planName: subscription.planName,
+      billingPeriod: subscription.billingPeriod || 'month',
+      startDate: subscription.startDate || now,
+      endDate: subscription.endDate || null,
+      status: subscription.status || 'active',
+      autoRenew: subscription.autoRenew || null,
+      paymentId: subscription.paymentId || null,
+      createdAt: now,
+      updatedAt: now
+    };
+    this.userSubscriptions.set(id, newSubscription);
+    return newSubscription;
+  }
+
+  async updateUserSubscription(userId: string, data: Partial<InsertUserSubscription>): Promise<UserSubscription | undefined> {
+    const subscription = await this.getUserSubscription(userId);
+    if (!subscription) return undefined;
+
+    const updatedSubscription: UserSubscription = {
+      ...subscription,
+      ...data,
+      updatedAt: new Date()
+    };
+    this.userSubscriptions.set(subscription.id, updatedSubscription);
+    return updatedSubscription;
+  }
+
+  async updateUserPlan(userId: string, planId: string, planName: string, billingPeriod: string, paymentId?: string): Promise<User | undefined> {
+    const user = this.users.get(userId);
+    if (!user) return undefined;
+
+    const now = new Date();
+    const endDate = new Date(now);
+    if (billingPeriod === 'year') {
+      endDate.setFullYear(endDate.getFullYear() + 1);
+    } else {
+      endDate.setMonth(endDate.getMonth() + 1);
+    }
+
+    const updatedUser: User = {
+      ...user,
+      currentPlan: planId,
+      planStatus: 'active',
+      subscriptionStartDate: now,
+      subscriptionEndDate: endDate,
+      billingPeriod: billingPeriod,
+      lastPaymentId: paymentId || null
+    };
+    
+    this.users.set(userId, updatedUser);
+    return updatedUser;
   }
 }
 
