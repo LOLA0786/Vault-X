@@ -194,18 +194,20 @@ export function ModernNavigation({
     )
   }
 
-  // Default sidebar variant
+  // Perfect sidebar variant
   return (
-    <nav className={cn("space-y-2", className)}>
+    <nav className={cn("space-y-1", className)}>
       {navigationItems.map((item) => {
         const Icon = item.icon
         const isActive = activeTab === item.id
         
         return (
           <div key={item.id} className="relative group">
+            {/* Perfect Active Indicator */}
             {isActive && (
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 rounded-r bg-gradient-to-b from-primary to-primary/70 shadow-lg shadow-primary/50" />
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r-full bg-gradient-to-b from-primary via-primary to-primary/80 shadow-lg shadow-primary/30" />
             )}
+            
             <Button
               variant="ghost"
               size="lg"
@@ -217,40 +219,38 @@ export function ModernNavigation({
               }}
               disabled={false}
               className={cn(
-                "w-full justify-start text-base font-semibold rounded-2xl transition-all duration-300 group-hover:translate-x-1 cursor-pointer",
+                "w-full justify-start text-sm font-medium rounded-xl transition-all duration-200 group-hover:translate-x-0.5 cursor-pointer h-11 px-3",
                 isActive
-                  ? "bg-gradient-to-r from-primary/10 to-primary/5 text-primary hover:from-primary/15 hover:to-primary/10 shadow-lg border border-primary/20"
-                  : "hover:bg-muted/50 hover:text-foreground text-muted-foreground hover:shadow-md"
+                  ? "bg-gradient-to-r from-primary/15 via-primary/10 to-primary/5 text-primary hover:from-primary/20 hover:via-primary/15 hover:to-primary/8 shadow-sm border border-primary/10 font-semibold"
+                  : "hover:bg-muted/60 hover:text-foreground text-muted-foreground hover:shadow-sm"
               )}
             >
               <Icon className={cn(
-                "mr-3 h-5 w-5 transition-colors duration-300", 
+                "mr-3 h-4 w-4 transition-all duration-200 flex-shrink-0", 
                 isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
               )} />
+              
               {showLabels && (
-                <div className="flex-1 text-left">
+                <div className="flex-1 text-left min-w-0">
                   <div className="flex items-center justify-between">
-                    <span>{item.label}</span>
-                    {showBadges && item.badge && (
-                      <Badge 
-                        variant={item.isNew ? "default" : "secondary"} 
-                        className={cn(
-                          "ml-2 h-5 text-xs",
-                          item.isNew && "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white animate-pulse"
-                        )}
-                      >
-                        {item.badge}
-                      </Badge>
-                    )}
-                    {isActive && (
-                      <ChevronRight className="h-4 w-4 text-primary" />
-                    )}
+                    <span className="truncate">{item.label}</span>
+                    <div className="flex items-center space-x-1 ml-2">
+                      {showBadges && item.badge && (
+                        <Badge 
+                          variant={item.isNew ? "default" : "secondary"} 
+                          className={cn(
+                            "h-4 text-xs px-1.5 font-medium",
+                            item.isNew && "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white animate-pulse"
+                          )}
+                        >
+                          {item.badge}
+                        </Badge>
+                      )}
+                      {isActive && (
+                        <ChevronRight className="h-3 w-3 text-primary/70" />
+                      )}
+                    </div>
                   </div>
-                  {item.description && (
-                    <p className="text-xs text-muted-foreground mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                      {item.description}
-                    </p>
-                  )}
                 </div>
               )}
             </Button>
@@ -258,19 +258,19 @@ export function ModernNavigation({
         )
       })}
       
-      {/* Security Status */}
-      <div className="mt-8 p-4 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950/30 dark:to-emerald-900/30 border border-emerald-200 dark:border-emerald-800/50">
-        <div className="flex items-center space-x-3 mb-3">
-          <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50 animate-pulse" />
-          <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">Encryption Active</span>
+      {/* Perfect Security Status */}
+      <div className="mt-6 mx-1 p-3 rounded-xl bg-gradient-to-br from-emerald-50/80 via-emerald-50/60 to-emerald-100/80 dark:from-emerald-950/40 dark:via-emerald-950/30 dark:to-emerald-900/40 border border-emerald-200/60 dark:border-emerald-800/40">
+        <div className="flex items-center space-x-2 mb-2">
+          <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50 animate-pulse" />
+          <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">Encryption Active</span>
         </div>
-        <div className="flex items-center space-x-2 text-xs text-emerald-600 dark:text-emerald-400">
-          <Shield className="w-3 h-3" />
+        <div className="flex items-center space-x-2 text-xs text-emerald-600 dark:text-emerald-400 mb-1">
+          <Shield className="w-3 h-3 flex-shrink-0" />
           <span className="font-medium">AES-256 Client-side</span>
         </div>
-        <div className="mt-2 flex items-center space-x-2 text-xs text-muted-foreground">
-          <Zap className="w-3 h-3" />
-          <span>Zero-Knowledge Architecture</span>
+        <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+          <Zap className="w-3 h-3 flex-shrink-0" />
+          <span>Zero-Knowledge</span>
         </div>
       </div>
     </nav>

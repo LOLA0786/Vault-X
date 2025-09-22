@@ -13,23 +13,21 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 // Modern UI Components
 import { ModernCard, ModernCardContent, ModernCardHeader, ModernCardTitle, ModernCardDescription } from '@/components/ui/modern-card';
-import { ModernGrid, ModernContainer, ModernStack } from '@/components/ui/modern-layout';
-import { StatCard, StatsGrid } from '@/components/ui/modern-stats';
+import { ModernContainer, ModernStack } from '@/components/ui/modern-layout';
+import { StatCard } from '@/components/ui/modern-stats';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { SecurityBadge, EncryptionIndicator } from '@/components/ui/security-badge';
 import { PrivateVaultLogo } from '@/components/ui/private-vault-logo';
 import { MobileThemeToggle } from '@/components/ui/mobile-theme-toggle';
+import { getNavigationItems } from '@/components/ui/modern-navigation';
 
 // Icons
-import { 
-  Key, 
-  Lock, 
-  Upload, 
-  Download, 
-  AlertTriangle, 
-  Shield, 
-  Eye, 
+import {
+  Key,
+  Lock,
+  Upload,
+  Download,
+  AlertTriangle,
+  Shield,
   EyeOff,
   CheckCircle,
   XCircle,
@@ -43,32 +41,21 @@ import {
   ShieldCheck,
   Menu,
   LogOut,
-  User,
-  Info as InfoIcon,
-  Globe,
-  Smartphone,
-  Laptop,
-  HardDrive,
-  Wifi,
-  WifiOff,
-  Server,
-  Home,
-  History,
-  Settings,
-  LayoutDashboard
+  User
 } from 'lucide-react';
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 // Mobile KeyInfo Component
-function MobileKeyInfo({ 
-  renderContent 
-}: { 
+function MobileKeyInfo({
+  renderContent
+}: {
   renderContent: () => React.ReactNode;
 }) {
   const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [, setLocation] = useLocation();
+  const navigationItems = getNavigationItems(user);
 
   const handleTabChange = (tab: string) => {
     if (tab === 'dashboard') {
@@ -128,95 +115,38 @@ function MobileKeyInfo({
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Navigation Menu */}
                   <nav className="flex-1 p-4">
                     <div className="space-y-2">
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
-                        onClick={() => {
-                          handleTabChange('dashboard');
-                          setIsMobileMenuOpen(false);
-                        }}
-                      >
-                        <LayoutDashboard className="mr-3 h-5 w-5" />
-                        Dashboard
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
-                        onClick={() => {
-                          handleTabChange('vault');
-                          setIsMobileMenuOpen(false);
-                        }}
-                      >
-                        <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M3 7H21L19 2H5L3 7Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M3 7V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                        File Vault
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
-                        onClick={() => {
-                          handleTabChange('chat');
-                          setIsMobileMenuOpen(false);
-                        }}
-                      >
-                        <MessageSquare className="mr-3 h-5 w-5" />
-                        AI Assistant
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
-                        onClick={() => {
-                          handleTabChange('agents');
-                          setIsMobileMenuOpen(false);
-                        }}
-                      >
-                        <Bot className="mr-3 h-5 w-5" />
-                        AI Agents
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
-                        onClick={() => {
-                          handleTabChange('history');
-                          setIsMobileMenuOpen(false);
-                        }}
-                      >
-                        <History className="mr-3 h-5 w-5" />
-                        Chat History
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
-                        onClick={() => {
-                          handleTabChange('settings');
-                          setIsMobileMenuOpen(false);
-                        }}
-                      >
-                        <Settings className="mr-3 h-5 w-5" />
-                        Settings
-                      </Button>
-                      <Button
-                        variant="default"
-                        className="w-full justify-start bg-primary text-primary-foreground"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        <Key className="mr-3 h-5 w-5" />
-                        How it works
-                      </Button>
+                      {navigationItems.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = item.id === 'key-info';
+                        return (
+                          <Button
+                            key={item.id}
+                            variant={isActive ? "default" : "ghost"}
+                            className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
+                            onClick={() => {
+                              if (item.id !== 'key-info') {
+                                handleTabChange(item.id);
+                              }
+                              setIsMobileMenuOpen(false);
+                            }}
+                          >
+                            <Icon className="mr-3 h-5 w-5" />
+                            {item.label}
+                          </Button>
+                        );
+                      })}
                     </div>
-                    
+
                     {/* Theme Toggle */}
                     <div className="px-4 pt-2 border-t border-border/30">
                       <MobileThemeToggle />
                     </div>
                   </nav>
-                  
+
                   {user && (
                     <div className="mt-auto p-4 border-t border-border">
                       <div className="flex items-center justify-between">
@@ -250,7 +180,7 @@ function MobileKeyInfo({
       <main className="flex-1 pb-4">
         {renderContent()}
       </main>
-      
+
       <Footer />
     </div>
   );
@@ -330,7 +260,7 @@ export default function KeyInfo() {
               </div>
             </div>
             <p className="text-base sm:text-xl text-muted-foreground max-w-4xl mx-auto leading-relaxed px-4 sm:px-0">
-              Your data is protected by military-grade AES-256 encryption that happens entirely on your device. 
+              Your data is protected by military-grade AES-256 encryption that happens entirely on your device.
               We never see your unencrypted data, ensuring complete privacy and security.
             </p>
           </div>
@@ -344,7 +274,7 @@ export default function KeyInfo() {
               icon={<Lock />}
               variant="security"
             />
-            
+
             <StatCard
               title="Zero-Knowledge"
               value="100%"
@@ -383,7 +313,7 @@ export default function KeyInfo() {
                     <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                     Data Flow Process
                   </h3>
-                  
+
                   <div className="space-y-3 sm:space-y-4">
                     <ModernCard variant="glass" hover="scale">
                       <ModernCardContent className="p-3 sm:p-4">
@@ -449,7 +379,7 @@ export default function KeyInfo() {
                     <Database className="w-4 h-4 sm:w-5 sm:h-5" />
                     What Gets Encrypted
                   </h3>
-                  
+
                   <div className="space-y-2 sm:space-y-3">
                     <ModernCard variant="glass" hover="scale" className="border-emerald-200 dark:border-emerald-800">
                       <ModernCardContent className="p-3 sm:p-4">
@@ -543,7 +473,7 @@ export default function KeyInfo() {
                     </li>
                   </ul>
                 </div>
-                
+
                 <div className="pt-4 space-y-2">
                   <Button onClick={handleExport} variant="premium" className="w-full shadow-lg touch-manipulation">
                     <Download className="w-4 h-4 mr-2" />
@@ -586,7 +516,7 @@ export default function KeyInfo() {
                     </li>
                   </ul>
                 </div>
-                
+
                 <div className="pt-4 space-y-2">
                   <Button variant="security" onClick={() => setLocation('/settings')} className="w-full shadow-lg touch-manipulation">
                     <Key className="w-4 h-4 mr-2" />
@@ -668,8 +598,8 @@ export default function KeyInfo() {
               <div className="space-y-2">
                 <h4 className="font-semibold">Critical Security Warning</h4>
                 <p>
-                  If you lose your encryption key and don't have a backup, your encrypted data cannot be recovered. 
-                  This is by design - it ensures that even we cannot access your data. Always keep a secure backup 
+                  If you lose your encryption key and don't have a backup, your encrypted data cannot be recovered.
+                  This is by design - it ensures that even we cannot access your data. Always keep a secure backup
                   of your encryption key in a safe location.
                 </p>
                 <div className="flex gap-2 pt-2">
@@ -698,14 +628,15 @@ export default function KeyInfo() {
       </div>
 
       {/* Desktop Layout */}
-      <div className="hidden lg:flex min-h-screen">
-        <Sidebar 
-          activeTab="key-info" 
+      <div className="hidden lg:block min-h-screen bg-background text-foreground">
+        {/* Sidebar - Outside any transform containers */}
+        <Sidebar
+          activeTab="key-info"
           onTabChange={handleTabChange}
-          className="fixed h-full w-64 bg-sidebar text-sidebar-foreground dark:bg-sidebar dark:text-sidebar-foreground"
         />
 
-        <div className="flex-1 ml-64 flex flex-col min-h-screen bg-background text-foreground">
+        {/* Main Content */}
+        <div className="ml-64 flex flex-col min-h-screen bg-background text-foreground">
           {/* Modern Header */}
           <ModernHeader
             title="Security Info"
@@ -723,7 +654,7 @@ export default function KeyInfo() {
               </PageTransition>
             </Container>
           </div>
-          
+
           {/* Footer */}
           <Footer />
         </div>

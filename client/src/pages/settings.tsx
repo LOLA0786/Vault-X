@@ -235,6 +235,7 @@ export default function SettingsPage() {
   const { user, logout } = useAuth();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const navigationItems = getNavigationItems(user);
 
   // Key Management State
   const [importKey, setImportKey] = useState('');
@@ -781,21 +782,22 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <>
       {/* Mobile Layout */}
-      <div className="lg:hidden">
+      <div className="lg:hidden min-h-screen bg-background text-foreground">
         <MobileSettings renderContent={renderContent} />
       </div>
 
       {/* Desktop Layout */}
-      <div className="hidden lg:flex min-h-screen">
+      <div className="hidden lg:block min-h-screen bg-background text-foreground">
+        {/* Sidebar - Outside any transform containers */}
         <Sidebar 
           activeTab="settings" 
           onTabChange={handleTabChange}
-          className="fixed h-full w-64 bg-sidebar text-sidebar-foreground dark:bg-sidebar dark:text-sidebar-foreground"
         />
 
-        <div className="flex-1 ml-64 flex flex-col min-h-screen bg-background text-foreground">
+        {/* Main Content */}
+        <div className="ml-64 flex flex-col min-h-screen bg-background text-foreground">
           {/* Modern Header */}
           <ModernHeader
             title="Settings"
@@ -818,6 +820,6 @@ export default function SettingsPage() {
           <Footer />
         </div>
       </div>
-    </div>
+    </>
   );
 }
