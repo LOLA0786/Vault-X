@@ -11,10 +11,13 @@ import {
   Settings,
   Lock,
   Bot,
-  ShieldCheck
+  ShieldCheck,
+  CreditCard,
+  Crown
 } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 import { useAuth } from "@/hooks/use-auth";
+import { PaymentButton } from "./payment-button";
 
 interface SidebarProps {
   className?: string;
@@ -32,6 +35,7 @@ export function Sidebar({ className, activeTab, onTabChange }: SidebarProps) {
     { id: 'chat', label: 'AI Assistant', icon: MessageSquare },
     { id: 'agents', label: 'AI Agents', icon: Bot },
     { id: 'history', label: 'Chat History', icon: History },
+    { id: 'pricing', label: 'Pricing Plans', icon: Crown, badge: 'NEW' },
     { id: 'settings', label: 'Settings', icon: Settings },
     { id: 'key-info', label: 'How it works', icon: Lock },
     ...(isAdmin ? [{ id: 'admin', label: 'Admin Dashboard', icon: ShieldCheck }] : []),

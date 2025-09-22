@@ -12,7 +12,8 @@ import {
   Lock,
   Shield,
   ChevronRight,
-  Zap
+  Zap,
+  Crown
 } from "lucide-react"
 
 interface NavigationItem {
@@ -63,6 +64,13 @@ const defaultNavItems: NavigationItem[] = [
     label: 'Chat History', 
     icon: History,
     description: 'Previous conversations'
+  },
+  { 
+    id: 'pricing', 
+    label: 'Pricing Plans', 
+    icon: Crown,
+    description: 'Subscription options',
+    isNew: true
   },
   { 
     id: 'settings', 

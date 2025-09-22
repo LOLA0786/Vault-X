@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, jsonb, integer, numeric } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -68,5 +68,34 @@ export type InsertFile = z.infer<typeof insertFileSchema>;
 export type EncryptedFile = typeof encryptedFiles.$inferSelect;
 export type InsertAiAgent = z.infer<typeof insertAiAgentSchema>;
 export type AiAgent = typeof aiAgents.$inferSelect;
+export const payments = pgTable("payments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  amount: numeric("amount").notNull(),
+  currency: varchar("currency").notNull().default("INR"),
+  originalAmount: numeric("original_amount"),  // Original amount before conversion
+  originalCurrency: varchar("original_currency"),  // Original currency before conversion
+  razorpayOrderId: varchar("razorpay_order_id").notNull(),
+  razorpayPaymentId: varchar("razorpay_payment_id"),
+  razorpaySignature: varchar("razorpay_signature"),
+  status: varchar("status").notNull().default("created"),
+  planId: varchar("plan_id"),
+  planName: varchar("plan_name"),
+  billingPeriod: varchar("billing_period").default("month"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertPaymentSchema = createInsertSchema(payments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  razorpayPaymentId: true,
+  razorpaySignature: true,
+  status: true,
+});
+
 export type InsertChatSession = z.infer<typeof insertChatSessionSchema>;
 export type ChatSession = typeof chatSessions.$inferSelect;
+export type InsertPayment = z.infer<typeof insertPaymentSchema>;
+export type Payment = typeof payments.$inferSelect;
