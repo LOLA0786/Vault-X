@@ -285,12 +285,20 @@ export default function HistoryPage() {
       setLocation('/agents');
       return;
     }
+    if (tab === 'pricing') {
+      setLocation('/pricing');
+      return;
+    }
     if (tab === 'settings') {
       setLocation('/settings');
       return;
     }
     if (tab === 'key-info') {
       setLocation('/key-info');
+      return;
+    }
+    if (tab === 'admin') {
+      setLocation('/admin');
       return;
     }
   };

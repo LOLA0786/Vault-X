@@ -1,18 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { ModernNavigation } from "./modern-navigation";
+import { ModernNavigation, getNavigationItems } from "./modern-navigation";
 import { PrivateVaultLogo } from "./private-vault-logo";
-import { 
-  Shield, 
-  LayoutDashboard, 
-  FolderOpen, 
-  MessageSquare, 
-  History, 
-  Settings,
-  Lock,
-  Bot,
-  ShieldCheck
-} from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -24,18 +13,7 @@ interface SidebarProps {
 
 export function Sidebar({ className, activeTab, onTabChange }: SidebarProps) {
   const { user } = useAuth();
-  const isAdmin = user?.email === 'Lolasolution27@gmail.com' || user?.email === "lolasolution27@gmail.com";;
-
-  const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'vault', label: 'File Vault', icon: FolderOpen },
-    { id: 'chat', label: 'AI Assistant', icon: MessageSquare },
-    { id: 'agents', label: 'AI Agents', icon: Bot },
-    { id: 'history', label: 'Chat History', icon: History },
-    { id: 'settings', label: 'Settings', icon: Settings },
-    { id: 'key-info', label: 'How it works', icon: Lock },
-    ...(isAdmin ? [{ id: 'admin', label: 'Admin Dashboard', icon: ShieldCheck }] : []),
-  ];
+  const navigationItems = getNavigationItems(user);
 
   return (
     <div className={cn(

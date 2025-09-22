@@ -316,8 +316,16 @@ export default function AgentsPage() {
       setLocation('/settings');
       return;
     }
+    if (tab === 'pricing') {
+      setLocation('/pricing');
+      return;
+    }
     if (tab === 'key-info') {
       setLocation('/key-info');
+      return;
+    }
+    if (tab === 'admin') {
+      setLocation('/admin');
       return;
     }
   };

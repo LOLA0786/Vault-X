@@ -719,7 +719,7 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
       return;
     }
     if (tab === 'admin') {
-      setActiveTab('admin');
+      setLocation('/admin');
       return;
     }
     setActiveTab(tab);
