@@ -95,6 +95,14 @@ function MobileKeyInfo({
       setLocation('/settings');
       return;
     }
+    if (tab === 'pricing') {
+      setLocation('/pricing');
+      return;
+    }
+    if (tab === 'admin') {
+      setLocation('/admin');
+      return;
+    }
   };
 
   return (
@@ -273,8 +281,16 @@ export default function KeyInfo() {
       setLocation('/history');
       return;
     }
+    if (tab === 'pricing') {
+      setLocation('/pricing');
+      return;
+    }
     if (tab === 'settings') {
       setLocation('/settings');
+      return;
+    }
+    if (tab === 'admin') {
+      setLocation('/admin');
       return;
     }
   };
