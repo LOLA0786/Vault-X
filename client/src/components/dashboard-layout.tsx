@@ -18,6 +18,7 @@ import {
 import { PrivateVaultLogo } from '@/components/ui/private-vault-logo';
 import { useAuth } from '@/hooks/use-auth';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { MobileThemeToggle } from '@/components/ui/mobile-theme-toggle';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -113,6 +114,11 @@ function MobileDashboardLayout({
                           </Button>
                         );
                       })}
+                    </div>
+                    
+                    {/* Theme Toggle */}
+                    <div className="px-3 pt-2 border-t border-border/30">
+                      <MobileThemeToggle />
                     </div>
                   </nav>
 

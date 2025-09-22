@@ -9,6 +9,7 @@ import { ModernFileUpload } from '@/components/ui/modern-file-upload';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Sidebar } from '@/components/ui/sidebar';
+import { MobileThemeToggle } from '@/components/ui/mobile-theme-toggle';
 
 
 import { KeyManagement } from '@/components/key-management';
@@ -47,16 +48,19 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { ModernHeader } from '@/components/ui/modern-header';
+import { getNavigationItems, type NavigationItem } from '@/components/ui/modern-navigation';
 
 // Mobile Dashboard Component
 function MobileDashboard({
   activeTab,
   onTabChange,
-  renderContent
+  renderContent,
+  navigationItems
 }: {
   activeTab: string;
   onTabChange: (tab: string) => void;
   renderContent: () => React.ReactNode;
+  navigationItems: NavigationItem[];
 }) {
   const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -96,15 +100,7 @@ function MobileDashboard({
                   {/* Mobile Navigation */}
                   <nav className="flex-1 overflow-y-auto py-4">
                     <div className="px-3 space-y-1">
-                      {[
-                        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-                        { id: 'vault', label: 'File Vault', icon: FolderOpen },
-                        { id: 'chat', label: 'AI Assistant', icon: MessageSquare },
-                        { id: 'agents', label: 'AI Agents', icon: Bot },
-                        { id: 'history', label: 'Chat History', icon: History },
-                        { id: 'settings', label: 'Settings', icon: Settings },
-                        { id: 'key-info', label: 'How it works', icon: Lock },
-                      ].map((item) => {
+                      {navigationItems.map((item) => {
                         const Icon = item.icon;
                         return (
                           <Button
@@ -121,6 +117,11 @@ function MobileDashboard({
                           </Button>
                         );
                       })}
+                    </div>
+                    
+                    {/* Theme Toggle */}
+                    <div className="px-3 pt-2 border-t border-border/30">
+                      <MobileThemeToggle />
                     </div>
                   </nav>
 
@@ -174,6 +175,9 @@ function MobileDashboard({
             <DropdownMenuContent align="end" className="w-48">
               <div className="px-2 py-1.5">
                 <p className="text-sm font-medium">{user?.email}</p>
+              </div>
+              <div className="px-2 py-1">
+                <MobileThemeToggle />
               </div>
               <DropdownMenuItem onClick={logout}>
                 <LogOut className="mr-2 h-4 w-4" />
@@ -236,11 +240,9 @@ function MobileDashboard({
               <div className="py-4">
                 <h3 className="text-lg font-semibold mb-4">More Options</h3>
                 <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { id: 'history', label: 'Chat History', icon: History },
-                    { id: 'settings', label: 'Settings', icon: Settings },
-                    { id: 'key-info', label: 'How it works', icon: Lock },
-                  ].map((item) => {
+                  {navigationItems.filter(item => 
+                    !['dashboard', 'vault', 'chat', 'agents'].includes(item.id)
+                  ).map((item) => {
                     const Icon = item.icon;
                     return (
                       <Button
@@ -276,6 +278,7 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
   const { user, logout } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const navigationItems = getNavigationItems(user);
   const [showImportKeyBanner, setShowImportKeyBanner] = useState(false);
   const [bannerImportKey, setBannerImportKey] = useState('');
 
@@ -676,6 +679,7 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
     }
   };
   const handleTabChange = (tab: string) => {
+    console.log('Dashboard handleTabChange called with:', tab);
     if (tab === 'dashboard') {
       setLocation('/');
       setActiveTab('dashboard');
@@ -700,6 +704,10 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
       setActiveTab('history');
       return;
     }
+    if (tab === 'pricing') {
+      setLocation('/pricing');
+      return;
+    }
     if (tab === 'settings') {
       setLocation('/settings');
       setActiveTab('settings');
@@ -708,6 +716,10 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
     if (tab === 'key-info') {
       setLocation('/key-info');
       setActiveTab('key-info');
+      return;
+    }
+    if (tab === 'admin') {
+      setActiveTab('admin');
       return;
     }
     setActiveTab(tab);
@@ -733,6 +745,9 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
       case 'agents':
         setActiveTab('agents');
         break;
+      case 'pricing':
+        setActiveTab('pricing');
+        break;
       case 'settings':
         setActiveTab('settings');
         break;
@@ -751,6 +766,7 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
           activeTab={activeTab}
           onTabChange={handleTabChange}
           renderContent={renderContent}
+          navigationItems={navigationItems}
         />
       </div>
 

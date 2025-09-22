@@ -15,6 +15,8 @@ import { Container } from '@/components/ui/container';
 import { PageTransition } from '@/components/ui/page-transition';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { PrivateVaultLogo } from '@/components/ui/private-vault-logo';
+import { MobileThemeToggle } from '@/components/ui/mobile-theme-toggle';
+import { getNavigationItems, type NavigationItem } from '@/components/ui/modern-navigation';
 import {
   Bot,
   Plus,
@@ -68,6 +70,7 @@ function MobileAgents({
   const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [, setLocation] = useLocation();
+  const navigationItems = getNavigationItems(user);
 
   const handleTabChange = (tab: string) => {
     if (tab === 'dashboard') {
@@ -128,15 +131,7 @@ function MobileAgents({
                   {/* Mobile Navigation */}
                   <nav className="flex-1 overflow-y-auto py-4">
                     <div className="px-3 space-y-1">
-                      {[
-                        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-                        { id: 'vault', label: 'File Vault', icon: FolderOpen },
-                        { id: 'chat', label: 'AI Assistant', icon: MessageSquare },
-                        { id: 'agents', label: 'AI Agents', icon: Bot },
-                        { id: 'history', label: 'Chat History', icon: History },
-                        { id: 'settings', label: 'Settings', icon: Settings },
-                        { id: 'key-info', label: 'How it works', icon: Lock },
-                      ].map((item) => {
+                      {navigationItems.map((item) => {
                         const Icon = item.icon;
                         return (
                           <Button
@@ -153,6 +148,11 @@ function MobileAgents({
                           </Button>
                         );
                       })}
+                    </div>
+                    
+                    {/* Theme Toggle */}
+                    <div className="px-3 pt-2 border-t border-border/30">
+                      <MobileThemeToggle />
                     </div>
                   </nav>
 
@@ -256,11 +256,9 @@ function MobileAgents({
               <div className="py-4">
                 <h3 className="text-lg font-semibold mb-4">More Options</h3>
                 <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { id: 'history', label: 'Chat History', icon: History },
-                    { id: 'settings', label: 'Settings', icon: Settings },
-                    { id: 'key-info', label: 'How it works', icon: Lock },
-                  ].map((item) => {
+                  {navigationItems.filter(item => 
+                    !['dashboard', 'vault', 'chat', 'agents'].includes(item.id)
+                  ).map((item) => {
                     const Icon = item.icon;
                     return (
                       <Button
