@@ -393,10 +393,12 @@ export default function AdminDashboard() {
         </div>
 
         {/* Desktop Layout */}
-        <div className="hidden lg:flex min-h-screen">
+        <div className="hidden lg:block min-h-screen bg-background text-foreground">
+          {/* Sidebar - Outside any transform containers */}
           <Sidebar activeTab="admin" onTabChange={handleNavigation} />
           
-          <div className="flex-1 flex flex-col">
+          {/* Main Content */}
+          <div className="ml-64 flex flex-col">
             {/* Desktop Content */}
             <div className="flex-1 p-8">
               <ModernContainer className="max-w-7xl">

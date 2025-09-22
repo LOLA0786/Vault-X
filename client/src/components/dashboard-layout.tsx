@@ -269,14 +269,12 @@ export function DashboardLayout({ children, activeTab, onTabChange }: DashboardL
 
       {/* Desktop Layout - Visible on large screens */}
       <div className="hidden lg:block min-h-screen bg-background">
-        <div className="flex min-h-screen">
-          <Sidebar
-            activeTab={activeTab}
-            onTabChange={handleTabChange}
-            className="fixed h-full w-64 bg-sidebar text-sidebar-foreground dark:bg-sidebar dark:text-sidebar-foreground z-30"
-          />
+        <Sidebar
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+        />
 
-          <div className="flex-1 ml-64 overflow-hidden bg-background text-foreground">
+        <div className="ml-64 overflow-hidden bg-background text-foreground">
             <main className="flex-1 flex flex-col min-h-screen">
               <div className="flex-1 w-full overflow-y-auto">
                 {children}

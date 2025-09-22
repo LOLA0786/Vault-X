@@ -96,6 +96,10 @@ function MobileChat({
       setLocation('/settings');
       return;
     }
+    if (tab === 'pricing') {
+      setLocation('/pricing');
+      return;
+    }
     if (tab === 'key-info') {
       setLocation('/key-info');
       return;
@@ -259,6 +263,10 @@ export default function ChatPage({ sessionId, onNewSession }: ChatPageProps) {
     }
     if (tab === 'key-info') {
       setLocation('/key-info');
+      return;
+    }
+    if (tab === 'admin') {
+      setLocation('/admin');
       return;
     }
   };
@@ -820,21 +828,22 @@ export default function ChatPage({ sessionId, onNewSession }: ChatPageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <>
       {/* Mobile Layout */}
-      <div className="lg:hidden">
+      <div className="lg:hidden min-h-screen bg-background text-foreground">
         <MobileChat renderContent={renderContent} />
       </div>
 
       {/* Desktop Layout */}
-      <div className="hidden lg:flex min-h-screen">
+      <div className="hidden lg:block min-h-screen bg-background text-foreground">
+        {/* Sidebar - Outside any transform containers */}
         <Sidebar 
           activeTab="chat" 
           onTabChange={handleTabChange}
-          className="fixed h-full w-64 bg-sidebar text-sidebar-foreground dark:bg-sidebar dark:text-sidebar-foreground"
         />
 
-        <div className="flex-1 ml-64 flex flex-col min-h-screen bg-background text-foreground">
+        {/* Main Content */}
+        <div className="ml-64 flex flex-col min-h-screen bg-background text-foreground">
           {/* Modern Header */}
           <ModernHeader
             title="AI Chat"
@@ -855,6 +864,6 @@ export default function ChatPage({ sessionId, onNewSession }: ChatPageProps) {
           <Footer />
         </div>
       </div>
-    </div>
+    </>
   );
 }

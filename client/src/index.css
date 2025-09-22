@@ -721,6 +721,14 @@
   }
 }
 
+/* Ensure body doesn't interfere with fixed positioning */
+body {
+  position: relative !important;
+  transform: none !important;
+  will-change: auto !important;
+  contain: none !important;
+}
+
 /* Ensure footer links are always clickable and above other elements */
 footer {
   position: relative !important;

@@ -118,7 +118,7 @@ function MobileDashboard({
                         );
                       })}
                     </div>
-                    
+
                     {/* Theme Toggle */}
                     <div className="px-3 pt-2 border-t border-border/30">
                       <MobileThemeToggle />
@@ -211,8 +211,8 @@ function MobileDashboard({
                 size="sm"
                 onClick={() => onTabChange(item.id)}
                 className={`flex flex-col items-center gap-1 h-auto py-2 px-3 min-w-0 ${isActive
-                    ? 'text-primary bg-primary/10'
-                    : 'text-muted-foreground hover:text-foreground'
+                  ? 'text-primary bg-primary/10'
+                  : 'text-muted-foreground hover:text-foreground'
                   }`}
               >
                 <Icon className="h-5 w-5" />
@@ -240,7 +240,7 @@ function MobileDashboard({
               <div className="py-4">
                 <h3 className="text-lg font-semibold mb-4">More Options</h3>
                 <div className="grid grid-cols-2 gap-2">
-                  {navigationItems.filter(item => 
+                  {navigationItems.filter(item =>
                     !['dashboard', 'vault', 'chat', 'agents'].includes(item.id)
                   ).map((item) => {
                     const Icon = item.icon;
@@ -696,26 +696,18 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
     }
     if (tab === 'chat') {
       setLocation('/chat');
-      setActiveTab('chat');
       return;
     }
     if (tab === 'history') {
       setLocation('/history');
-      setActiveTab('history');
-      return;
-    }
-    if (tab === 'pricing') {
-      setLocation('/pricing');
       return;
     }
     if (tab === 'settings') {
       setLocation('/settings');
-      setActiveTab('settings');
       return;
     }
     if (tab === 'key-info') {
       setLocation('/key-info');
-      setActiveTab('key-info');
       return;
     }
     if (tab === 'admin') {
@@ -725,82 +717,52 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
     setActiveTab(tab);
   };
 
+  // Check if we're on mobile
+  const [isMobile, setIsMobile] = useState(false);
+
   useEffect(() => {
-    const path = location.replace(/^\//, '');
-    switch (path) {
-      case '':
-      case 'dashboard':
-        setActiveTab('dashboard');
-        break;
-      case 'vault':
-      case 'files':
-        setActiveTab('vault');
-        break;
-      case 'chat':
-        setActiveTab('chat');
-        break;
-      case 'history':
-        setActiveTab('history');
-        break;
-      case 'agents':
-        setActiveTab('agents');
-        break;
-      case 'pricing':
-        setActiveTab('pricing');
-        break;
-      case 'settings':
-        setActiveTab('settings');
-        break;
-      case 'key-info':
-        setActiveTab('key-info');
-        break;
-      default:
-        break;
-    }
-  }, [location]);
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Mobile layout
+  if (isMobile) {
+    return (
+      <MobileDashboard
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        renderContent={renderContent}
+        navigationItems={navigationItems}
+      />
+    );
+  }
+
+  // Desktop layout with fixed sidebar
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* Mobile Layout */}
-      <div className="lg:hidden">
-        <MobileDashboard
-          activeTab={activeTab}
-          onTabChange={handleTabChange}
-          renderContent={renderContent}
-          navigationItems={navigationItems}
-        />
-      </div>
+    <div className="min-h-screen bg-background">
+      {/* Fixed Sidebar - Outside any transform containers */}
+      <Sidebar
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+      />
 
-      {/* Desktop Layout */}
-      <div className="hidden lg:flex min-h-screen">
-        <Sidebar
-          activeTab={activeTab}
-          onTabChange={handleTabChange}
-          className="fixed h-full w-64 bg-sidebar text-sidebar-foreground dark:bg-sidebar dark:text-sidebar-foreground"
-        />
-
-        <div className="flex-1 ml-64 flex flex-col min-h-screen bg-background text-foreground">
-          {/* Modern Header */}
-          <ModernHeader
-            title={activeTab === 'dashboard' ? 'Dashboard' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
-            subtitle="Manage your private AI assistant and encrypted files"
-            user={user ? { email: user.email } : undefined}
-            onLogout={logout}
-            showSearch={false}
-          />
-
-          {/* Main Content */}
-          <div className="flex-1 overflow-y-auto bg-background text-foreground">
-            <Container size="xl" padding="lg" className="py-6">
-              <PageTransition>
-                {renderContent()}
-              </PageTransition>
-            </Container>
+      {/* Main Content Area */}
+      <div className="ml-64">
+        <main className="min-h-screen overflow-y-auto">
+          <div className="p-6">
+            {renderContent()}
           </div>
+        </main>
 
-          {/* Footer */}
-          <Footer />
-        </div>
+        {/* Footer */}
+        <Footer />
       </div>
     </div>
   );
 }
+

@@ -6,27 +6,26 @@ import { useAuth } from '@/hooks/use-auth';
 import { Sidebar } from '@/components/ui/sidebar';
 import { ModernHeader } from '@/components/ui/modern-header';
 import { Footer } from '@/components/ui/footer';
-import { Container } from '@/components/ui/container';
 import { PageTransition } from '@/components/ui/page-transition';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 // Modern UI Components
 import { ModernCard, ModernCardContent, ModernCardHeader, ModernCardTitle, ModernCardDescription } from '@/components/ui/modern-card';
-import { ModernContainer, ModernGrid, ModernStack } from '@/components/ui/modern-layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { PrivateVaultLogo } from '@/components/ui/private-vault-logo';
 import { MobileThemeToggle } from '@/components/ui/mobile-theme-toggle';
+import { getNavigationItems } from '@/components/ui/modern-navigation';
 
 // Icons
-import { 
-  Check, 
-  Star, 
-  Shield, 
-  Zap, 
-  Users, 
-  HardDrive, 
-  MessageSquare, 
+import {
+  Check,
+  Star,
+  Shield,
+  Zap,
+  Users,
+  HardDrive,
+  MessageSquare,
   Smartphone,
   Crown,
   Building,
@@ -35,17 +34,9 @@ import {
   Menu,
   User,
   LogOut,
-  LayoutDashboard,
-  FolderOpen,
-  History,
-  Settings,
-  Bot,
   Lock,
-  DollarSign,
   X,
   Sparkles,
-  Server,
-  Globe,
   Activity,
   Briefcase,
   Award
@@ -60,6 +51,7 @@ function MobilePricing({
   const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [, setLocation] = useLocation();
+  const navigationItems = getNavigationItems(user);
 
   const handleTabChange = (tab: string) => {
     if (tab === 'dashboard') {
@@ -94,6 +86,10 @@ function MobilePricing({
       setLocation('/key-info');
       return;
     }
+    if (tab === 'admin') {
+      setLocation('/admin');
+      return;
+    }
   };
 
   return (
@@ -119,106 +115,38 @@ function MobilePricing({
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Navigation Menu */}
                   <nav className="flex-1 p-4">
                     <div className="space-y-2">
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
-                        onClick={() => {
-                          handleTabChange('dashboard');
-                          setIsMobileMenuOpen(false);
-                        }}
-                      >
-                        <LayoutDashboard className="mr-3 h-5 w-5" />
-                        Dashboard
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
-                        onClick={() => {
-                          handleTabChange('vault');
-                          setIsMobileMenuOpen(false);
-                        }}
-                      >
-                        <FolderOpen className="mr-3 h-5 w-5" />
-                        File Vault
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
-                        onClick={() => {
-                          handleTabChange('chat');
-                          setIsMobileMenuOpen(false);
-                        }}
-                      >
-                        <MessageSquare className="mr-3 h-5 w-5" />
-                        AI Assistant
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
-                        onClick={() => {
-                          handleTabChange('agents');
-                          setIsMobileMenuOpen(false);
-                        }}
-                      >
-                        <Bot className="mr-3 h-5 w-5" />
-                        AI Agents
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
-                        onClick={() => {
-                          handleTabChange('history');
-                          setIsMobileMenuOpen(false);
-                        }}
-                      >
-                        <History className="mr-3 h-5 w-5" />
-                        Chat History
-                      </Button>
-                      <Button
-                        variant="premium"
-                        className="w-full justify-start bg-gradient-to-r from-violet-600 to-purple-600 text-white font-semibold shadow-lg"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        <DollarSign className="mr-3 h-5 w-5" />
-                        Pricing Plans
-                        <Badge variant="secondary" className="ml-auto bg-white/20 text-white text-xs">
-                          Current
-                        </Badge>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
-                        onClick={() => {
-                          handleTabChange('settings');
-                          setIsMobileMenuOpen(false);
-                        }}
-                      >
-                        <Settings className="mr-3 h-5 w-5" />
-                        Settings
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
-                        onClick={() => {
-                          handleTabChange('key-info');
-                          setIsMobileMenuOpen(false);
-                        }}
-                      >
-                        <Lock className="mr-3 h-5 w-5" />
-                        How it works
-                      </Button>
+                      {navigationItems.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = item.id === 'pricing';
+                        return (
+                          <Button
+                            key={item.id}
+                            variant={isActive ? "default" : "ghost"}
+                            className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
+                            onClick={() => {
+                              if (item.id !== 'pricing') {
+                                handleTabChange(item.id);
+                              }
+                              setIsMobileMenuOpen(false);
+                            }}
+                          >
+                            <Icon className="mr-3 h-5 w-5" />
+                            {item.label}
+                          </Button>
+                        );
+                      })}
                     </div>
-                    
+
                     {/* Theme Toggle */}
                     <div className="px-4 pt-4 border-t border-border/30">
                       <MobileThemeToggle />
                     </div>
                   </nav>
-                  
+
                   {user && (
                     <div className="mt-auto p-4 border-t border-border">
                       <div className="flex items-center justify-between">
@@ -247,15 +175,15 @@ function MobilePricing({
           <Button variant="ghost" size="sm" onClick={logout}>
             <User className="h-5 w-5" />
           </Button>
-        </div>
-      </header>
+        </div >
+      </header >
 
       <main className="flex-1 pb-4">
         {renderContent()}
       </main>
-      
+
       <Footer />
-    </div>
+    </div >
   );
 }
 
@@ -396,7 +324,7 @@ export default function PricingPage() {
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-violet-500/10 relative overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-grid-pattern opacity-5" />
-      
+
       <PageTransition>
         {/* Hero Section */}
         <div className="relative pt-20 pb-24 px-4 lg:px-8">
@@ -406,13 +334,13 @@ export default function PricingPage() {
               <div className="absolute -top-40 -right-32 w-96 h-96 rounded-full bg-gradient-to-br from-violet-400/20 to-purple-600/20 blur-3xl" />
               <div className="absolute -bottom-40 -left-32 w-96 h-96 rounded-full bg-gradient-to-br from-blue-400/20 to-indigo-600/20 blur-3xl" />
             </div>
-            
+
             <div className="relative z-10">
               <Badge variant="secondary" className="mb-6 text-sm px-4 py-2 bg-gradient-to-r from-violet-500/10 to-purple-500/10 border border-violet-200 dark:border-violet-800">
                 <Sparkles className="w-4 h-4 mr-2" />
                 Choose Your Perfect Plan
               </Badge>
-              
+
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-black mb-6 leading-tight">
                 <span className="bg-gradient-to-r from-violet-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">
                   Simple, Transparent
@@ -420,13 +348,13 @@ export default function PricingPage() {
                 <br />
                 <span className="text-foreground">Pricing</span>
               </h1>
-              
+
               <p className="text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto mb-8 leading-relaxed font-medium">
-                Secure, AI-powered file management with end-to-end encryption. 
+                Secure, AI-powered file management with end-to-end encryption.
                 <br className="hidden sm:block" />
                 Start free and scale as you grow with confidence.
               </p>
-              
+
               {/* Billing Toggle */}
               <div className="flex items-center justify-center gap-4 mb-12">
                 <span className={`text-base font-semibold transition-colors ${billingCycle === 'monthly' ? 'text-foreground' : 'text-muted-foreground'}`}>
@@ -435,16 +363,14 @@ export default function PricingPage() {
                 <div className="relative">
                   <button
                     onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'annual' : 'monthly')}
-                    className={`relative inline-flex h-8 w-16 items-center rounded-full border-2 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-                      billingCycle === 'annual' 
-                        ? 'bg-primary border-primary' 
-                        : 'bg-muted border-border'
-                    }`}
+                    className={`relative inline-flex h-8 w-16 items-center rounded-full border-2 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${billingCycle === 'annual'
+                      ? 'bg-primary border-primary'
+                      : 'bg-muted border-border'
+                      }`}
                   >
                     <span
-                      className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform duration-300 ${
-                        billingCycle === 'annual' ? 'translate-x-8' : 'translate-x-1'
-                      }`}
+                      className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform duration-300 ${billingCycle === 'annual' ? 'translate-x-8' : 'translate-x-1'
+                        }`}
                     />
                   </button>
                 </div>
@@ -467,16 +393,15 @@ export default function PricingPage() {
           <div className="max-w-7xl mx-auto">
             {/* Horizontal Layout - 4 plans perfectly structured grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 auto-rows-fr">
-              {plans.map((plan, index) => (
-                <ModernCard 
+              {plans.map((plan) => (
+                <ModernCard
                   key={plan.name}
                   variant={plan.popular ? "premium" : "default"}
                   hover="lift"
-                  className={`relative flex flex-col h-full transition-all duration-300 ${
-                    plan.popular 
-                      ? 'border-2 border-primary/50 shadow-xl shadow-primary/20 transform scale-[1.02]' 
-                      : 'hover:shadow-lg hover:scale-[1.01]'
-                  }`}
+                  className={`relative flex flex-col h-full transition-all duration-300 ${plan.popular
+                    ? 'border-2 border-primary/50 shadow-xl shadow-primary/20 transform scale-[1.02]'
+                    : 'hover:shadow-lg hover:scale-[1.01]'
+                    }`}
                 >
                   {plan.badge && (
                     <div className={`absolute -top-3 left-1/2 transform -translate-x-1/2 px-3 py-1 rounded-full text-xs font-bold text-white shadow-lg ${plan.badgeColor} z-10`}>
@@ -486,7 +411,7 @@ export default function PricingPage() {
                       {plan.badge}
                     </div>
                   )}
-                  
+
                   <ModernCardHeader className="pb-3 pt-6 text-center flex-shrink-0">
                     <div className="mb-3">
                       {plan.name === 'Starter Plan' && <HardDrive className="w-10 h-10 mx-auto mb-2 text-green-500" />}
@@ -494,12 +419,12 @@ export default function PricingPage() {
                       {plan.name === 'Pro Plan' && <Sparkles className="w-10 h-10 mx-auto mb-2 text-violet-500" />}
                       {plan.name === 'Business Plan' && <Briefcase className="w-10 h-10 mx-auto mb-2 text-orange-500" />}
                     </div>
-                    
+
                     <ModernCardTitle className="text-lg font-bold mb-2 line-clamp-1">{plan.name}</ModernCardTitle>
                     <ModernCardDescription className="text-xs text-muted-foreground mb-3 min-h-[2rem] flex items-center justify-center text-center px-2 line-clamp-2">
                       {plan.subtitle}
                     </ModernCardDescription>
-                    
+
                     <div className="mb-3">
                       <div className="flex items-baseline justify-center gap-1">
                         <span className="text-2xl font-black text-foreground">{plan.price}</span>
@@ -516,12 +441,12 @@ export default function PricingPage() {
                         </div>
                       )}
                     </div>
-                    
+
                     <p className="text-xs text-muted-foreground leading-relaxed min-h-[2.5rem] flex items-center justify-center px-1 text-center">
                       {plan.description}
                     </p>
                   </ModernCardHeader>
-                  
+
                   <ModernCardContent className="pt-0 pb-4 flex-1 flex flex-col px-4">
                     <ul className="space-y-2 mb-4 flex-1">
                       {plan.features.map((feature, idx) => (
@@ -545,8 +470,8 @@ export default function PricingPage() {
                         </li>
                       ))}
                     </ul>
-                    
-                    <Button 
+
+                    <Button
                       variant={plan.ctaVariant}
                       className="w-full group text-xs py-2 font-semibold"
                       size="sm"
@@ -570,7 +495,7 @@ export default function PricingPage() {
                 Built for security, powered by AI, designed for scale. Experience the future of secure file management.
               </p>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
               <ModernCard hover="lift" className="text-center p-10 lg:p-12 h-full bg-gradient-to-br from-background to-background/80 backdrop-blur-sm">
                 <div className="w-20 h-20 bg-gradient-to-br from-primary/20 to-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-8">
@@ -581,7 +506,7 @@ export default function PricingPage() {
                   Your data is encrypted client-side with AES-256. We never see your content - true zero-knowledge architecture ensures complete privacy.
                 </p>
               </ModernCard>
-              
+
               <ModernCard hover="lift" className="text-center p-10 lg:p-12 h-full bg-gradient-to-br from-background to-background/80 backdrop-blur-sm">
                 <div className="w-20 h-20 bg-gradient-to-br from-violet-500/20 to-violet-500/10 rounded-2xl flex items-center justify-center mx-auto mb-8">
                   <Zap className="h-10 w-10 text-violet-500" />
@@ -591,7 +516,7 @@ export default function PricingPage() {
                   Advanced AI chat with multiple providers, custom agents, and intelligent file analysis capabilities for enhanced productivity.
                 </p>
               </ModernCard>
-              
+
               <ModernCard hover="lift" className="text-center p-10 lg:p-12 h-full bg-gradient-to-br from-background to-background/80 backdrop-blur-sm">
                 <div className="w-20 h-20 bg-gradient-to-br from-emerald-500/20 to-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto mb-8">
                   <Activity className="h-10 w-10 text-emerald-500" />
@@ -614,7 +539,7 @@ export default function PricingPage() {
                 Everything you need to know about VaultX pricing and features.
               </p>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 text-left">
               <ModernCard className="p-8 lg:p-10 h-full hover:shadow-lg transition-all duration-300">
                 <h3 className="text-xl lg:text-2xl font-bold mb-4 text-foreground">Can I change plans anytime?</h3>
@@ -622,21 +547,21 @@ export default function PricingPage() {
                   Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately with prorated billing.
                 </p>
               </ModernCard>
-              
+
               <ModernCard className="p-8 lg:p-10 h-full hover:shadow-lg transition-all duration-300">
                 <h3 className="text-xl lg:text-2xl font-bold mb-4 text-foreground">What happens to my data if I downgrade?</h3>
                 <p className="text-lg text-muted-foreground leading-relaxed">
                   Your data remains secure and accessible. You'll just have reduced storage and AI chat limits according to your new plan.
                 </p>
               </ModernCard>
-              
+
               <ModernCard className="p-8 lg:p-10 h-full hover:shadow-lg transition-all duration-300">
                 <h3 className="text-xl lg:text-2xl font-bold mb-4 text-foreground">Is my data really secure?</h3>
                 <p className="text-lg text-muted-foreground leading-relaxed">
                   Absolutely. We use client-side AES-256 encryption. Your encryption key never leaves your device, ensuring true zero-knowledge security.
                 </p>
               </ModernCard>
-              
+
               <ModernCard className="p-8 lg:p-10 h-full hover:shadow-lg transition-all duration-300">
                 <h3 className="text-xl lg:text-2xl font-bold mb-4 text-foreground">Do you offer discounts for teams?</h3>
                 <p className="text-lg text-muted-foreground leading-relaxed">
@@ -651,21 +576,22 @@ export default function PricingPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+    <>
       {/* Mobile Layout */}
-      <div className="lg:hidden">
+      <div className="lg:hidden min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
         <MobilePricing renderContent={renderContent} />
       </div>
 
       {/* Desktop Layout */}
-      <div className="hidden lg:flex min-h-screen">
+      <div className="hidden lg:block min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+        {/* Sidebar - Outside any transform containers */}
         <Sidebar
           activeTab="pricing"
           onTabChange={handleTabChange}
-          className="fixed h-full w-64 bg-sidebar text-sidebar-foreground dark:bg-sidebar dark:text-sidebar-foreground"
         />
 
-        <div className="flex-1 ml-64 flex flex-col min-h-screen bg-background text-foreground">
+        {/* Main Content */}
+        <div className="ml-64 flex flex-col min-h-screen bg-background text-foreground">
           {/* Modern Header */}
           <ModernHeader
             title="Pricing Plans"
@@ -684,6 +610,6 @@ export default function PricingPage() {
           <Footer />
         </div>
       </div>
-    </div>
+    </>
   );
 }
