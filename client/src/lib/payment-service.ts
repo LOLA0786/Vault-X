@@ -38,10 +38,16 @@ export interface PaymentOptions {
 }
 
 export class PaymentService {
-  static async createOrder(options: PaymentOptions): Promise<RazorpayResponse> {
+  static async createOrder(options: PaymentOptions, userId?: string): Promise<RazorpayResponse> {
     try {
-      const userId = localStorage.getItem('user_email');
-      if (!userId) {
+      // First try to use the passed userId, otherwise fall back to email from localStorage
+      let userIdentifier = userId;
+      if (!userIdentifier) {
+        const storedEmail = localStorage.getItem('user_email');
+        userIdentifier = storedEmail || undefined;
+      }
+      
+      if (!userIdentifier) {
         throw new Error('User not authenticated');
       }
 
@@ -51,7 +57,7 @@ export class PaymentService {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userId,
+          userId: userIdentifier,
           amount: Math.round(options.amount), // Ensure amount is an integer
           currency: options.currency || 'INR',
           planId: options.planId,
@@ -159,6 +165,12 @@ export class PaymentService {
         order_id: order.id,
         handler: function (response: any) {
           resolve(response);
+        },
+        modal: {
+          ondismiss: function() {
+            // User closed the checkout form without paying
+            reject(new Error('Payment cancelled by user'));
+          }
         },
         prefill: {
           email: localStorage.getItem('user_email') || '',

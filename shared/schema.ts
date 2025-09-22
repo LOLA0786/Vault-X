@@ -7,6 +7,13 @@ export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   email: text("email").notNull().unique(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  // Subscription fields
+  currentPlan: varchar("current_plan").default("free"),
+  planStatus: varchar("plan_status").default("active"), // active, cancelled, expired
+  subscriptionStartDate: timestamp("subscription_start_date"),
+  subscriptionEndDate: timestamp("subscription_end_date"),
+  billingPeriod: varchar("billing_period").default("month"),
+  lastPaymentId: varchar("last_payment_id"),
 });
 
 export const encryptedFiles = pgTable("encrypted_files", {
@@ -95,7 +102,67 @@ export const insertPaymentSchema = createInsertSchema(payments).omit({
   status: true,
 });
 
+export const userSubscriptions = pgTable("user_subscriptions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  planId: varchar("plan_id").notNull(), // starter-plan, personal-plan, pro-plan, business-plan
+  planName: varchar("plan_name").notNull(),
+  status: varchar("status").notNull().default("active"), // active, cancelled, expired, paused
+  billingPeriod: varchar("billing_period").notNull().default("month"),
+  startDate: timestamp("start_date").defaultNow().notNull(),
+  endDate: timestamp("end_date"),
+  autoRenew: integer("auto_renew").default(1), // 1 = true, 0 = false
+  paymentId: varchar("payment_id").references(() => payments.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertUserSubscriptionSchema = createInsertSchema(userSubscriptions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertUserSubscription = z.infer<typeof insertUserSubscriptionSchema>;
+export type UserSubscription = typeof userSubscriptions.$inferSelect;
+
 export type InsertChatSession = z.infer<typeof insertChatSessionSchema>;
 export type ChatSession = typeof chatSessions.$inferSelect;
 export type InsertPayment = z.infer<typeof insertPaymentSchema>;
 export type Payment = typeof payments.$inferSelect;
+
+// Plan configuration
+export const PLAN_CONFIGS = {
+  'free': {
+    name: 'Free Plan',
+    features: ['5GB Storage', '10 AI chats/month', '1 Device'],
+    price: { monthly: 0, yearly: 0 },
+    limits: { storage: 5, chats: 10, devices: 1 }
+  },
+  'starter-plan': {
+    name: 'Starter Plan',
+    features: ['50GB Storage', '100 AI chats/month', '3 Devices'],
+    price: { monthly: 7, yearly: 70 },
+    limits: { storage: 50, chats: 100, devices: 3 }
+  },
+  'personal-plan': {
+    name: 'Personal Plan',
+    features: ['200GB Storage', '500 chats/month', '5 Devices'],
+    price: { monthly: 12, yearly: 120 },
+    limits: { storage: 200, chats: 500, devices: 5 }
+  },
+  'pro-plan': {
+    name: 'Pro Plan',
+    features: ['1TB Storage', '2000 chats/month', 'Unlimited Devices'],
+    price: { monthly: 24, yearly: 240 },
+    limits: { storage: 1000, chats: 2000, devices: -1 }
+  },
+  'business-plan': {
+    name: 'Business Plan',
+    features: ['10TB Storage', '10000 chats/month', '25 Users'],
+    price: { monthly: 99, yearly: 990 },
+    limits: { storage: 10000, chats: 10000, devices: -1, users: 25 }
+  }
+} as const;
+
+export type PlanId = keyof typeof PLAN_CONFIGS;

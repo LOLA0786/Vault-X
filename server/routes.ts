@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, insertFileSchema, insertChatSessionSchema, insertAiAgentSchema, insertPaymentSchema } from "@shared/schema";
+import { insertUserSchema, insertFileSchema, insertChatSessionSchema, insertAiAgentSchema, insertPaymentSchema } from "../shared/schema";
 import { z } from "zod";
 import Razorpay from "razorpay";
 import crypto from "crypto";
@@ -338,6 +338,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Missing required fields" });
       }
       
+      // Resolve userId - if it contains @ it's an email, look up the actual user ID
+      let resolvedUserId = userId;
+      if (userId.includes('@')) {
+        try {
+          const user = await storage.getUserByEmail(userId);
+          if (!user) {
+            return res.status(404).json({ error: "User not found" });
+          }
+          resolvedUserId = user.id;
+          console.log(`Resolved email ${userId} to user ID ${resolvedUserId}`);
+        } catch (error) {
+          console.error("Error resolving user email:", error);
+          return res.status(500).json({ error: "Failed to resolve user" });
+        }
+      }
+      
       // Convert amount to INR if needed (Razorpay primarily uses INR)
       let processedAmount = parseFloat(amount);
       let targetCurrency = currency || "INR";
@@ -365,9 +381,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const order = await razorpay.orders.create(options);
       
-      // Store payment information in database
+      // Store payment information in database using resolved user ID
       const paymentData = {
-        userId,
+        userId: resolvedUserId, // Use the resolved user ID
         amount: processedAmount.toString(), // Convert to string for the database
         currency: targetCurrency,
         originalAmount: amount.toString(), // Convert original amount to string
@@ -458,6 +474,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
         plan_id
       );
       
+      console.log("Updated payment details:", {
+        id: updatedPayment?.id,
+        userId: updatedPayment?.userId,
+        planId: updatedPayment?.planId,
+        planName: updatedPayment?.planName,
+        billingPeriod: updatedPayment?.billingPeriod
+      });
+      
+      // Create subscription record after successful payment
+      if (updatedPayment && updatedPayment.planId) {
+        const billingPeriod = updatedPayment.billingPeriod || 'month';
+        const planName = updatedPayment.planName || 'Standard Plan';
+        
+        try {
+          console.log("Creating subscription for user:", updatedPayment.userId, "with plan:", updatedPayment.planId);
+          
+          // Create subscription record in user_subscriptions table
+          const subscriptionData = {
+            userId: updatedPayment.userId,
+            planId: updatedPayment.planId,
+            planName: planName,
+            billingPeriod: billingPeriod,
+            startDate: new Date(),
+            endDate: billingPeriod === 'year' ? 
+              new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) : // Add 1 year
+              new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),   // Add 30 days
+            status: 'active',
+            autoRenew: 1, // 1 = true, 0 = false for integer column
+            paymentId: updatedPayment.id
+          };
+          
+          await storage.createUserSubscription(subscriptionData);
+          console.log("Subscription created successfully for user:", updatedPayment.userId);
+          
+          // Update user plan information
+          console.log("Updating user plan for user:", updatedPayment.userId);
+          const updatedUser = await storage.updateUserPlan(
+            updatedPayment.userId,
+            updatedPayment.planId,
+            planName,
+            billingPeriod,
+            updatedPayment.id
+          );
+          console.log("User plan update result:", updatedUser ? "SUCCESS" : "FAILED");
+          if (updatedUser) {
+            console.log("Updated user plan details:", {
+              currentPlan: updatedUser.currentPlan,
+              planStatus: updatedUser.planStatus,
+              subscriptionStartDate: updatedUser.subscriptionStartDate,
+              subscriptionEndDate: updatedUser.subscriptionEndDate
+            });
+          }
+        } catch (subscriptionError) {
+          console.error("Error creating subscription:", subscriptionError);
+          // Don't fail the payment verification, just log the error
+          // The payment is still successful even if subscription creation fails
+        }
+      } else {
+        console.log("Skipping subscription creation - missing required fields:", {
+          hasPayment: !!updatedPayment,
+          planId: updatedPayment?.planId,
+          planName: updatedPayment?.planName
+        });
+      }
+      
       console.log("Payment verification successful for order:", razorpay_order_id);
       res.json({ success: true, payment: updatedPayment });
     } catch (error) {
@@ -476,6 +557,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const payments = await storage.getPaymentsByUserId(req.params.userId);
       res.json(payments);
     } catch (error) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Subscription routes
+  // Get user subscription
+  app.get("/api/subscriptions/user/:userId", async (req, res) => {
+    try {
+      const subscription = await storage.getUserSubscription(req.params.userId);
+      if (!subscription) {
+        return res.status(404).json({ error: "No active subscription found" });
+      }
+      res.json(subscription);
+    } catch (error) {
+      console.error("Error fetching user subscription:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Update user subscription
+  app.put("/api/subscriptions/user/:userId", async (req, res) => {
+    try {
+      const { status, autoRenew } = req.body;
+      const updateData: any = {};
+      
+      if (status !== undefined) updateData.status = status;
+      if (autoRenew !== undefined) updateData.autoRenew = autoRenew ? 1 : 0;
+      
+      const subscription = await storage.updateUserSubscription(req.params.userId, updateData);
+      if (!subscription) {
+        return res.status(404).json({ error: "Subscription not found" });
+      }
+      
+      res.json(subscription);
+    } catch (error) {
+      console.error("Error updating user subscription:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });

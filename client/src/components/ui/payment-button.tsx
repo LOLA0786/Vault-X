@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { CreditCard, Loader2 } from 'lucide-react';
 import { PaymentService } from '@/lib/payment-service';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/use-auth';
 
 interface PaymentButtonProps {
   amount?: number;
@@ -17,8 +18,18 @@ export function PaymentButton({
 }: PaymentButtonProps) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const handlePayment = async () => {
+    if (!user?.id) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to make a payment.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       setLoading(true);
       
@@ -27,7 +38,7 @@ export function PaymentButton({
         amount,
         currency,
         description
-      });
+      }, user.id); // Pass the user ID
 
       if (!orderData.success || !orderData.order || !orderData.key) {
         throw new Error(orderData.error || 'Failed to create payment order');
