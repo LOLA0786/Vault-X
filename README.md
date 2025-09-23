@@ -18,7 +18,15 @@ A secure AI-powered file management platform with end-to-end encryption, develop
 - **Custom AI Agents**: Create personalized AI assistants
 - **Encrypted Chat History**: All conversations stored securely
 - **Modern UI**: Professional interface with dark/light themes
-- **File Processing**: PDF text extraction and analysis
+- **File Processing**: Multi-format file support with text extraction and analysis
+
+### 📁 Supported File Formats
+
+- **Documents**: PDF, DOC, DOCX - Full text extraction and AI analysis
+- **Text Files**: TXT, MD - Direct text processing and formatting
+- **Data Files**: CSV - Structured data parsing with column analysis
+- **Images**: PNG, JPG, JPEG, GIF, WEBP - Secure storage with AI-ready processing
+- **File Size**: Up to 50MB per file with client-side encryption
 
 ## 🛠️ Technology Stack
 

@@ -35,6 +35,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { type EncryptedFile, type ChatSession, type AiAgent } from '@shared/schema';
 import { EncryptionService } from '@/lib/encryption';
+import { getFileTypeCategory } from '@/lib/file-utils';
 import KeyInfo from './key-info';
 import { Footer } from '@/components/ui/footer';
 import { Container } from '@/components/ui/container';
@@ -364,8 +365,24 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
 
   const handleDownloadFile = async (file: EncryptedFile) => {
     try {
-      const decryptedData = EncryptionService.decryptFile(file.encryptedData);
-      const blob = new Blob([decryptedData], { type: file.fileType });
+      let decryptedData: string | Uint8Array;
+      let blob: Blob;
+      
+      // Handle different file types appropriately
+      if (file.fileType === 'application/pdf' || file.fileName.endsWith('.pdf')) {
+        // For PDFs, decrypt as binary data
+        decryptedData = EncryptionService.decryptFileToUint8Array(file.encryptedData);
+        blob = new Blob([decryptedData], { type: file.fileType });
+      } else if (file.fileType.startsWith('image/') || /\.(png|jpg|jpeg|gif|webp)$/i.test(file.fileName)) {
+        // For images, decrypt as binary data
+        decryptedData = EncryptionService.decryptFileToUint8Array(file.encryptedData);
+        blob = new Blob([decryptedData], { type: file.fileType });
+      } else {
+        // For text-based files (TXT, MD, CSV, DOC, DOCX), decrypt as text
+        decryptedData = EncryptionService.decryptFile(file.encryptedData);
+        blob = new Blob([decryptedData], { type: file.fileType || 'text/plain' });
+      }
+      
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;

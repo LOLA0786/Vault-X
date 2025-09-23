@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { EncryptionService } from '@/lib/encryption';
 import { GrokService, type ChatMessage } from '@/lib/grok';
 import { extractPdfText } from '@/lib/pdf-utils';
+import { extractFileContent } from '@/lib/file-utils';
 import { type EncryptedFile, type AiAgent } from '@shared/schema';
 
 // Layout Components
@@ -462,12 +463,17 @@ export default function ChatPage({ sessionId, onNewSession }: ChatPageProps) {
         if (selectedFile) {
           try {
             fileName = selectedFile.fileName;
+            
+            // Use the new file processing utility
+            let decryptedData: string | Uint8Array;
             if (selectedFile.fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
-              const pdfBytes = EncryptionService.decryptFileToUint8Array(selectedFile.encryptedData);
-              fileContent = await extractPdfText(pdfBytes);
+              decryptedData = EncryptionService.decryptFileToUint8Array(selectedFile.encryptedData);
             } else {
-              fileContent = EncryptionService.decryptFile(selectedFile.encryptedData);
+              decryptedData = EncryptionService.decryptFile(selectedFile.encryptedData);
             }
+            
+            const result = await extractFileContent(selectedFile, decryptedData);
+            fileContent = result.content;
           } catch (error) {
             throw new Error('Failed to decrypt or parse selected file');
           }

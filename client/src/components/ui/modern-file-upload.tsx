@@ -100,9 +100,11 @@ export function ModernFileUpload({
   onFileSelect,
   onFileUploaded,
   accept = {
-    'image/*': ['.png', '.jpg', '.jpeg', '.gif'],
+    'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp'],
     'application/pdf': ['.pdf'],
     'text/*': ['.txt', '.md'],
+    'text/csv': ['.csv'],
+    'application/csv': ['.csv'],
     'application/msword': ['.doc'],
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx']
   },
@@ -174,7 +176,7 @@ export function ModernFileUpload({
         }
 
         // Validate file type
-        const allowedTypes = ['.pdf', '.docx', '.txt', '.png', '.jpg', '.jpeg', '.gif', '.doc'];
+        const allowedTypes = ['.pdf', '.docx', '.doc', '.txt', '.md', '.csv', '.png', '.jpg', '.jpeg', '.gif', '.webp'];
         const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
         if (!allowedTypes.includes(fileExtension)) {
           toast({
@@ -338,9 +340,10 @@ export function ModernFileUpload({
             </div>
             <div className="flex flex-wrap justify-center gap-2 text-xs text-muted-foreground">
               <span className="bg-muted px-2 py-1 rounded">PDF</span>
+              <span className="bg-muted px-2 py-1 rounded">DOC/DOCX</span>
+              <span className="bg-muted px-2 py-1 rounded">TXT/MD</span>
+              <span className="bg-muted px-2 py-1 rounded">CSV</span>
               <span className="bg-muted px-2 py-1 rounded">Images</span>
-              <span className="bg-muted px-2 py-1 rounded">Documents</span>
-              <span className="bg-muted px-2 py-1 rounded">Text files</span>
             </div>
             <p className="text-xs text-muted-foreground">
               Maximum {maxFiles} files, up to {Math.round(maxSize / 1024 / 1024)}MB each

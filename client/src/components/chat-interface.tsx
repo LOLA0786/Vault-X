@@ -7,6 +7,7 @@ import { Paperclip, Send, Bot, User, Shield, Lock } from 'lucide-react';
 import { GrokService, type ChatMessage } from '@/lib/grok';
 import { EncryptionService } from '@/lib/encryption';
 import { extractPdfText } from '@/lib/pdf-utils';
+import { extractFileContent } from '@/lib/file-utils';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
@@ -53,15 +54,17 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
         const key = EncryptionService.getStoredKey();
         console.log('[Decrypt Debug] File:', selectedFile);
         console.log('[Decrypt Debug] Key:', key);
+        
+        // Use the new file processing utility
+        let decryptedData: string | Uint8Array;
         if (selectedFile.fileType === 'application/pdf' || selectedFile.fileName.endsWith('.pdf')) {
-          const pdfBytes = EncryptionService.decryptFileToUint8Array(selectedFile.encryptedData);
-          console.log('[Decrypt Debug] PDF Bytes:', pdfBytes);
-          const text = await extractPdfText(pdfBytes);
-          setDecryptedFileContent(text);
+          decryptedData = EncryptionService.decryptFileToUint8Array(selectedFile.encryptedData);
         } else {
-          const text = EncryptionService.decryptFile(selectedFile.encryptedData);
-          setDecryptedFileContent(text);
+          decryptedData = EncryptionService.decryptFile(selectedFile.encryptedData);
         }
+        
+        const result = await extractFileContent(selectedFile, decryptedData);
+        setDecryptedFileContent(result.content);
       } catch (err) {
         setDecryptedFileContent('Failed to decrypt or parse file.');
         console.error('[Decrypt Debug] Error:', err);
@@ -223,12 +226,17 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
         if (selectedFile) {
           try {
             fileName = selectedFile.fileName;
+            
+            // Use the new file processing utility
+            let decryptedData: string | Uint8Array;
             if (selectedFile.fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
-              const pdfBytes = EncryptionService.decryptFileToUint8Array(selectedFile.encryptedData);
-              fileContent = await extractPdfText(pdfBytes);
+              decryptedData = EncryptionService.decryptFileToUint8Array(selectedFile.encryptedData);
             } else {
-              fileContent = EncryptionService.decryptFile(selectedFile.encryptedData);
+              decryptedData = EncryptionService.decryptFile(selectedFile.encryptedData);
             }
+            
+            const result = await extractFileContent(selectedFile, decryptedData);
+            fileContent = result.content;
           } catch (error) {
             throw new Error('Failed to decrypt or parse selected file');
           }
