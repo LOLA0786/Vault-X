@@ -2,13 +2,13 @@ import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { 
-  CloudUpload, 
-  FileText, 
-  File, 
-  Lock, 
-  Shield, 
-  CheckCircle, 
+import {
+  CloudUpload,
+  FileText,
+  File,
+  Lock,
+  Shield,
+  CheckCircle,
   Zap,
   Upload,
   Database,
@@ -18,7 +18,9 @@ import {
   Sparkles,
   Fingerprint,
   ShieldCheck,
-  AlertTriangle
+  AlertTriangle,
+  Image,
+  FileSpreadsheet
 } from 'lucide-react';
 import { EncryptionService } from '@/lib/encryption';
 import { useAuth } from '@/hooks/use-auth';
@@ -63,7 +65,7 @@ export function FileUpload({ onFileUploaded }: FileUploadProps) {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
+
     const files = e.dataTransfer.files;
     if (files && files[0]) {
       uploadFile(files[0]);
@@ -98,12 +100,12 @@ export function FileUpload({ onFileUploaded }: FileUploadProps) {
       return;
     }
 
-    const allowedTypes = ['.pdf', '.docx', '.txt'];
+    const allowedTypes = ['.pdf', '.docx', '.doc', '.txt', '.md', '.csv', '.png', '.jpg', '.jpeg', '.gif', '.webp'];
     const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
     if (!allowedTypes.includes(fileExtension)) {
       toast({
         title: "Invalid file type",
-        description: "Please select a PDF, DOCX, or TXT file",
+        description: "Please select a supported file type (PDF, DOC, DOCX, TXT, MD, CSV, or Image)",
         variant: "destructive",
       });
       return;
@@ -183,26 +185,26 @@ export function FileUpload({ onFileUploaded }: FileUploadProps) {
       <CardContent className="space-y-6">
         {/* Security Features */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                     <div className="bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-slate-800 dark:to-slate-700 rounded-lg p-4 border border-emerald-200 dark:border-slate-600">
-             <div className="flex items-center gap-3 mb-2">
-               <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center">
-                 <Lock className="h-4 w-4 text-white" />
-               </div>
-               <h4 className="font-semibold text-foreground">AES-256 Encryption</h4>
-             </div>
-             <p className="text-sm text-muted-foreground">Military-grade encryption before upload</p>
-           </div>
-          
-                     <div className="bg-gradient-to-r from-blue-50 to-blue-50 dark:from-slate-800 dark:to-slate-700 rounded-lg p-4 border border-blue-200 dark:border-slate-600">
-             <div className="flex items-center gap-3 mb-2">
-               <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                 <Eye className="h-4 w-4 text-white" />
-               </div>
-               <h4 className="font-semibold text-foreground">Zero-Knowledge</h4>
-             </div>
-             <p className="text-sm text-muted-foreground">We never see your unencrypted data</p>
-           </div>
-          
+          <div className="bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-slate-800 dark:to-slate-700 rounded-lg p-4 border border-emerald-200 dark:border-slate-600">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                <Lock className="h-4 w-4 text-white" />
+              </div>
+              <h4 className="font-semibold text-foreground">AES-256 Encryption</h4>
+            </div>
+            <p className="text-sm text-muted-foreground">Military-grade encryption before upload</p>
+          </div>
+
+          <div className="bg-gradient-to-r from-blue-50 to-blue-50 dark:from-slate-800 dark:to-slate-700 rounded-lg p-4 border border-blue-200 dark:border-slate-600">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                <Eye className="h-4 w-4 text-white" />
+              </div>
+              <h4 className="font-semibold text-foreground">Zero-Knowledge</h4>
+            </div>
+            <p className="text-sm text-muted-foreground">We never see your unencrypted data</p>
+          </div>
+
           <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-slate-800 dark:to-slate-700 rounded-lg p-4 border border-purple-200 dark:border-slate-600">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
@@ -218,9 +220,9 @@ export function FileUpload({ onFileUploaded }: FileUploadProps) {
         <div
           className={cn(
             "relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300",
-                         dragActive
-               ? "border-primary-500 bg-primary-50 dark:bg-primary-950 dark:bg-opacity-20 scale-105"
-               : "border-gray-300 dark:border-slate-600 hover:border-primary-400 dark:hover:border-primary-500 hover:bg-gray-50 dark:hover:bg-slate-800 dark:hover:bg-opacity-50"
+            dragActive
+              ? "border-primary-500 bg-primary-50 dark:bg-primary-950 dark:bg-opacity-20 scale-105"
+              : "border-gray-300 dark:border-slate-600 hover:border-primary-400 dark:hover:border-primary-500 hover:bg-gray-50 dark:hover:bg-slate-800 dark:hover:bg-opacity-50"
           )}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
@@ -231,11 +233,11 @@ export function FileUpload({ onFileUploaded }: FileUploadProps) {
             ref={fileInputRef}
             type="file"
             className="hidden"
-            accept=".pdf,.docx,.txt"
+            accept=".pdf,.docx,.doc,.txt,.md,.csv,.png,.jpg,.jpeg,.gif,.webp"
             onChange={handleFileChange}
             disabled={isUploading}
           />
-          
+
           <div className="space-y-4">
             <div className="relative mx-auto w-20 h-20">
               <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
@@ -245,18 +247,18 @@ export function FileUpload({ onFileUploaded }: FileUploadProps) {
                 <Sparkles className="h-4 w-4 text-white" />
               </div>
             </div>
-            
+
             <div>
               <h3 className="text-lg font-semibold text-foreground mb-2">
                 {isUploading ? "Encrypting & Uploading..." : "Drop files here or click to upload"}
               </h3>
               <p className="text-sm text-muted-foreground mb-4">
-                {isUploading 
+                {isUploading
                   ? "Your file is being encrypted with AES-256 before secure transmission"
-                  : "Supported formats: PDF, DOCX, TXT (Max 50MB)"
+                  : "Supported formats: PDF, DOC, DOCX, TXT, MD, CSV, Images (Max 50MB)"
                 }
               </p>
-              
+
               {!isUploading && (
                 <Button
                   onClick={handleFileSelect}
@@ -270,7 +272,7 @@ export function FileUpload({ onFileUploaded }: FileUploadProps) {
               )}
             </div>
           </div>
-          
+
           {/* Upload Progress */}
           {isUploading && (
             <div className="mt-6 space-y-3">
@@ -288,11 +290,11 @@ export function FileUpload({ onFileUploaded }: FileUploadProps) {
         </div>
 
         {/* Security Notice */}
-                 <div className="bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-slate-800 dark:to-slate-700 rounded-lg p-4 border border-emerald-200 dark:border-slate-600">
-           <div className="flex items-start gap-3">
-             <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
-               <ShieldCheck className="h-4 w-4 text-white" />
-             </div>
+        <div className="bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-slate-800 dark:to-slate-700 rounded-lg p-4 border border-emerald-200 dark:border-slate-600">
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
+              <ShieldCheck className="h-4 w-4 text-white" />
+            </div>
             <div className="flex-1">
               <h4 className="font-semibold text-foreground mb-1">Security Guarantee</h4>
               <p className="text-sm text-muted-foreground mb-3">
@@ -317,34 +319,54 @@ export function FileUpload({ onFileUploaded }: FileUploadProps) {
         </div>
 
         {/* File Type Info */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           <div className="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-600">
             <div className="w-8 h-8 bg-red-100 dark:bg-red-900 rounded-lg flex items-center justify-center">
               <FileText className="h-4 w-4 text-red-600 dark:text-red-400" />
             </div>
             <div>
-              <p className="text-sm font-medium text-foreground">PDF Files</p>
-              <p className="text-xs text-muted-foreground">Documents & reports</p>
+              <p className="text-sm font-medium text-foreground">PDF</p>
+              <p className="text-xs text-muted-foreground">Documents</p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-600">
             <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
               <File className="h-4 w-4 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <p className="text-sm font-medium text-foreground">DOCX Files</p>
-              <p className="text-xs text-muted-foreground">Word documents</p>
+              <p className="text-sm font-medium text-foreground">DOC/DOCX</p>
+              <p className="text-xs text-muted-foreground">Word files</p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-600">
             <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
               <FileText className="h-4 w-4 text-green-600 dark:text-green-400" />
             </div>
             <div>
-              <p className="text-sm font-medium text-foreground">TXT Files</p>
-              <p className="text-xs text-muted-foreground">Plain text documents</p>
+              <p className="text-sm font-medium text-foreground">TXT/MD</p>
+              <p className="text-xs text-muted-foreground">Text files</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-600">
+            <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center">
+              <FileSpreadsheet className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">CSV</p>
+              <p className="text-xs text-muted-foreground">Data files</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-600 md:col-span-2 lg:col-span-1">
+            <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
+              <Image className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">Images</p>
+              <p className="text-xs text-muted-foreground">PNG, JPG, GIF, WEBP</p>
             </div>
           </div>
         </div>

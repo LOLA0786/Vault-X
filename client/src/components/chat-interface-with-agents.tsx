@@ -8,6 +8,7 @@ import { Paperclip, Send, Bot, User, Shield, Lock, ChevronLeft, ChevronRight, Re
 import { GrokService, type ChatMessage } from '@/lib/grok';
 import { EncryptionService } from '@/lib/encryption';
 import { extractPdfText } from '@/lib/pdf-utils';
+import { extractFileContent } from '@/lib/file-utils';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
@@ -90,13 +91,16 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
         const key = EncryptionService.getStoredKey();
         console.log('[Decrypt Debug] File:', selectedFile);
 
-        let content: string;
+        // Use the new file processing utility
+        let decryptedData: string | Uint8Array;
         if (selectedFile.fileType === 'application/pdf' || selectedFile.fileName.endsWith('.pdf')) {
-          const pdfBytes = EncryptionService.decryptFileToUint8Array(selectedFile.encryptedData);
-          content = await extractPdfText(pdfBytes);
+          decryptedData = EncryptionService.decryptFileToUint8Array(selectedFile.encryptedData);
         } else {
-          content = EncryptionService.decryptFile(selectedFile.encryptedData);
+          decryptedData = EncryptionService.decryptFile(selectedFile.encryptedData);
         }
+        
+        const result = await extractFileContent(selectedFile, decryptedData);
+        const content = result.content;
         
         // Truncate preview for UI display (but keep full content for AI processing)
         setDecryptedFileContent(content.substring(0, 1000) + (content.length > 1000 ? '...' : ''));
@@ -377,12 +381,17 @@ export function ChatInterface({ sessionId, onNewSession }: ChatInterfaceProps) {
         if (selectedFile) {
           try {
             fileName = selectedFile.fileName;
+            
+            // Use the new file processing utility
+            let decryptedData: string | Uint8Array;
             if (selectedFile.fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
-              const pdfBytes = EncryptionService.decryptFileToUint8Array(selectedFile.encryptedData);
-              fileContent = await extractPdfText(pdfBytes);
+              decryptedData = EncryptionService.decryptFileToUint8Array(selectedFile.encryptedData);
             } else {
-              fileContent = EncryptionService.decryptFile(selectedFile.encryptedData);
+              decryptedData = EncryptionService.decryptFile(selectedFile.encryptedData);
             }
+            
+            const result = await extractFileContent(selectedFile, decryptedData);
+            fileContent = result.content;
           } catch (error) {
             throw new Error('Failed to decrypt or parse selected file');
           }
