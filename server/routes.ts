@@ -5,9 +5,13 @@ import { insertUserSchema, insertFileSchema, insertChatSessionSchema, insertAiAg
 import { z } from "zod";
 import Razorpay from "razorpay";
 import crypto from "crypto";
+import { registerChunkedUploadRoutes } from "./chunked-upload-routes";
 
 
 export async function registerRoutes(app: Express): Promise<Server> {
+
+  // Register chunked upload routes for large files
+  registerChunkedUploadRoutes(app);
 
   // Secure file upload route: only accept encrypted file data as JSON
   app.post("/api/upload", async (req, res) => {

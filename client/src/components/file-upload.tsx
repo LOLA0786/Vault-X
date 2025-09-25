@@ -23,6 +23,7 @@ import {
   FileSpreadsheet
 } from 'lucide-react';
 import { EncryptionService } from '@/lib/encryption';
+import { ChunkedUploadService } from '@/lib/chunked-upload';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { SecurityBadge, SecurityStatus, SecurityIcon } from '@/components/ui/security-badge';
@@ -115,46 +116,72 @@ export function FileUpload({ onFileUploaded }: FileUploadProps) {
     setUploadProgress(0);
 
     try {
-      // Simulate encryption progress
-      const encryptionSteps = [20, 40, 60, 80, 100];
-      for (const step of encryptionSteps) {
-        await new Promise(resolve => setTimeout(resolve, 200));
-        setUploadProgress(step);
+      // Choose upload method based on file size
+      if (ChunkedUploadService.shouldUseChunkedUpload(file)) {
+        // Use chunked upload for large files (>5MB)
+        console.log(`[Upload] Using chunked upload for ${file.name} (${file.size} bytes)`);
+        
+        const result = await ChunkedUploadService.uploadFile(file, user.id, {
+          onProgress: (progress) => setUploadProgress(progress),
+          onChunkComplete: (completed, total) => {
+            console.log(`[Upload] Chunk ${completed}/${total} completed`);
+          }
+        });
+
+        if (!result.success) {
+          throw new Error(result.error || 'Chunked upload failed');
+        }
+
+        toast({
+          title: "File uploaded successfully",
+          description: `${file.name} has been encrypted and stored securely using optimized chunked upload`,
+        });
+      } else {
+        // Use traditional upload for smaller files (<5MB)
+        console.log(`[Upload] Using traditional upload for ${file.name} (${file.size} bytes)`);
+        
+        // Simulate encryption progress
+        const encryptionSteps = [20, 40, 60, 80, 100];
+        for (const step of encryptionSteps) {
+          await new Promise(resolve => setTimeout(resolve, 200));
+          setUploadProgress(step);
+        }
+
+        // Encrypt the file
+        const encryptedData = await EncryptionService.encryptFile(file);
+
+        // Upload encrypted payload as JSON to server
+        const payload = {
+          userId: user.id,
+          fileName: file.name,
+          fileType: file.type || 'application/octet-stream',
+          encryptedData,
+        };
+
+        const response = await fetch('/api/files', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          const errText = await response.text().catch(() => '');
+          console.error('Upload response not ok:', response.status, errText);
+          throw new Error('Upload failed');
+        }
+
+        toast({
+          title: "File uploaded successfully",
+          description: `${file.name} has been encrypted and stored securely`,
+        });
       }
-
-      // Encrypt the file
-      const encryptedData = await EncryptionService.encryptFile(file);
-
-      // Upload encrypted payload as JSON to server (do not send raw file)
-      const payload = {
-        userId: user.id,
-        fileName: file.name,
-        fileType: file.type || 'application/octet-stream',
-        encryptedData,
-      };
-
-      const response = await fetch('/api/files', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const errText = await response.text().catch(() => '');
-        console.error('Upload response not ok:', response.status, errText);
-        throw new Error('Upload failed');
-      }
-
-      toast({
-        title: "File uploaded successfully",
-        description: `${file.name} has been encrypted and stored securely`,
-      });
 
       onFileUploaded?.();
     } catch (error) {
+      console.error('Upload error:', error);
       toast({
         title: "Upload failed",
-        description: "Failed to upload the file. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to upload the file. Please try again.",
         variant: "destructive",
       });
     } finally {
