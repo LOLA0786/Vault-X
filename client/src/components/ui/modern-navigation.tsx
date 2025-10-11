@@ -89,7 +89,7 @@ const defaultNavItems: NavigationItem[] = [
 
 // Helper function to get navigation items based on user
 export function getNavigationItems(user: any): NavigationItem[] {
-  const isAdmin = user?.email === 'Lolasolution27@gmail.com' || user?.email === "lolasolution27@gmail.com" || user?.email === "test11@gmail.com";
+  const isAdmin = user?.email === 'Lolasolution27@gmail.com' || user?.email === "lolasolution27@gmail.com";
   console.log('ModernNavigation - User email:', user?.email);
   console.log('ModernNavigation - Is admin:', isAdmin);
   

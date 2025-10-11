@@ -18,6 +18,7 @@ import { ModernGrid, ModernContainer, ModernStack } from '@/components/ui/modern
 import { ModernInput } from '@/components/ui/modern-input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { NewsWidget } from '@/components/ui/blog-section';
 import { SecurityBadge, EncryptionIndicator } from '@/components/ui/security-badge';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -724,6 +725,9 @@ export default function SettingsPage() {
                 </div>
               </ModernCardContent>
             </ModernCard>
+
+            {/* News and Updates */}
+            <NewsWidget />
 
             {/* Danger Zone */}
             <ModernCard variant="elevated" className="border-red-200 dark:border-red-800">

@@ -3,6 +3,15 @@ import { PrivateVaultLogo } from "./private-vault-logo";
 import { ThemeToggle } from "./theme-toggle";
 import { useAuth } from "@/hooks/use-auth";
 import { createPortal } from "react-dom";
+import { Button } from "./button";
+import { LogOut, User } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "./dropdown-menu";
 
 interface SidebarProps {
   activeTab: string;
@@ -10,7 +19,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   // Only render on desktop
   if (typeof window === 'undefined' || window.innerWidth < 1024) {
@@ -59,7 +68,39 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       </div>
 
       {/* Perfect Footer */}
-      <div className="px-4 py-3 border-t border-border/20 bg-gradient-to-r from-muted/30 to-muted/20">
+      <div className="px-4 py-3 border-t border-border/20 bg-gradient-to-r from-muted/30 to-muted/20 space-y-3">
+        {/* User Profile & Logout */}
+        {user && (
+          <div className="flex items-center justify-between">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="w-full justify-start p-2 h-auto">
+                  <div className="flex items-center space-x-3 min-w-0 flex-1">
+                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                      <User className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="min-w-0 flex-1 text-left">
+                      <p className="text-sm font-medium text-foreground truncate">{user.email}</p>
+                      <p className="text-xs text-muted-foreground">Account Settings</p>
+                    </div>
+                  </div>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56 ml-4">
+                <div className="px-2 py-1.5">
+                  <p className="text-sm font-medium">{user.email}</p>
+                  <p className="text-xs text-muted-foreground">Signed in</p>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={logout} className="text-red-600 dark:text-red-400">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
+        
         <ThemeToggle />
       </div>
     </div>
