@@ -3,35 +3,36 @@ import { useLocation } from 'wouter';
 
 // Modern UI Components
 import { ModernCard, ModernCardContent, ModernCardDescription, ModernCardHeader, ModernCardTitle } from '@/components/ui/modern-card';
-import { ModernGrid, ModernContainer, ModernStack } from '@/components/ui/modern-layout';
-import { StatCard, StatsGrid } from '@/components/ui/modern-stats';
-import { ModernHeader } from '@/components/ui/modern-header';
+import { ModernContainer } from '@/components/ui/modern-layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Sidebar } from '@/components/ui/sidebar';
 import { Footer } from '@/components/ui/footer';
-import { Container } from '@/components/ui/container';
 import { PageTransition } from '@/components/ui/page-transition';
-import { SecurityBadge, EncryptionIndicator } from '@/components/ui/security-badge';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { PrivateVaultLogo } from '@/components/ui/private-vault-logo';
 import { MobileThemeToggle } from '@/components/ui/mobile-theme-toggle';
-import { getNavigationItems, type NavigationItem } from '@/components/ui/modern-navigation';
+import { getNavigationItems } from '@/components/ui/modern-navigation';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import { useToast } from '@/hooks/use-toast';
-import { Shield, Users, Activity, Database, ArrowLeft, Menu, Lock, LogOut } from 'lucide-react';
+import { Shield, Users, Database, ArrowLeft, Menu, Lock, LogOut, DollarSign, CreditCard, TrendingUp } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
-import type { User } from '@shared/schema';
+import type { User, Payment, UserSubscription } from '@shared/schema';
 
 // Mobile Admin Dashboard Component
 function MobileAdminDashboard({
   users,
+  payments,
+  subscriptions,
   loading,
   formatDate,
   onNavigate
 }: {
   users: User[];
+  payments: Payment[];
+  subscriptions: UserSubscription[];
   loading: boolean;
   formatDate: (date: string | Date) => string;
   onNavigate: (tab: string) => void;
@@ -92,7 +93,7 @@ function MobileAdminDashboard({
                         );
                       })}
                     </div>
-                    
+
                     {/* Theme Toggle */}
                     <div className="px-3 pt-2 border-t border-border/30">
                       <MobileThemeToggle />
@@ -143,7 +144,7 @@ function MobileAdminDashboard({
       <div className="flex-1 p-4">
         <ModernContainer className="space-y-6">
           {/* Mobile Stats Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <ModernCard>
               <ModernCardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <ModernCardTitle className="text-sm font-medium">Total Users</ModernCardTitle>
@@ -159,24 +160,38 @@ function MobileAdminDashboard({
 
             <ModernCard>
               <ModernCardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <ModernCardTitle className="text-sm font-medium">Active Today</ModernCardTitle>
-                <Activity className="h-4 w-4 text-muted-foreground" />
+                <ModernCardTitle className="text-sm font-medium">Total Revenue</ModernCardTitle>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
               </ModernCardHeader>
               <ModernCardContent>
                 <div className="text-2xl font-bold">
-                  {users.filter(u => {
-                    const today = new Date();
-                    const userDate = new Date(u.createdAt);
-                    return userDate.toDateString() === today.toDateString();
-                  }).length}
+                  ₹{payments
+                    .filter(p => p.status === 'completed')
+                    .reduce((sum, p) => sum + parseFloat(p.amount), 0)
+                    .toFixed(2)}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Users registered today
+                  All time revenue
                 </p>
               </ModernCardContent>
             </ModernCard>
 
-            <ModernCard className="sm:col-span-2 lg:col-span-1">
+            <ModernCard>
+              <ModernCardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <ModernCardTitle className="text-sm font-medium">Active Plans</ModernCardTitle>
+                <CreditCard className="h-4 w-4 text-muted-foreground" />
+              </ModernCardHeader>
+              <ModernCardContent>
+                <div className="text-2xl font-bold">
+                  {subscriptions.filter(s => s.status === 'active').length}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Paid subscriptions
+                </p>
+              </ModernCardContent>
+            </ModernCard>
+
+            <ModernCard>
               <ModernCardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <ModernCardTitle className="text-sm font-medium">System Status</ModernCardTitle>
                 <Database className="h-4 w-4 text-muted-foreground" />
@@ -220,15 +235,25 @@ function MobileAdminDashboard({
                             <Badge variant="secondary" className="text-xs">Admin</Badge>
                           )}
                         </div>
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <span>ID: {user.id.slice(0, 8)}...</span>
-                          <Badge variant="outline" className="text-green-600 border-green-600">
-                            Active
+                        <div className="flex items-center justify-between text-xs">
+                          <Badge variant={user.currentPlan === 'free' ? 'outline' : 'default'}>
+                            {user.currentPlan || 'free'}
+                          </Badge>
+                          <Badge
+                            variant={user.planStatus === 'active' ? 'default' : 'secondary'}
+                            className={user.planStatus === 'active' ? 'bg-green-600 text-xs' : 'text-xs'}
+                          >
+                            {user.planStatus || 'active'}
                           </Badge>
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          {formatDate(user.createdAt)}
+                          Registered: {formatDate(user.createdAt)}
                         </div>
+                        {user.subscriptionEndDate && (
+                          <div className="text-xs text-muted-foreground">
+                            Expires: {formatDate(user.subscriptionEndDate)}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -239,8 +264,9 @@ function MobileAdminDashboard({
                       <TableHeader>
                         <TableRow>
                           <TableHead>Email</TableHead>
-                          <TableHead>User ID</TableHead>
+                          <TableHead>Plan</TableHead>
                           <TableHead>Status</TableHead>
+                          <TableHead>Billing</TableHead>
                           <TableHead>Registered</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -255,11 +281,21 @@ function MobileAdminDashboard({
                                 )}
                               </div>
                             </TableCell>
-                            <TableCell className="font-mono text-sm">{user.id.slice(0, 8)}...</TableCell>
                             <TableCell>
-                              <Badge variant="outline" className="text-green-600 border-green-600">
-                                Active
+                              <Badge variant={user.currentPlan === 'free' ? 'outline' : 'default'}>
+                                {user.currentPlan || 'free'}
                               </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant={user.planStatus === 'active' ? 'default' : 'secondary'}
+                                className={user.planStatus === 'active' ? 'bg-green-600' : ''}
+                              >
+                                {user.planStatus || 'active'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-sm">
+                              {user.billingPeriod || 'N/A'}
                             </TableCell>
                             <TableCell className="text-sm text-muted-foreground">
                               {formatDate(user.createdAt)}
@@ -284,35 +320,45 @@ function MobileAdminDashboard({
 
 export default function AdminDashboard() {
   const [users, setUsers] = useState<User[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [subscriptions, setSubscriptions] = useState<UserSubscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [, setLocation] = useLocation();
   const { user } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchUsers();
+    fetchAdminData();
   }, []);
 
-  const fetchUsers = async () => {
+  const fetchAdminData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/admin/users?adminEmail=${user?.email}`);
-      
-      if (response.ok) {
-        const data = await response.json();
-        setUsers(data);
-      } else {
-        const error = await response.json();
-        toast({
-          title: "Error",
-          description: error.error || "Failed to fetch users",
-          variant: "destructive",
-        });
+
+      // Fetch users
+      const usersResponse = await fetch(`/api/admin/users?adminEmail=${user?.email}`);
+      if (usersResponse.ok) {
+        const usersData = await usersResponse.json();
+        setUsers(usersData);
+      }
+
+      // Fetch all payments
+      const paymentsResponse = await fetch(`/api/admin/payments?adminEmail=${user?.email}`);
+      if (paymentsResponse.ok) {
+        const paymentsData = await paymentsResponse.json();
+        setPayments(paymentsData);
+      }
+
+      // Fetch all subscriptions
+      const subscriptionsResponse = await fetch(`/api/admin/subscriptions?adminEmail=${user?.email}`);
+      if (subscriptionsResponse.ok) {
+        const subscriptionsData = await subscriptionsResponse.json();
+        setSubscriptions(subscriptionsData);
       }
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to connect to server",
+        description: "Failed to fetch admin data",
         variant: "destructive",
       });
     } finally {
@@ -351,9 +397,8 @@ export default function AdminDashboard() {
   };
 
   // Check admin permission
-  if (user?.email !== 'Lolasolution27@gmail.com' && 
-      user?.email !== "lolasolution27@gmail.com" && 
-      user?.email !== "test11@gmail.com") {
+  if (user?.email !== 'Lolasolution27@gmail.com' &&
+    user?.email !== "lolasolution27@gmail.com") {
     return (
       <PageTransition>
         <div className="min-h-screen flex items-center justify-center bg-background">
@@ -386,6 +431,8 @@ export default function AdminDashboard() {
         <div className="lg:hidden">
           <MobileAdminDashboard
             users={users}
+            payments={payments}
+            subscriptions={subscriptions}
             loading={loading}
             formatDate={formatDate}
             onNavigate={handleNavigation}
@@ -396,7 +443,7 @@ export default function AdminDashboard() {
         <div className="hidden lg:block min-h-screen bg-background text-foreground">
           {/* Sidebar - Outside any transform containers */}
           <Sidebar activeTab="admin" onTabChange={handleNavigation} />
-          
+
           {/* Main Content */}
           <div className="ml-64 flex flex-col">
             {/* Desktop Content */}
@@ -422,7 +469,7 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Desktop Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                   <ModernCard>
                     <ModernCardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <ModernCardTitle className="text-sm font-medium">Total Users</ModernCardTitle>
@@ -431,104 +478,311 @@ export default function AdminDashboard() {
                     <ModernCardContent>
                       <div className="text-2xl font-bold">{users.length}</div>
                       <p className="text-xs text-muted-foreground">
-                        Registered users in the system
+                        Registered users
                       </p>
                     </ModernCardContent>
                   </ModernCard>
 
                   <ModernCard>
                     <ModernCardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <ModernCardTitle className="text-sm font-medium">Active Today</ModernCardTitle>
-                      <Activity className="h-4 w-4 text-muted-foreground" />
+                      <ModernCardTitle className="text-sm font-medium">Total Revenue</ModernCardTitle>
+                      <DollarSign className="h-4 w-4 text-muted-foreground" />
                     </ModernCardHeader>
                     <ModernCardContent>
                       <div className="text-2xl font-bold">
-                        {users.filter(u => {
-                          const today = new Date();
-                          const userDate = new Date(u.createdAt);
-                          return userDate.toDateString() === today.toDateString();
-                        }).length}
+                        ₹{payments
+                          .filter(p => p.status === 'completed')
+                          .reduce((sum, p) => sum + parseFloat(p.amount), 0)
+                          .toFixed(2)}
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Users registered today
+                        From {payments.filter(p => p.status === 'completed').length} payments
                       </p>
                     </ModernCardContent>
                   </ModernCard>
 
                   <ModernCard>
                     <ModernCardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <ModernCardTitle className="text-sm font-medium">System Status</ModernCardTitle>
-                      <Database className="h-4 w-4 text-muted-foreground" />
+                      <ModernCardTitle className="text-sm font-medium">Active Subscriptions</ModernCardTitle>
+                      <CreditCard className="h-4 w-4 text-muted-foreground" />
                     </ModernCardHeader>
                     <ModernCardContent>
-                      <div className="text-2xl font-bold text-green-600">Online</div>
+                      <div className="text-2xl font-bold">
+                        {subscriptions.filter(s => s.status === 'active').length}
+                      </div>
                       <p className="text-xs text-muted-foreground">
-                        All systems operational
+                        Active paid plans
+                      </p>
+                    </ModernCardContent>
+                  </ModernCard>
+
+                  <ModernCard>
+                    <ModernCardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <ModernCardTitle className="text-sm font-medium">Monthly Revenue</ModernCardTitle>
+                      <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                    </ModernCardHeader>
+                    <ModernCardContent>
+                      <div className="text-2xl font-bold">
+                        ₹{payments
+                          .filter(p => {
+                            const paymentDate = new Date(p.createdAt);
+                            const now = new Date();
+                            return p.status === 'completed' &&
+                              paymentDate.getMonth() === now.getMonth() &&
+                              paymentDate.getFullYear() === now.getFullYear();
+                          })
+                          .reduce((sum, p) => sum + parseFloat(p.amount), 0)
+                          .toFixed(2)}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        This month
                       </p>
                     </ModernCardContent>
                   </ModernCard>
                 </div>
 
-                {/* Desktop Users Table */}
-                <ModernCard>
-                  <ModernCardHeader>
-                    <ModernCardTitle>Registered Users</ModernCardTitle>
-                    <ModernCardDescription>
-                      All users registered in the PrivateVaultAI system
-                    </ModernCardDescription>
-                  </ModernCardHeader>
-                  <ModernCardContent>
-                    {loading ? (
-                      <div className="flex items-center justify-center py-8">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                        <span className="ml-2">Loading users...</span>
-                      </div>
-                    ) : users.length === 0 ? (
-                      <div className="text-center py-8 text-muted-foreground">
-                        No users found in the system
-                      </div>
-                    ) : (
-                      <div className="rounded-md border">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Email</TableHead>
-                              <TableHead>User ID</TableHead>
-                              <TableHead>Status</TableHead>
-                              <TableHead>Registered</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {users.map((user) => (
-                              <TableRow key={user.id}>
-                                <TableCell className="font-medium">
-                                  <div className="flex items-center gap-2">
-                                    <span className="truncate">{user.email}</span>
-                                    {(user.email === "Lolasolution27@gmail.com" || user.email === "lolasolution27@gmail.com") && (
-                                      <Badge variant="secondary">Admin</Badge>
-                                    )}
-                                  </div>
-                                </TableCell>
-                                <TableCell className="font-mono text-sm">{user.id.slice(0, 8)}...</TableCell>
-                                <TableCell>
-                                  <Badge variant="outline" className="text-green-600 border-green-600">
-                                    Active
-                                  </Badge>
-                                </TableCell>
-                                <TableCell className="text-sm text-muted-foreground">
-                                  {formatDate(user.createdAt)}
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    )}
-                  </ModernCardContent>
-                </ModernCard>
+                {/* Tabbed Content */}
+                <Tabs defaultValue="users" className="space-y-4">
+                  <TabsList>
+                    <TabsTrigger value="users">Users</TabsTrigger>
+                    <TabsTrigger value="payments">Payments</TabsTrigger>
+                    <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
+                  </TabsList>
+
+                  {/* Users Tab */}
+                  <TabsContent value="users">
+                    <ModernCard>
+                      <ModernCardHeader>
+                        <ModernCardTitle>Registered Users</ModernCardTitle>
+                        <ModernCardDescription>
+                          All users registered in the system with their plan details
+                        </ModernCardDescription>
+                      </ModernCardHeader>
+                      <ModernCardContent>
+                        {loading ? (
+                          <div className="flex items-center justify-center py-8">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                            <span className="ml-2">Loading users...</span>
+                          </div>
+                        ) : users.length === 0 ? (
+                          <div className="text-center py-8 text-muted-foreground">
+                            No users found in the system
+                          </div>
+                        ) : (
+                          <div className="rounded-md border">
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>Email</TableHead>
+                                  <TableHead>Current Plan</TableHead>
+                                  <TableHead>Plan Status</TableHead>
+                                  <TableHead>Billing Period</TableHead>
+                                  <TableHead>Subscription End</TableHead>
+                                  <TableHead>Registered</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {users.map((user) => (
+                                  <TableRow key={user.id}>
+                                    <TableCell className="font-medium">
+                                      <div className="flex items-center gap-2">
+                                        <span className="truncate max-w-[200px]">{user.email}</span>
+                                        {(user.email === "Lolasolution27@gmail.com" || user.email === "lolasolution27@gmail.com") && (
+                                          <Badge variant="secondary">Admin</Badge>
+                                        )}
+                                      </div>
+                                    </TableCell>
+                                    <TableCell>
+                                      <Badge variant={user.currentPlan === 'free' ? 'outline' : 'default'}>
+                                        {user.currentPlan || 'free'}
+                                      </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                      <Badge
+                                        variant={user.planStatus === 'active' ? 'default' : 'secondary'}
+                                        className={user.planStatus === 'active' ? 'bg-green-600' : ''}
+                                      >
+                                        {user.planStatus || 'active'}
+                                      </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-sm">
+                                      {user.billingPeriod || 'N/A'}
+                                    </TableCell>
+                                    <TableCell className="text-sm text-muted-foreground">
+                                      {user.subscriptionEndDate ? formatDate(user.subscriptionEndDate) : 'N/A'}
+                                    </TableCell>
+                                    <TableCell className="text-sm text-muted-foreground">
+                                      {formatDate(user.createdAt)}
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        )}
+                      </ModernCardContent>
+                    </ModernCard>
+                  </TabsContent>
+
+                  {/* Payments Tab */}
+                  <TabsContent value="payments">
+                    <ModernCard>
+                      <ModernCardHeader>
+                        <ModernCardTitle>Payment History</ModernCardTitle>
+                        <ModernCardDescription>
+                          All payment transactions in the system
+                        </ModernCardDescription>
+                      </ModernCardHeader>
+                      <ModernCardContent>
+                        {loading ? (
+                          <div className="flex items-center justify-center py-8">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                            <span className="ml-2">Loading payments...</span>
+                          </div>
+                        ) : payments.length === 0 ? (
+                          <div className="text-center py-8 text-muted-foreground">
+                            No payments found
+                          </div>
+                        ) : (
+                          <div className="rounded-md border">
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>User Email</TableHead>
+                                  <TableHead>Plan</TableHead>
+                                  <TableHead>Amount</TableHead>
+                                  <TableHead>Status</TableHead>
+                                  <TableHead>Payment ID</TableHead>
+                                  <TableHead>Date</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {payments.map((payment) => {
+                                  const user = users.find(u => u.id === payment.userId);
+                                  return (
+                                    <TableRow key={payment.id}>
+                                      <TableCell className="font-medium">
+                                        <span className="truncate max-w-[200px]">
+                                          {user?.email || payment.userId.slice(0, 8) + '...'}
+                                        </span>
+                                      </TableCell>
+                                      <TableCell>
+                                        <Badge variant="outline">
+                                          {payment.planName || payment.planId || 'N/A'}
+                                        </Badge>
+                                      </TableCell>
+                                      <TableCell className="font-semibold">
+                                        {payment.currency} {parseFloat(payment.amount).toFixed(2)}
+                                      </TableCell>
+                                      <TableCell>
+                                        <Badge
+                                          variant={payment.status === 'completed' ? 'default' : 'secondary'}
+                                          className={payment.status === 'completed' ? 'bg-green-600' : ''}
+                                        >
+                                          {payment.status}
+                                        </Badge>
+                                      </TableCell>
+                                      <TableCell className="font-mono text-xs">
+                                        {payment.razorpayPaymentId?.slice(0, 12) || 'Pending'}...
+                                      </TableCell>
+                                      <TableCell className="text-sm text-muted-foreground">
+                                        {formatDate(payment.createdAt)}
+                                      </TableCell>
+                                    </TableRow>
+                                  );
+                                })}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        )}
+                      </ModernCardContent>
+                    </ModernCard>
+                  </TabsContent>
+
+                  {/* Subscriptions Tab */}
+                  <TabsContent value="subscriptions">
+                    <ModernCard>
+                      <ModernCardHeader>
+                        <ModernCardTitle>Active Subscriptions</ModernCardTitle>
+                        <ModernCardDescription>
+                          All subscription records in the system
+                        </ModernCardDescription>
+                      </ModernCardHeader>
+                      <ModernCardContent>
+                        {loading ? (
+                          <div className="flex items-center justify-center py-8">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                            <span className="ml-2">Loading subscriptions...</span>
+                          </div>
+                        ) : subscriptions.length === 0 ? (
+                          <div className="text-center py-8 text-muted-foreground">
+                            No subscriptions found
+                          </div>
+                        ) : (
+                          <div className="rounded-md border">
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>User Email</TableHead>
+                                  <TableHead>Plan</TableHead>
+                                  <TableHead>Status</TableHead>
+                                  <TableHead>Billing Period</TableHead>
+                                  <TableHead>Start Date</TableHead>
+                                  <TableHead>End Date</TableHead>
+                                  <TableHead>Auto Renew</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {subscriptions.map((subscription) => {
+                                  const user = users.find(u => u.id === subscription.userId);
+                                  return (
+                                    <TableRow key={subscription.id}>
+                                      <TableCell className="font-medium">
+                                        <span className="truncate max-w-[200px]">
+                                          {user?.email || subscription.userId.slice(0, 8) + '...'}
+                                        </span>
+                                      </TableCell>
+                                      <TableCell>
+                                        <Badge variant="default">
+                                          {subscription.planName}
+                                        </Badge>
+                                      </TableCell>
+                                      <TableCell>
+                                        <Badge
+                                          variant={subscription.status === 'active' ? 'default' : 'secondary'}
+                                          className={subscription.status === 'active' ? 'bg-green-600' : ''}
+                                        >
+                                          {subscription.status}
+                                        </Badge>
+                                      </TableCell>
+                                      <TableCell className="text-sm">
+                                        {subscription.billingPeriod}
+                                      </TableCell>
+                                      <TableCell className="text-sm text-muted-foreground">
+                                        {formatDate(subscription.startDate)}
+                                      </TableCell>
+                                      <TableCell className="text-sm text-muted-foreground">
+                                        {subscription.endDate ? formatDate(subscription.endDate) : 'N/A'}
+                                      </TableCell>
+                                      <TableCell>
+                                        <Badge variant={subscription.autoRenew ? 'default' : 'outline'}>
+                                          {subscription.autoRenew ? 'Yes' : 'No'}
+                                        </Badge>
+                                      </TableCell>
+                                    </TableRow>
+                                  );
+                                })}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        )}
+                      </ModernCardContent>
+                    </ModernCard>
+                  </TabsContent>
+                </Tabs>
               </ModernContainer>
             </div>
-            
+
             <Footer />
           </div>
         </div>

@@ -38,13 +38,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/users", async (req, res) => {
     try {
       const userData = insertUserSchema.parse(req.body);
-      
+
       // Check if user already exists
       const existingUser = await storage.getUserByEmail(userData.email);
       if (existingUser) {
         return res.status(400).json({ error: "User already exists" });
       }
-      
+
       const user = await storage.createUser(userData);
       res.json(user);
     } catch (error) {
@@ -68,18 +68,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/users", async (req, res) => {
     try {
       const { adminEmail } = req.query;
-      
+
       // Check if the requesting user is admin
       if (adminEmail !== "Lolasolution27@gmail.com" && adminEmail !== "lolasolution27@gmail.com") {
         return res.status(403).json({ error: "Admin access required" });
       }
-      
-      // Get all users (add this method to storage if it doesn't exist)
+
       const users = await storage.getAllUsers?.() || [];
       res.json(users);
     } catch (error) {
       console.error("Get users error:", error);
       res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
+  // Admin route to get all payments
+  app.get("/api/admin/payments", async (req, res) => {
+    try {
+      const { adminEmail } = req.query;
+
+      // Check if the requesting user is admin
+      if (adminEmail !== "Lolasolution27@gmail.com" && adminEmail !== "lolasolution27@gmail.com") {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      const payments = await storage.getAllPayments?.() || [];
+      res.json(payments);
+    } catch (error) {
+      console.error("Get payments error:", error);
+      res.status(500).json({ error: "Failed to fetch payments" });
+    }
+  });
+
+  // Admin route to get all subscriptions
+  app.get("/api/admin/subscriptions", async (req, res) => {
+    try {
+      const { adminEmail } = req.query;
+
+      // Check if the requesting user is admin
+      if (adminEmail !== "Lolasolution27@gmail.com" && adminEmail !== "lolasolution27@gmail.com") {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      const subscriptions = await storage.getAllSubscriptions?.() || [];
+      res.json(subscriptions);
+    } catch (error) {
+      console.error("Get subscriptions error:", error);
+      res.status(500).json({ error: "Failed to fetch subscriptions" });
     }
   });
 
@@ -131,7 +166,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/chat-sessions", async (req, res) => {
     try {
       console.log('[Server Debug] POST /api/chat-sessions request body:', req.body);
-      
+
       // Check for agent ID
       const agentId = req.body.agentId || null;
       delete req.body.agentId; // Remove it so Zod validation passes
@@ -238,7 +273,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     });
   }
-  
+
   // AI Agent routes
   app.post("/api/ai-agents", async (req, res) => {
     try {
@@ -249,7 +284,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!parsed.success) {
         console.warn('[Server Debug] AI agent validation failed');
         console.warn('[Server Debug] Zod validation error:', parsed.error);
-        
+
         // Return formatted Zod error to the client for debugging
         return res.status(400).json({ error: 'Invalid agent data', details: parsed.error.format() });
       }
@@ -300,12 +335,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { name, encryptedSystemPrompt, encryptedDescription, icon } = req.body;
       const updateData: Partial<Omit<typeof req.body, 'userId'>> = {};
-      
+
       if (name) updateData.name = name;
       if (encryptedSystemPrompt) updateData.encryptedSystemPrompt = encryptedSystemPrompt;
       if (encryptedDescription) updateData.encryptedDescription = encryptedDescription;
       if (icon) updateData.icon = icon;
-      
+
       const agent = await storage.updateAiAgent(req.params.id, updateData);
       if (!agent) {
         return res.status(404).json({ error: "Agent not found" });
@@ -337,11 +372,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/payments/create-order", async (req, res) => {
     try {
       const { userId, amount, currency, planId, planName, billingPeriod } = req.body;
-      
+
       if (!userId || !amount) {
         return res.status(400).json({ error: "Missing required fields" });
       }
-      
+
       // Resolve userId - if it contains @ it's an email, look up the actual user ID
       let resolvedUserId = userId;
       if (userId.includes('@')) {
@@ -357,11 +392,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(500).json({ error: "Failed to resolve user" });
         }
       }
-      
+
       // Convert amount to INR if needed (Razorpay primarily uses INR)
       let processedAmount = parseFloat(amount);
       let targetCurrency = currency || "INR";
-      
+
       if (currency && currency !== "INR") {
         console.log(`Converting ${processedAmount} ${currency} to INR`);
         processedAmount = convertCurrency(processedAmount, currency, "INR");
@@ -384,7 +419,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const order = await razorpay.orders.create(options);
-      
+
       // Store payment information in database using resolved user ID
       const paymentData = {
         userId: resolvedUserId, // Use the resolved user ID
@@ -399,7 +434,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const payment = await storage.createPayment(paymentData);
-      
+
       res.json({
         success: true,
         order,
@@ -408,10 +443,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Payment order creation failed:", error);
-      res.status(500).json({ 
-        success: false, 
-        error: "Payment order creation failed", 
-        details: error instanceof Error ? error.message : error 
+      res.status(500).json({
+        success: false,
+        error: "Payment order creation failed",
+        details: error instanceof Error ? error.message : error
       });
     }
   });
@@ -420,16 +455,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/payments/verify", async (req, res) => {
     try {
       const { razorpay_payment_id, razorpay_order_id, razorpay_signature, plan_id } = req.body;
-      
+
       // Validate input parameters
       if (!razorpay_payment_id || !razorpay_order_id || !razorpay_signature) {
         console.error("Payment verification failed: Missing required parameters");
-        return res.status(400).json({ 
-          success: false, 
-          error: "Missing required payment verification parameters" 
+        return res.status(400).json({
+          success: false,
+          error: "Missing required payment verification parameters"
         });
       }
-      
+
       // Fetch the payment from database using orderId
       const payment = await storage.getPaymentByOrderId(razorpay_order_id);
       if (!payment) {
@@ -439,7 +474,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log("Verifying payment signature for order:", razorpay_order_id);
       console.log("Razorpay secret key available:", !!process.env.RAZORPAY_KEY_SECRET);
-      
+
       // Verify signature
       try {
         const generatedSignature = generateSignature(razorpay_order_id, razorpay_payment_id);
@@ -451,9 +486,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       } catch (signatureError) {
         console.error("Error generating signature:", signatureError);
-        return res.status(500).json({ 
-          success: false, 
-          error: "Signature verification error", 
+        return res.status(500).json({
+          success: false,
+          error: "Signature verification error",
           details: signatureError instanceof Error ? signatureError.message : String(signatureError)
         });
       }
@@ -464,7 +499,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         signature: razorpay_signature,
         status: "completed"
       };
-      
+
       // If plan_id is passed and payment doesn't already have one, update it
       if (plan_id && !payment.planId) {
         updateData.planId = plan_id;
@@ -477,7 +512,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         "completed",
         plan_id
       );
-      
+
       console.log("Updated payment details:", {
         id: updatedPayment?.id,
         userId: updatedPayment?.userId,
@@ -485,15 +520,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         planName: updatedPayment?.planName,
         billingPeriod: updatedPayment?.billingPeriod
       });
-      
+
       // Create subscription record after successful payment
       if (updatedPayment && updatedPayment.planId) {
         const billingPeriod = updatedPayment.billingPeriod || 'month';
         const planName = updatedPayment.planName || 'Standard Plan';
-        
+
         try {
           console.log("Creating subscription for user:", updatedPayment.userId, "with plan:", updatedPayment.planId);
-          
+
           // Create subscription record in user_subscriptions table
           const subscriptionData = {
             userId: updatedPayment.userId,
@@ -501,17 +536,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
             planName: planName,
             billingPeriod: billingPeriod,
             startDate: new Date(),
-            endDate: billingPeriod === 'year' ? 
+            endDate: billingPeriod === 'year' ?
               new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) : // Add 1 year
               new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),   // Add 30 days
             status: 'active',
             autoRenew: 1, // 1 = true, 0 = false for integer column
             paymentId: updatedPayment.id
           };
-          
+
           await storage.createUserSubscription(subscriptionData);
           console.log("Subscription created successfully for user:", updatedPayment.userId);
-          
+
           // Update user plan information
           console.log("Updating user plan for user:", updatedPayment.userId);
           const updatedUser = await storage.updateUserPlan(
@@ -542,15 +577,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           planName: updatedPayment?.planName
         });
       }
-      
+
       console.log("Payment verification successful for order:", razorpay_order_id);
       res.json({ success: true, payment: updatedPayment });
     } catch (error) {
       console.error("Payment verification failed:", error);
-      res.status(500).json({ 
-        success: false, 
-        error: "Payment verification failed", 
-        details: error instanceof Error ? error.message : String(error) 
+      res.status(500).json({
+        success: false,
+        error: "Payment verification failed",
+        details: error instanceof Error ? error.message : String(error)
       });
     }
   });
@@ -585,22 +620,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { status, autoRenew } = req.body;
       const updateData: any = {};
-      
+
       if (status !== undefined) updateData.status = status;
       if (autoRenew !== undefined) updateData.autoRenew = autoRenew ? 1 : 0;
-      
+
       const subscription = await storage.updateUserSubscription(req.params.userId, updateData);
       if (!subscription) {
         return res.status(404).json({ error: "Subscription not found" });
       }
-      
+
       res.json(subscription);
     } catch (error) {
       console.error("Error updating user subscription:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
-  
+
   // Helper function to generate signature
   function generateSignature(orderId: string, paymentId: string) {
     const secret = process.env.RAZORPAY_KEY_SECRET || "";
@@ -610,7 +645,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       .update(payload)
       .digest("hex");
   }
-  
+
   // Helper function to convert USD to INR
   function convertCurrency(amount: number, fromCurrency: string, toCurrency: string): number {
     // Current conversion rates (as of September 2025)
@@ -618,7 +653,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       USD_TO_INR: 83.5, // 1 USD = 83.5 INR (example rate)
       EUR_TO_INR: 90.2, // 1 EUR = 90.2 INR (example rate)
     };
-    
+
     // Convert from USD to INR
     if (fromCurrency === "USD" && toCurrency === "INR") {
       return amount * conversionRates.USD_TO_INR;
@@ -637,11 +672,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         const storageType = storage.constructor.name;
         const hasDbUrl = !!process.env.DATABASE_URL;
-        const dbUrlPreview = process.env.DATABASE_URL ? 
-          process.env.DATABASE_URL.substring(0, 20) + '...' + process.env.DATABASE_URL.substring(process.env.DATABASE_URL.length - 10) : 
+        const dbUrlPreview = process.env.DATABASE_URL ?
+          process.env.DATABASE_URL.substring(0, 20) + '...' + process.env.DATABASE_URL.substring(process.env.DATABASE_URL.length - 10) :
           'Not configured';
-        
-        res.json({ 
+
+        res.json({
           storageType,
           hasDbUrl,
           dbUrlPreview,

@@ -11,6 +11,10 @@ import { Badge } from '@/components/ui/badge';
 import { Sidebar } from '@/components/ui/sidebar';
 import { MobileThemeToggle } from '@/components/ui/mobile-theme-toggle';
 
+// New components
+import { Testimonials } from '@/components/ui/testimonials';
+import { PromoBanner, SecurityTrustBanner } from '@/components/ui/promo-banner';
+import { StatsCounter, UsageStats, SecurityStats } from '@/components/ui/stats-counter';
 
 import { KeyManagement } from '@/components/key-management';
 import { PrivateVaultLogo } from '@/components/ui/private-vault-logo';
@@ -367,22 +371,22 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
     try {
       let decryptedData: string | Uint8Array;
       let blob: Blob;
-      
+
       // Handle different file types appropriately
       if (file.fileType === 'application/pdf' || file.fileName.endsWith('.pdf')) {
         // For PDFs, decrypt as binary data
         decryptedData = EncryptionService.decryptFileToUint8Array(file.encryptedData);
-        blob = new Blob([decryptedData], { type: file.fileType });
+        blob = new Blob([decryptedData as BlobPart], { type: file.fileType });
       } else if (file.fileType.startsWith('image/') || /\.(png|jpg|jpeg|gif|webp)$/i.test(file.fileName)) {
         // For images, decrypt as binary data
         decryptedData = EncryptionService.decryptFileToUint8Array(file.encryptedData);
-        blob = new Blob([decryptedData], { type: file.fileType });
+        blob = new Blob([decryptedData as BlobPart], { type: file.fileType });
       } else {
         // For text-based files (TXT, MD, CSV, DOC, DOCX), decrypt as text
         decryptedData = EncryptionService.decryptFile(file.encryptedData);
         blob = new Blob([decryptedData], { type: file.fileType || 'text/plain' });
       }
-      
+
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -397,6 +401,35 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
       toast({ title: "Download failed", description: "Failed to decrypt and download the file", variant: "destructive" });
     }
   };
+
+  const getCurrentPageTitle = () => {
+    switch (activeTab) {
+      case 'dashboard': return 'Dashboard';
+      case 'vault': return 'File Vault';
+      case 'chat': return 'AI Chat';
+      case 'agents': return 'AI Agents';
+      case 'history': return 'Chat History';
+      case 'settings': return 'Settings';
+      case 'key-info': return 'Key Management';
+      case 'admin': return 'Admin Dashboard';
+      default: return 'Private Vault';
+    }
+  };
+
+  const getPageSubtitle = () => {
+    switch (activeTab) {
+      case 'dashboard': return 'Your secure AI assistant and file management center';
+      case 'vault': return 'Encrypted file storage and management';
+      case 'chat': return 'Secure AI conversations';
+      case 'agents': return 'Custom AI assistants';
+      case 'history': return 'Previous chat sessions';
+      case 'settings': return 'Account and security preferences';
+      case 'key-info': return 'Encryption key information';
+      case 'admin': return 'Administrative controls';
+      default: return 'Secure AI assistant';
+    }
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case 'vault':
@@ -554,6 +587,9 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
         return (
           <ModernContainer className="py-8">
             <ModernStack spacing="xl">
+              {/* Security Trust Banner */}
+              <SecurityTrustBanner />
+
               {/* Welcome Section */}
               <div className="text-center space-y-4">
                 <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-purple-600 to-primary bg-clip-text text-transparent">
@@ -562,6 +598,12 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
                 <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                   Your secure, encrypted AI assistant with client-side privacy protection
                 </p>
+              </div>
+
+              {/* Usage Statistics */}
+              <div className="space-y-4">
+                <h2 className="text-2xl font-semibold text-center">Trusted Worldwide</h2>
+                <UsageStats />
               </div>
 
               {/* Quick Stats */}
@@ -690,6 +732,21 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
                   </ModernCardContent>
                 </ModernCard>
               </ModernGrid>
+
+              {/* Testimonials Section */}
+              <div className="space-y-6">
+                <div className="text-center">
+                  <h2 className="text-3xl font-bold mb-2">Trusted by Professionals</h2>
+                  <p className="text-muted-foreground">See what our users say about VaultX</p>
+                </div>
+                <Testimonials variant="default" />
+              </div>
+
+              {/* Security Stats */}
+              <div className="space-y-4">
+                <h2 className="text-2xl font-semibold text-center">Security You Can Trust</h2>
+                <SecurityStats />
+              </div>
             </ModernStack>
           </ModernContainer>
         );
@@ -774,6 +831,16 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
 
       {/* Main Content Area */}
       <div className="ml-64">
+        {/* Desktop Header with Logout */}
+        <ModernHeader
+          title={getCurrentPageTitle()}
+          subtitle={getPageSubtitle()}
+          user={user ? { email: user.email } : undefined}
+          onLogout={logout}
+          showSearch={false}
+          className="border-b border-border/50"
+        />
+
         <main className="min-h-screen overflow-y-auto">
           <div className="p-6">
             {renderContent()}

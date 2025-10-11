@@ -64,6 +64,24 @@ export class DrizzleStorage implements IStorage {
     const users = await this.db.query.users.findMany();
     return users;
   }
+
+  async getAllPayments(): Promise<Payment[]> {
+    await this.ensureReady();
+    const { desc } = await import('drizzle-orm');
+    const payments = await this.db.query.payments.findMany({
+      orderBy: desc(this.schema.payments.createdAt)
+    });
+    return payments;
+  }
+
+  async getAllSubscriptions(): Promise<UserSubscription[]> {
+    await this.ensureReady();
+    const { desc } = await import('drizzle-orm');
+    const subscriptions = await this.db.query.userSubscriptions.findMany({
+      orderBy: desc(this.schema.userSubscriptions.createdAt)
+    });
+    return subscriptions;
+  }
   async getFilesByUserId(userId: string): Promise<EncryptedFile[]> {
     await this.ensureReady();
     const { eq } = await import('drizzle-orm');
@@ -399,12 +417,14 @@ export interface IStorage {
   getPaymentsByUserId(userId: string): Promise<Payment[]>;
   getPaymentByOrderId(orderId: string): Promise<Payment | undefined>;
   updatePaymentStatus(id: string, paymentId: string, signature: string, status: string, planId?: string): Promise<Payment | undefined>;
+  getAllPayments?(): Promise<Payment[]>;
   
   // Subscription methods
   getUserSubscription(userId: string): Promise<UserSubscription | undefined>;
   createUserSubscription(subscription: InsertUserSubscription): Promise<UserSubscription>;
   updateUserSubscription(userId: string, data: Partial<InsertUserSubscription>): Promise<UserSubscription | undefined>;
   updateUserPlan(userId: string, planId: string, planName: string, billingPeriod: string, paymentId?: string): Promise<User | undefined>;
+  getAllSubscriptions?(): Promise<UserSubscription[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -453,6 +473,18 @@ export class MemStorage implements IStorage {
 
   async getAllUsers(): Promise<User[]> {
     return Array.from(this.users.values());
+  }
+
+  async getAllPayments(): Promise<Payment[]> {
+    return Array.from(this.payments.values()).sort((a, b) => 
+      b.createdAt.getTime() - a.createdAt.getTime()
+    );
+  }
+
+  async getAllSubscriptions(): Promise<UserSubscription[]> {
+    return Array.from(this.userSubscriptions.values()).sort((a, b) => 
+      b.createdAt.getTime() - a.createdAt.getTime()
+    );
   }
 
   async getFilesByUserId(userId: string): Promise<EncryptedFile[]> {
