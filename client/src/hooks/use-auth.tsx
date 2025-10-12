@@ -8,6 +8,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
   loading: boolean;
   showLogoutDialog: boolean;
   setShowLogoutDialog: (show: boolean) => void;
@@ -117,6 +118,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setShowLogoutDialog(false);
   };
 
+  const refreshUser = async () => {
+    const userEmail = localStorage.getItem('user_email');
+    if (userEmail) {
+      console.log('[Auth] Refreshing user data for:', userEmail);
+      await fetchUser(userEmail);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -125,6 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         register,
         logout,
+        refreshUser,
         loading,
         showLogoutDialog,
         setShowLogoutDialog,

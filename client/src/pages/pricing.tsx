@@ -190,7 +190,7 @@ function MobilePricing({
 }
 
 export default function PricingPage() {
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
   const [, setLocation] = useLocation();
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
   const [loading, setLoading] = useState<Record<string, boolean>>({});
@@ -255,10 +255,10 @@ export default function PricingPage() {
     }
 
     let timeoutId: NodeJS.Timeout | null = null;
-    
+
     try {
       setLoading(prev => ({ ...prev, [plan.name]: true }));
-      
+
       // Set a timeout to automatically reset loading state after 5 minutes
       timeoutId = setTimeout(() => {
         setLoading(prev => ({ ...prev, [plan.name]: false }));
@@ -268,11 +268,11 @@ export default function PricingPage() {
           variant: "destructive"
         });
       }, 300000); // 5 minutes
-      
+
       // Extract price from string (remove $ and convert to number)
       const priceString = plan.price.replace('$', '');
       const price = parseFloat(priceString);
-      
+
       // Create order with plan details
       const orderData = await PaymentService.createOrder({
         amount: price,
@@ -286,12 +286,12 @@ export default function PricingPage() {
       if (!orderData.success || !orderData.order || !orderData.key) {
         throw new Error(orderData.error || 'Failed to create payment order');
       }
-      
+
       // Show currency conversion info if payment will be in INR
       if (orderData.order.currency === 'INR') {
         toast({
           title: "Currency Conversion",
-          description: `${price} USD has been converted to ₹${(orderData.order.amount/100).toFixed(2)} INR for payment processing.`,
+          description: `${price} USD has been converted to ₹${(orderData.order.amount / 100).toFixed(2)} INR for payment processing.`,
           variant: "default"
         });
       }
@@ -299,7 +299,7 @@ export default function PricingPage() {
       // Open Razorpay checkout with plan amount
       try {
         const response = await PaymentService.openRazorpayCheckout(orderData);
-        
+
         // Verify payment
         const verificationData = {
           razorpay_payment_id: response.razorpay_payment_id,
@@ -307,16 +307,21 @@ export default function PricingPage() {
           razorpay_signature: response.razorpay_signature,
           plan_id: plan.name.toLowerCase().replace(/\s+/g, '-')
         };
-        
+
         const verification = await PaymentService.verifyPayment(verificationData);
 
         if (verification.success) {
           toast({
             title: "Payment Successful!",
-            description: `Your ${plan.name} subscription is now active. Welcome to VaultX!`,
+            description: `Your ${plan.name} subscription is now active. Welcome to PrivateVaultAI!`,
             variant: "default"
           });
-          // Optionally redirect to dashboard or show success state
+          
+          // Refresh user data to get updated subscription info
+          console.log('[Payment] Refreshing user data after successful payment');
+          await refreshUser();
+          
+          // Redirect to dashboard
           setTimeout(() => {
             setLocation('/dashboard');
           }, 2000);
@@ -364,7 +369,7 @@ export default function PricingPage() {
       badgeColor: "bg-green-500",
       features: [
         { icon: HardDrive, text: "50 GB Storage", included: true },
-        { icon: MessageSquare, text: "100 AI chats/month", included: true },
+        { icon: MessageSquare, text: "200 AI chats/month", included: true },
         { icon: Smartphone, text: "3 Devices", included: true },
         { icon: Shield, text: "End-to-End Encryption", included: true },
         { icon: Lock, text: "Zero-Knowledge Security", included: true }
@@ -376,13 +381,13 @@ export default function PricingPage() {
     {
       name: "Personal Plan",
       subtitle: "For power users",
-      price: billingCycle === 'monthly' ? "$12" : "$120",
+      price: billingCycle === 'monthly' ? "$15" : "$150",
       period: billingCycle === 'monthly' ? "/month" : "/year",
-      originalPrice: billingCycle === 'annual' ? "$144" : undefined,
+      originalPrice: billingCycle === 'annual' ? "$180" : undefined,
       description: "Enhanced storage and AI capabilities for personal use",
       features: [
         { icon: HardDrive, text: "200 GB Storage", included: true },
-        { icon: MessageSquare, text: "500 chats/month", included: true },
+        { icon: MessageSquare, text: "800 chats/month", included: true },
         { icon: Smartphone, text: "5 Devices", included: true },
         { icon: Shield, text: "End-to-End Encryption", included: true },
         { icon: Lock, text: "Zero-Knowledge Security", included: true },
@@ -394,18 +399,18 @@ export default function PricingPage() {
     {
       name: "Pro Plan",
       subtitle: "For professionals & creators",
-      price: billingCycle === 'monthly' ? "$24" : "$240",
+      price: billingCycle === 'monthly' ? "$39" : "$390",
       period: billingCycle === 'monthly' ? "/month" : "/year",
-      originalPrice: billingCycle === 'annual' ? "$288" : undefined,
+      originalPrice: billingCycle === 'annual' ? "$468" : undefined,
       description: "Advanced features for small businesses and content creators",
       badge: "Best Value",
       badgeColor: "bg-violet-500",
       features: [
-        { icon: HardDrive, text: "1 TB Storage", included: true },
-        { icon: MessageSquare, text: "2,000 chats/month", included: true },
+        { icon: HardDrive, text: "500 GB Storage", included: true },
+        { icon: MessageSquare, text: "3,000 chats/month", included: true },
         { icon: Infinity, text: "Unlimited Devices", included: true },
         { icon: Users, text: "Advanced Sharing", included: true },
-        { icon: Shield, text: "Zero-Knowledge Recovery", included: true },
+        { icon: Shield, text: "API Access", included: true },
         { icon: Zap, text: "24/7 Support", included: true }
       ] as Array<{ icon: any; text: string; included: boolean; note?: string }>,
       cta: "Upgrade to Pro",
@@ -415,17 +420,17 @@ export default function PricingPage() {
     {
       name: "Business Plan",
       subtitle: "For growing teams",
-      price: billingCycle === 'monthly' ? "$99" : "$990",
+      price: billingCycle === 'monthly' ? "$199" : "$1,990",
       period: billingCycle === 'monthly' ? "/month" : "/year",
-      originalPrice: billingCycle === 'annual' ? "$1,188" : undefined,
+      originalPrice: billingCycle === 'annual' ? "$2,388" : undefined,
       description: "Enterprise-grade features for business teams",
       features: [
-        { icon: HardDrive, text: "10 TB Storage", included: true },
-        { icon: MessageSquare, text: "10,000 chats/month", included: true },
-        { icon: Users, text: "25 User Seats", included: true },
+        { icon: HardDrive, text: "2 TB Shared Storage", included: true },
+        { icon: MessageSquare, text: "15,000 chats/month", included: true },
+        { icon: Users, text: "Up to 10 Users", included: true },
         { icon: Building, text: "Admin Dashboard", included: true },
         { icon: Shield, text: "SSO & Audit Logs", included: true },
-        { icon: Zap, text: "Compliance Reports", included: true }
+        { icon: Zap, text: "Dedicated Support", included: true }
       ] as Array<{ icon: any; text: string; included: boolean; note?: string }>,
       cta: "Contact Sales",
       ctaVariant: "outline" as const
@@ -603,7 +608,7 @@ export default function PricingPage() {
                           </>
                         )}
                       </Button>
-                      
+
                       {loading[plan.name] && (
                         <Button
                           variant="ghost"

@@ -21,6 +21,19 @@ import { Shield, Users, Database, ArrowLeft, Menu, Lock, LogOut, DollarSign, Cre
 import { useAuth } from '@/hooks/use-auth';
 import type { User, Payment, UserSubscription } from '@shared/schema';
 
+// Helper function to check if user is admin
+const isAdminUser = (email: string): boolean => {
+  return email === 'Lolasolution27@gmail.com' || email === 'lolasolution27@gmail.com';
+};
+
+// Helper function to display plan name
+const displayPlanName = (user: User): string => {
+  if (isAdminUser(user.email)) {
+    return 'Unlimited';
+  }
+  return user.currentPlan || 'none';
+};
+
 // Mobile Admin Dashboard Component
 function MobileAdminDashboard({
   users,
@@ -236,8 +249,9 @@ function MobileAdminDashboard({
                           )}
                         </div>
                         <div className="flex items-center justify-between text-xs">
-                          <Badge variant={user.currentPlan === 'free' ? 'outline' : 'default'}>
-                            {user.currentPlan || 'free'}
+                          <Badge variant={isAdminUser(user.email) ? 'default' : (user.currentPlan === 'free' ? 'outline' : 'default')} 
+                                 className={isAdminUser(user.email) ? 'bg-gradient-to-r from-violet-600 to-purple-600' : ''}>
+                            {displayPlanName(user)}
                           </Badge>
                           <Badge
                             variant={user.planStatus === 'active' ? 'default' : 'secondary'}
@@ -249,9 +263,14 @@ function MobileAdminDashboard({
                         <div className="text-xs text-muted-foreground">
                           Registered: {formatDate(user.createdAt)}
                         </div>
-                        {user.subscriptionEndDate && (
+                        {!isAdminUser(user.email) && user.subscriptionEndDate && (
                           <div className="text-xs text-muted-foreground">
                             Expires: {formatDate(user.subscriptionEndDate)}
+                          </div>
+                        )}
+                        {isAdminUser(user.email) && (
+                          <div className="text-xs text-violet-600 dark:text-violet-400 font-medium">
+                            Never Expires
                           </div>
                         )}
                       </div>
@@ -282,8 +301,9 @@ function MobileAdminDashboard({
                               </div>
                             </TableCell>
                             <TableCell>
-                              <Badge variant={user.currentPlan === 'free' ? 'outline' : 'default'}>
-                                {user.currentPlan || 'free'}
+                              <Badge variant={isAdminUser(user.email) ? 'default' : (user.currentPlan === 'free' ? 'outline' : 'default')}
+                                     className={isAdminUser(user.email) ? 'bg-gradient-to-r from-violet-600 to-purple-600' : ''}>
+                                {displayPlanName(user)}
                               </Badge>
                             </TableCell>
                             <TableCell>
@@ -339,21 +359,33 @@ export default function AdminDashboard() {
       const usersResponse = await fetch(`/api/admin/users?adminEmail=${user?.email}`);
       if (usersResponse.ok) {
         const usersData = await usersResponse.json();
-        setUsers(usersData);
+        // Sort users by registration date (newest first)
+        const sortedUsers = usersData.sort((a: User, b: User) => {
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
+        setUsers(sortedUsers);
       }
 
       // Fetch all payments
       const paymentsResponse = await fetch(`/api/admin/payments?adminEmail=${user?.email}`);
       if (paymentsResponse.ok) {
         const paymentsData = await paymentsResponse.json();
-        setPayments(paymentsData);
+        // Sort payments by date (newest first)
+        const sortedPayments = paymentsData.sort((a: Payment, b: Payment) => {
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
+        setPayments(sortedPayments);
       }
 
       // Fetch all subscriptions
       const subscriptionsResponse = await fetch(`/api/admin/subscriptions?adminEmail=${user?.email}`);
       if (subscriptionsResponse.ok) {
         const subscriptionsData = await subscriptionsResponse.json();
-        setSubscriptions(subscriptionsData);
+        // Sort subscriptions by date (newest first)
+        const sortedSubscriptions = subscriptionsData.sort((a: UserSubscription, b: UserSubscription) => {
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
+        setSubscriptions(sortedSubscriptions);
       }
     } catch (error) {
       toast({
@@ -593,8 +625,9 @@ export default function AdminDashboard() {
                                       </div>
                                     </TableCell>
                                     <TableCell>
-                                      <Badge variant={user.currentPlan === 'free' ? 'outline' : 'default'}>
-                                        {user.currentPlan || 'free'}
+                                      <Badge variant={isAdminUser(user.email) ? 'default' : (user.currentPlan === 'free' ? 'outline' : 'default')}
+                                             className={isAdminUser(user.email) ? 'bg-gradient-to-r from-violet-600 to-purple-600' : ''}>
+                                        {displayPlanName(user)}
                                       </Badge>
                                     </TableCell>
                                     <TableCell>
@@ -608,8 +641,14 @@ export default function AdminDashboard() {
                                     <TableCell className="text-sm">
                                       {user.billingPeriod || 'N/A'}
                                     </TableCell>
-                                    <TableCell className="text-sm text-muted-foreground">
-                                      {user.subscriptionEndDate ? formatDate(user.subscriptionEndDate) : 'N/A'}
+                                    <TableCell className="text-sm">
+                                      {isAdminUser(user.email) ? (
+                                        <span className="text-violet-600 dark:text-violet-400 font-medium">Never</span>
+                                      ) : (
+                                        <span className="text-muted-foreground">
+                                          {user.subscriptionEndDate ? formatDate(user.subscriptionEndDate) : 'N/A'}
+                                        </span>
+                                      )}
                                     </TableCell>
                                     <TableCell className="text-sm text-muted-foreground">
                                       {formatDate(user.createdAt)}

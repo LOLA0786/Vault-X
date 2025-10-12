@@ -6,6 +6,7 @@ import { z } from "zod";
 import Razorpay from "razorpay";
 import crypto from "crypto";
 import { registerChunkedUploadRoutes } from "./chunked-upload-routes";
+import { requireSubscription } from "./middleware/subscription-check";
 
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -13,8 +14,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register chunked upload routes for large files
   registerChunkedUploadRoutes(app);
 
-  // Secure file upload route: only accept encrypted file data as JSON
-  app.post("/api/upload", async (req, res) => {
+  // Secure file upload route: only accept encrypted file data as JSON - REQUIRES SUBSCRIPTION
+  app.post("/api/upload", requireSubscription, async (req, res) => {
     try {
       const { encryptedData, fileName, fileType, userId } = req.body;
       if (!encryptedData || !fileName || !fileType || !userId) {
@@ -118,8 +119,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // File routes
-  app.post("/api/files", async (req, res) => {
+  // File routes - REQUIRES SUBSCRIPTION
+  app.post("/api/files", requireSubscription, async (req, res) => {
     try {
       const fileData = insertFileSchema.parse(req.body);
       const file = await storage.createFile(fileData);
@@ -129,7 +130,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/files/user/:userId", async (req, res) => {
+  app.get("/api/files/user/:userId", requireSubscription, async (req, res) => {
     try {
       const files = await storage.getFilesByUserId(req.params.userId);
       res.json(files);
@@ -162,8 +163,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Chat session routes
-  app.post("/api/chat-sessions", async (req, res) => {
+  // Chat session routes - REQUIRES SUBSCRIPTION
+  app.post("/api/chat-sessions", requireSubscription, async (req, res) => {
     try {
       console.log('[Server Debug] POST /api/chat-sessions request body:', req.body);
 
@@ -211,7 +212,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/chat-sessions/user/:userId", async (req, res) => {
+  app.get("/api/chat-sessions/user/:userId", requireSubscription, async (req, res) => {
     try {
       console.log('[Server Debug] GET chat sessions for user:', req.params.userId);
       const sessions = await storage.getChatSessionsByUserId(req.params.userId);
@@ -274,8 +275,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   }
 
-  // AI Agent routes
-  app.post("/api/ai-agents", async (req, res) => {
+  // AI Agent routes - REQUIRES SUBSCRIPTION
+  app.post("/api/ai-agents", requireSubscription, async (req, res) => {
     try {
       console.log('[Server Debug] POST /api/ai-agents request body:', req.body);
 
@@ -307,7 +308,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/ai-agents/user/:userId", async (req, res) => {
+  app.get("/api/ai-agents/user/:userId", requireSubscription, async (req, res) => {
     try {
       console.log('[Server Debug] GET AI agents for user:', req.params.userId);
       const agents = await storage.getAiAgentsByUserId(req.params.userId);

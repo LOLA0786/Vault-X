@@ -7,9 +7,9 @@ export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   email: text("email").notNull().unique(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  // Subscription fields
-  currentPlan: varchar("current_plan").default("free"),
-  planStatus: varchar("plan_status").default("active"), // active, cancelled, expired
+  // Subscription fields - NO FREE PLAN, users must subscribe to access features
+  currentPlan: varchar("current_plan"), // null until they subscribe
+  planStatus: varchar("plan_status").default("inactive"), // inactive, active, cancelled, expired
   subscriptionStartDate: timestamp("subscription_start_date"),
   subscriptionEndDate: timestamp("subscription_end_date"),
   billingPeriod: varchar("billing_period").default("month"),
@@ -131,37 +131,79 @@ export type ChatSession = typeof chatSessions.$inferSelect;
 export type InsertPayment = z.infer<typeof insertPaymentSchema>;
 export type Payment = typeof payments.$inferSelect;
 
-// Plan configuration
+// Plan configuration - NO FREE PLAN, PAID PLANS ONLY
+// Pricing optimized for sustainable margins and competitive positioning
 export const PLAN_CONFIGS = {
-  'free': {
-    name: 'Free Plan',
-    features: ['5GB Storage', '10 AI chats/month', '1 Device'],
-    price: { monthly: 0, yearly: 0 },
-    limits: { storage: 5, chats: 10, devices: 1 }
-  },
   'starter-plan': {
     name: 'Starter Plan',
-    features: ['50GB Storage', '100 AI chats/month', '3 Devices'],
+    description: 'Perfect for individuals',
+    features: ['50GB Storage', '200 AI chats/month', '3 Devices', '3 AI Agents', 'Max 100MB per file', '30 days history'],
     price: { monthly: 7, yearly: 70 },
-    limits: { storage: 50, chats: 100, devices: 3 }
+    limits: { 
+      storage: 50, // GB
+      chats: 200, // per month
+      devices: 3,
+      aiAgents: 3,
+      maxFileSize: 100, // MB
+      chatHistoryDays: 30
+    }
   },
   'personal-plan': {
     name: 'Personal Plan',
-    features: ['200GB Storage', '500 chats/month', '5 Devices'],
-    price: { monthly: 12, yearly: 120 },
-    limits: { storage: 200, chats: 500, devices: 5 }
+    description: 'For power users',
+    features: ['200GB Storage', '800 chats/month', '5 Devices', '10 AI Agents', 'Max 500MB per file', '90 days history', 'Priority Support'],
+    price: { monthly: 15, yearly: 150 },
+    limits: { 
+      storage: 200, // GB
+      chats: 800, // per month
+      devices: 5,
+      aiAgents: 10,
+      maxFileSize: 500, // MB
+      chatHistoryDays: 90,
+      prioritySupport: true
+    }
   },
   'pro-plan': {
     name: 'Pro Plan',
-    features: ['1TB Storage', '2000 chats/month', 'Unlimited Devices'],
-    price: { monthly: 24, yearly: 240 },
-    limits: { storage: 1000, chats: 2000, devices: -1 }
+    description: 'For professionals & creators',
+    features: ['500GB Storage', '3,000 chats/month', 'Unlimited Devices', 'Unlimited AI Agents', 'Max 2GB per file', '1 year history', 'API Access', '24/7 Support'],
+    price: { monthly: 39, yearly: 390 },
+    limits: { 
+      storage: 500, // GB
+      chats: 3000, // per month
+      devices: -1, // unlimited
+      aiAgents: -1, // unlimited
+      maxFileSize: 2048, // MB (2GB)
+      chatHistoryDays: 365,
+      prioritySupport: true,
+      apiAccess: true,
+      advancedAnalytics: true,
+      versionHistory: 30 // days
+    }
   },
   'business-plan': {
     name: 'Business Plan',
-    features: ['10TB Storage', '10000 chats/month', '25 Users'],
-    price: { monthly: 99, yearly: 990 },
-    limits: { storage: 10000, chats: 10000, devices: -1, users: 25 }
+    description: 'For growing teams',
+    features: ['2TB Shared Storage', '15,000 chats/month', 'Unlimited Devices', 'Unlimited AI Agents', 'Max 5GB per file', 'Up to 10 Users', 'Admin Dashboard', 'SSO & Audit Logs', 'Unlimited History'],
+    price: { monthly: 199, yearly: 1990 },
+    limits: { 
+      storage: 2000, // GB (2TB)
+      chats: 15000, // per month
+      devices: -1, // unlimited
+      aiAgents: -1, // unlimited
+      maxFileSize: 5120, // MB (5GB)
+      chatHistoryDays: -1, // unlimited
+      teamMembers: 10,
+      prioritySupport: true,
+      apiAccess: true,
+      advancedAnalytics: true,
+      adminDashboard: true,
+      sso: true,
+      auditLogs: true,
+      complianceReports: true,
+      versionHistory: -1, // unlimited
+      dedicatedSupport: true
+    }
   }
 } as const;
 

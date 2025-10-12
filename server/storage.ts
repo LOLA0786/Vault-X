@@ -460,8 +460,8 @@ export class MemStorage implements IStorage {
       ...insertUser,
       id,
       createdAt: new Date(),
-      currentPlan: insertUser.currentPlan || 'free',
-      planStatus: insertUser.planStatus || 'active',
+      currentPlan: insertUser.currentPlan || null, // No free plan - must subscribe
+      planStatus: insertUser.planStatus || 'inactive', // Inactive until they subscribe
       subscriptionStartDate: insertUser.subscriptionStartDate || null,
       subscriptionEndDate: insertUser.subscriptionEndDate || null,
       billingPeriod: insertUser.billingPeriod || 'month',
