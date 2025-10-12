@@ -17,6 +17,8 @@ import TermsConditions from "@/pages/terms-conditions";
 import RefundPolicy from "@/pages/refund-policy";
 import Pricing from "@/pages/pricing";
 import AdminDashboard from "@/pages/admin-dashboard";
+import SubscriptionRequired from "@/pages/subscription-required";
+import { ProtectedRoute } from "@/components/protected-route";
 import { EncryptionOnboarding } from "@/components/encryption-onboarding";
 import { KeyImportPrompt } from "@/components/key-import-prompt";
 import { EncryptionService } from "@/lib/encryption";
@@ -105,16 +107,32 @@ function Router() {
           {isAuthenticated ? <Dashboard initialTab="dashboard" /> : <Onboarding />}
         </Route>
         <Route path="/agents">
-          {isAuthenticated ? <Agents /> : <Onboarding />}
+          {isAuthenticated ? (
+            <ProtectedRoute requireSubscription={true}>
+              <Agents />
+            </ProtectedRoute>
+          ) : <Onboarding />}
         </Route>
         <Route path="/vault">
-          {isAuthenticated ? <Dashboard initialTab="vault" /> : <Onboarding />}
+          {isAuthenticated ? (
+            <ProtectedRoute requireSubscription={true}>
+              <Dashboard initialTab="vault" />
+            </ProtectedRoute>
+          ) : <Onboarding />}
         </Route>
         <Route path="/chat">
-          {isAuthenticated ? <Chat /> : <Onboarding />}
+          {isAuthenticated ? (
+            <ProtectedRoute requireSubscription={true}>
+              <Chat />
+            </ProtectedRoute>
+          ) : <Onboarding />}
         </Route>
         <Route path="/history">
-          {isAuthenticated ? <History /> : <Onboarding />}
+          {isAuthenticated ? (
+            <ProtectedRoute requireSubscription={true}>
+              <History />
+            </ProtectedRoute>
+          ) : <Onboarding />}
         </Route>
         <Route path="/key-info">
           {isAuthenticated ? <KeyInfo /> : <Onboarding />}
@@ -123,6 +141,9 @@ function Router() {
           {isAuthenticated ? <Settings /> : <Onboarding />}
         </Route>
         <Route path="/pricing" component={Pricing} />
+        <Route path="/subscription-required">
+          {isAuthenticated ? <SubscriptionRequired /> : <Onboarding />}
+        </Route>
         <Route path="/admin">
           {isAuthenticated ? <AdminDashboard /> : <Onboarding />}
         </Route>
