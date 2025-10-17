@@ -638,7 +638,7 @@ export default function PricingPage() {
         <div className="px-4 lg:px-8 py-24 bg-gradient-to-br from-muted/30 via-muted/20 to-muted/30">
           <div className="max-w-7xl mx-auto text-center">
             <div className="mb-16">
-              <h2 className="text-4xl lg:text-5xl font-bold mb-6">Why Choose VaultX?</h2>
+              <h2 className="text-4xl lg:text-5xl font-bold mb-6">Why Choose PrivateVault.ai?</h2>
               <p className="text-xl lg:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed">
                 Built for security, powered by AI, designed for scale. Experience the future of secure file management.
               </p>
@@ -671,7 +671,7 @@ export default function PricingPage() {
                 </div>
                 <h3 className="text-2xl lg:text-3xl font-bold mb-6">Enterprise-Grade Scale</h3>
                 <p className="text-lg text-muted-foreground leading-relaxed">
-                  From personal use to enterprise teams, VaultX grows with you. Dedicated infrastructure and custom solutions available.
+                  From personal use to enterprise teams, PrivateVault.ai grows with you. Dedicated infrastructure and custom solutions available.
                 </p>
               </ModernCard>
             </div>
@@ -684,7 +684,7 @@ export default function PricingPage() {
             <div className="mb-16">
               <h2 className="text-4xl lg:text-5xl font-bold mb-6">Frequently Asked Questions</h2>
               <p className="text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                Everything you need to know about VaultX pricing and features.
+                Everything you need to know about PrivateVault.ai pricing and features.
               </p>
             </div>
 

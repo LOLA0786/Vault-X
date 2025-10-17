@@ -737,7 +737,7 @@ export default function Dashboard({ initialTab }: { initialTab?: string }) {
               <div className="space-y-6">
                 <div className="text-center">
                   <h2 className="text-3xl font-bold mb-2">Trusted by Professionals</h2>
-                  <p className="text-muted-foreground">See what our users say about VaultX</p>
+                  <p className="text-muted-foreground">See what our users say about PrivateVault.ai</p>
                 </div>
                 <Testimonials variant="default" />
               </div>

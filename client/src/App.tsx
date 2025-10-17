@@ -48,8 +48,8 @@ function Router() {
   useEffect(() => {
     if (isAuthenticated && user) {
       const hasValidKey = EncryptionService.hasValidKey();
-      const onboardingComplete = localStorage.getItem('vault_x_encryption_onboarding_complete') === 'true';
-      const isNewUser = localStorage.getItem('vault_x_is_new_user') === 'true';
+      const onboardingComplete = localStorage.getItem('privatevault_encryption_onboarding_complete') === 'true';
+      const isNewUser = localStorage.getItem('privatevault_is_new_user') === 'true';
 
       if (isNewUser && !onboardingComplete) {
         // Show encryption onboarding for new users who haven't completed it
