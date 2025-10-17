@@ -90,8 +90,8 @@ export function EncryptionOnboarding({ onComplete, isFirstTime = true }: Encrypt
 
   const completeOnboarding = () => {
     // Mark onboarding as complete and clear new user flag
-    localStorage.setItem('vault_x_encryption_onboarding_complete', 'true');
-    localStorage.removeItem('vault_x_is_new_user');
+    localStorage.setItem('privatevault_encryption_onboarding_complete', 'true');
+    localStorage.removeItem('privatevault_is_new_user');
     onComplete();
   };
 

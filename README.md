@@ -1,8 +1,8 @@
-# VaultX - Private Client Project
+# PrivateVault.ai - Secure AI File Management
 
 **CONFIDENTIAL - PROPRIETARY SOFTWARE**
 
-A secure AI-powered file management platform with end-to-end encryption, developed for [Client Company Name].
+A secure AI-powered file management platform with end-to-end encryption, developed for Pentaprime Solutions.
 
 ## 🔒 Security Features
 
@@ -71,7 +71,7 @@ A secure AI-powered file management platform with end-to-end encryption, develop
 
 ```env
 # Database
-DATABASE_URL=postgresql://username:password@localhost:5432/vaultx
+DATABASE_URL=postgresql://username:password@localhost:5432/privatevault
 
 # AI Providers (Configure as needed)
 OPENAI_API_KEY=your_openai_api_key
@@ -90,7 +90,7 @@ NODE_ENV=development
 
 ### Docker Deployment
 ```bash
-docker build -t vaultx .
+docker build -t privatevault .
 docker-compose up -d
 ```
 

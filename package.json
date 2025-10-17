@@ -1,10 +1,10 @@
 {
-  "name": "vaultx-client-project",
+  "name": "privatevault-ai",
   "version": "1.0.0",
   "type": "module",
   "private": true,
   "license": "UNLICENSED",
-  "description": "Secure AI-powered file management platform - Private Client Project",
+  "description": "PrivateVault.ai - Secure AI-powered file management platform with end-to-end encryption",
   "scripts": {
     "dev": "cross-env NODE_ENV=development tsx server/index.ts",
     "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",

@@ -49,7 +49,7 @@ const defaultPosts: BlogPost[] = [
   {
     id: '3',
     title: 'Zero-Knowledge Architecture Explained',
-    excerpt: 'Understanding how VaultX protects your data without ever seeing your content.',
+    excerpt: 'Understanding how PrivateVault.ai protects your data without ever seeing your content.',
     date: 'Sep 25, 2025',
     author: 'Engineering Team',
     readTime: '7 min read',
@@ -58,7 +58,7 @@ const defaultPosts: BlogPost[] = [
   {
     id: '4',
     title: 'File Encryption Best Practices',
-    excerpt: 'Learn how to maximize security when uploading sensitive documents to VaultX.',
+    excerpt: 'Learn how to maximize security when uploading sensitive documents to PrivateVault.ai.',
     date: 'Sep 20, 2025',
     author: 'Security Team',
     readTime: '4 min read',
@@ -275,7 +275,7 @@ export function NewsWidget({ className }: { className?: string }) {
     <Card className={cn("", className)}>
       <CardHeader>
         <CardTitle className="text-lg">Latest Updates</CardTitle>
-        <CardDescription>Stay informed about VaultX</CardDescription>
+        <CardDescription>Stay informed about PrivateVault.ai</CardDescription>
       </CardHeader>
       <CardContent>
         <BlogSection 

@@ -28,14 +28,14 @@ const defaultTestimonials: Testimonial[] = [
     name: 'Sarah Johnson',
     role: 'Data Analyst',
     company: 'TechCorp',
-    quote: 'VaultX keeps my sensitive data secure while making AI analysis effortless. The encryption gives me peace of mind.',
+    quote: 'PrivateVault.ai keeps my sensitive data secure while making AI analysis effortless. The encryption gives me peace of mind.',
     rating: 5,
     verified: true
   },
   {
-    id: '2', 
+    id: '2',
     name: 'Michael Chen',
-    role: 'Security Engineer', 
+    role: 'Security Engineer',
     company: 'CyberShield Inc',
     quote: 'Finally, an AI platform I can trust with confidential documents. The zero-knowledge architecture is impressive.',
     rating: 5,
@@ -55,23 +55,23 @@ const defaultTestimonials: Testimonial[] = [
     name: 'David Kim',
     role: 'Legal Counsel',
     company: 'LawFirm Pro',
-    quote: 'Client confidentiality is paramount. VaultX ensures our sensitive legal documents remain completely private.',
+    quote: 'Client confidentiality is paramount. PrivateVault.ai ensures our sensitive legal documents remain completely private.',
     rating: 5,
     verified: true
   }
 ];
 
-export function Testimonials({ 
-  testimonials = defaultTestimonials, 
+export function Testimonials({
+  testimonials = defaultTestimonials,
   variant = 'default',
   showRating = true,
   className = ''
 }: TestimonialsProps) {
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
-      <Star 
-        key={i} 
-        className={`w-4 h-4 ${i < rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
+      <Star
+        key={i}
+        className={`w-4 h-4 ${i < rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
       />
     ));
   };

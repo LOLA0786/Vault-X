@@ -248,4 +248,4 @@ console.log(`[Chunked Upload] Finalized upload for session ${sessionId}`);
 - Remove Base64 upload code
 - Optimize chunk size based on analytics
 
-This architecture provides a robust, scalable solution for large file uploads while maintaining VaultX's security guarantees and improving user experience significantly.
+This architecture provides a robust, scalable solution for large file uploads while maintaining PrivateVault.ai's security guarantees and improving user experience significantly.
