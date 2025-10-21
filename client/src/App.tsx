@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import Dashboard from "@/pages/dashboard";
+import LandingPage from "@/pages/landing";
 import Onboarding from "@/pages/onboarding";
 import NotFound from "@/pages/not-found";
 import Agents from "@/pages/agents";
@@ -16,6 +17,9 @@ import PrivacyPolicy from "@/pages/privacy-policy";
 import TermsConditions from "@/pages/terms-conditions";
 import RefundPolicy from "@/pages/refund-policy";
 import Pricing from "@/pages/pricing";
+import About from "@/pages/about";
+import Contact from "@/pages/contact";
+import HelpCenter from "@/pages/help-center";
 import AdminDashboard from "@/pages/admin-dashboard";
 import SubscriptionRequired from "@/pages/subscription-required";
 import { ProtectedRoute } from "@/components/protected-route";
@@ -101,7 +105,10 @@ function Router() {
       <GlobalBackground parallax />
       <Switch>
         <Route path="/">
-          {isAuthenticated ? <Dashboard /> : <Onboarding />}
+          {isAuthenticated ? <Dashboard /> : <LandingPage />}
+        </Route>
+        <Route path="/onboarding">
+          <Onboarding />
         </Route>
         <Route path="/dashboard">
           {isAuthenticated ? <Dashboard initialTab="dashboard" /> : <Onboarding />}
@@ -152,7 +159,11 @@ function Router() {
         <Route path="/privacy-policy" component={PrivacyPolicy} />
         <Route path="/terms-conditions" component={TermsConditions} />
         <Route path="/refund-policy" component={RefundPolicy} />
-        
+
+        {/* Info Pages - Publicly Accessible */}
+        <Route path="/about" component={About} />
+        <Route path="/contact" component={Contact} />
+        <Route path="/help" component={HelpCenter} />
 
         <Route component={NotFound} />
       </Switch>
