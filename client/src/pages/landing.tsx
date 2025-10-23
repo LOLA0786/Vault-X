@@ -353,7 +353,7 @@ export default function LandingPage() {
                                 ))}
                             </div>
 
-                            <Button size="lg" variant="outline" className="group">
+                            <Button size="lg" variant="outline" className="group" onClick={() => setLocation('/whitepaper')}>
                                 Read Security Whitepaper
                                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                             </Button>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { ModernCard, ModernCardContent, ModernCardDescription, ModernCardHeader, ModernCardTitle } from '@/components/ui/modern-card';
 import { ModernContainer } from '@/components/ui/modern-layout';
@@ -12,6 +12,10 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 export default function HelpCenter() {
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const categories = [
     {
@@ -142,13 +146,13 @@ export default function HelpCenter() {
 
   const filteredFaqs = searchQuery
     ? faqs.map(category => ({
-        ...category,
-        questions: category.questions.filter(
-          faq =>
-            faq.q.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            faq.a.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-      })).filter(category => category.questions.length > 0)
+      ...category,
+      questions: category.questions.filter(
+        faq =>
+          faq.q.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          faq.a.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    })).filter(category => category.questions.length > 0)
     : faqs;
 
   return (
