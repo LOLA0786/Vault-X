@@ -20,6 +20,7 @@ import Pricing from "@/pages/pricing";
 import About from "@/pages/about";
 import Contact from "@/pages/contact";
 import HelpCenter from "@/pages/help-center";
+import Whitepaper from "@/pages/whitepaper";
 import AdminDashboard from "@/pages/admin-dashboard";
 import SubscriptionRequired from "@/pages/subscription-required";
 import { ProtectedRoute } from "@/components/protected-route";
@@ -164,6 +165,7 @@ function Router() {
         <Route path="/about" component={About} />
         <Route path="/contact" component={Contact} />
         <Route path="/help" component={HelpCenter} />
+        <Route path="/whitepaper" component={Whitepaper} />
 
         <Route component={NotFound} />
       </Switch>

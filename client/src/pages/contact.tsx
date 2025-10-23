@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { ModernCard, ModernCardContent, ModernCardDescription, ModernCardHeader, ModernCardTitle } from '@/components/ui/modern-card';
 import { ModernContainer } from '@/components/ui/modern-layout';
@@ -13,6 +13,10 @@ import { useToast } from '@/hooks/use-toast';
 export default function Contact() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
