@@ -1,1 +1,7 @@
-.vercel
+venv/
+__pycache__/
+*.pyc
+reports/
+.DS_Store
+.env
+
